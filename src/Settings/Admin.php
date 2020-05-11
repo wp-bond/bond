@@ -7,6 +7,7 @@ use Bond\Utils\Cast;
 class Admin
 {
     private static $archive_columns = [];
+    private static $tax_archive_columns = [];
 
 
     public static function enableTheming()
@@ -151,25 +152,38 @@ class Admin
 
     public static function manageArchiveColumns()
     {
-        \add_filter(
+        \add_action(
             'manage_pages_custom_column',
             [static::class, 'handleArchiveColumn'],
             10,
             2
         );
-        \add_filter(
+        \add_action(
             'manage_posts_custom_column',
             [static::class, 'handleArchiveColumn'],
             10,
             2
         );
-        \add_filter(
+        \add_action(
             'manage_media_custom_column',
             [static::class, 'handleArchiveColumn'],
             10,
             2
         );
-        // add terms here too with another handlers that cast as term
+
+        // wait until taxonomies are registered
+        \add_action('wp_loaded', function () {
+            global $wp_taxonomies;
+
+            foreach (array_keys($wp_taxonomies) as $taxonomy) {
+                \add_filter(
+                    'manage_' . $taxonomy . '_custom_column',
+                    [static::class, 'handleTaxonomyArchiveColumn'],
+                    10,
+                    3
+                );
+            }
+        });
     }
 
     public static function addArchiveColumn($name, callable $handler)
@@ -179,14 +193,31 @@ class Admin
 
     public static function handleArchiveColumn($name, $post_id)
     {
+        if (!isset(self::$archive_columns[$name])) {
+            return;
+        }
         $post = Cast::post($post_id);
         if (!$post) {
             return;
         }
+        echo self::$archive_columns[$name]($post);
+    }
 
-        if (isset(self::$archive_columns[$name])) {
-            echo self::$archive_columns[$name]($post);
+    public static function addTaxonomyArchiveColumn($name, callable $handler)
+    {
+        self::$tax_archive_columns[$name] = $handler;
+    }
+
+    public static function handleTaxonomyArchiveColumn($content, $name, $term_id)
+    {
+        if (!isset(self::$tax_archive_columns[$name])) {
+            return $content;
         }
+        $term = Cast::term($term_id);
+        if (!$term) {
+            return $content;
+        }
+        return self::$tax_archive_columns[$name]($term);
     }
 
 
