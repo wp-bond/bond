@@ -6,6 +6,7 @@ use Bond\Post;
 use Bond\Posts;
 use Bond\PostType;
 use Bond\Support\Fluent;
+use Bond\Taxonomy;
 use Bond\Term;
 use Bond\Terms;
 use stdClass;
@@ -18,6 +19,8 @@ class Cast
     protected static array $posts = [];
     protected static array $post_types = [];
     protected static array $terms = [];
+    protected static array $taxonomies = [];
+
 
     protected static function loadClasses()
     {
@@ -47,6 +50,13 @@ class Cast
                 $_term = new $_class();
                 if (isset($_term->taxonomy)) {
                     static::$terms[$_term->taxonomy] = $_class;
+                }
+            }
+
+            // taxonomies
+            if (is_subclass_of($_class, Taxonomy::class)) {
+                if (isset($_class::$taxonomy)) {
+                    static::$taxonomies[$_class::$taxonomy] = $_class;
                 }
             }
         }
@@ -221,9 +231,32 @@ class Cast
     }
 
 
+    // Taxonomies
+
+    public static function taxonomyClass($name): ?string
+    {
+        if (empty($name)) {
+            return null;
+        }
+
+        // load
+        static::loadClasses();
+
+        if ($name instanceof Taxonomy) {
+            $name = $name::$taxonomy;
+        } elseif (is_object($name) && isset($name->taxonomy)) {
+            $name = $name->taxonomy;
+        } elseif (is_array($name) && !empty($name['taxonomy'])) {
+            $name = $name['taxonomy'];
+        }
+        $name = (string) $name;
+
+        // return only if exist
+        return static::$taxonomies[$name] ?? null;
+    }
 
 
-    // Taxonomy
+    // Terms
 
     public static function term($term): ?Term
     {

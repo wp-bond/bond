@@ -17,13 +17,7 @@ class App
 
     public static function mapLinks()
     {
-        static::mapPostLinks();
-        static::mapArchiveLinks();
-        static::mapTermLinks();
-    }
-
-    public static function mapPostLinks()
-    {
+        // posts
         $fn = function ($wp_link, $post) {
             return ($link = Link::post($post))
                 ? Link::url($link)
@@ -31,24 +25,23 @@ class App
         };
         \add_filter('post_type_link', $fn, 10, 2);
         \add_filter('page_link', $fn, 10, 2);
-    }
 
-    public static function mapArchiveLinks()
-    {
+        // posts archives
         \add_filter('post_type_archive_link', function ($wp_link, $post_type) {
             return ($link = Link::postType($post_type))
                 ? Link::url($link)
                 : $wp_link;
         }, 10, 2);
-    }
 
-    public static function mapTermLinks()
-    {
+        // terms
         \add_filter('term_link', function ($wp_link, $term) {
             return ($link = Link::term($term))
                 ? Link::url($link)
                 : $wp_link;
         }, 10, 2);
+
+        // there a no terms archive links in WP
+        // no need to filter
     }
 
 

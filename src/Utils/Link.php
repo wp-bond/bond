@@ -60,6 +60,7 @@ class Link
         return $postType ? $postType::link($language_code) : '';
     }
 
+
     public static function term(
         $term,
         string $language_code = null
@@ -68,6 +69,16 @@ class Link
         $term = Cast::term($term);
         return $term ? $term->link($language_code) : '';
     }
+
+    public static function taxonomy(
+        $taxonomy,
+        string $language_code = null
+    ): string {
+
+        $taxonomy = Cast::taxonomyClass($taxonomy);
+        return $taxonomy ? $taxonomy::link($language_code) : '';
+    }
+
 
     public static function search(string $language_code = null): string
     {
@@ -197,6 +208,8 @@ class Link
         return '/' . $post_type;
     }
 
+
+
     public static function forTerms(
         $term,
         string $language_code = null
@@ -207,7 +220,22 @@ class Link
             return '';
         }
 
-        return static::search()
+        return static::search($language_code)
             . '/?' . $term->taxonomy . '=' . $term->slug($language_code);
+    }
+
+    public static function forTaxonomies(
+        $taxonomy,
+        string $language_code = null
+    ): string {
+
+        if (empty($taxonomy)) {
+            return '';
+        }
+        if (is_array($taxonomy)) {
+            $taxonomy = $taxonomy[0];
+        }
+        return static::search($language_code)
+            . '/?taxonomy=' . $taxonomy;
     }
 }

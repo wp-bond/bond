@@ -6,6 +6,7 @@ use Bond\Utils\Cache;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use Bond\Utils\Query;
+use Bond\Utils\Str;
 
 abstract class PostType
 {
@@ -13,7 +14,6 @@ abstract class PostType
     public static array $taxonomies = [];
 
     // we may elect some more props here
-
 
 
     public static function link(string $language_code = null): string
@@ -72,13 +72,17 @@ abstract class PostType
         );
     }
 
-    // idea
-    // public static function getAll()
+
+    // idea, but still would need to allow order options
+    // just think of the naming getAll or all
+    // also consider if the caching is disabled
+
+    // public static function getAll(array $params = [])
     // {
     //     return Cache::php(
-    //         static::$post_type . '/all',
+    //         static::$post_type . '/all' . (!empty($params) ? '-' . Str::slug($params) : ''),
     //         -1,
-    //         function () {
+    //         function () use ($params) {
     //             $query_args = [
     //                 'post_type' => static::$post_type,
     //                 'posts_per_page' => -1,
@@ -88,7 +92,9 @@ abstract class PostType
     //                 'update_post_term_cache' => false,
     //                 'orderby' => 'menu_order title',
     //                 'order' => 'ASC',
+    //                 // order as class vars? could help to set the archive columns too
     //             ];
+    //             $query_args = array_merge($query_args, $params);
     //             $query = new \WP_Query($query_args);
 
     //             return Cast::posts($query->posts);
