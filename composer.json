@@ -1,14 +1,14 @@
 {
   "name": "wp-bond/bond",
   "homepage": "https://github.com/wp-bond/bond",
-  "description": "A utility library for WordPress theme developers.",
+  "description": "A utility library for WordPress developers.",
   "keywords": [
     "wordpress",
     "utility",
     "library"
   ],
   "type": "library",
-  "license": "MIT",
+  "license": "GPL-3.0-or-later",
   "authors": [
     {
       "name": "André Felipe",
@@ -32,6 +32,7 @@
   },
   "suggest": {
     "google/cloud-translate": "Translate strings with Google Translate.",
-    "aws/aws-sdk-php": "Translate strings with AWS Translate."
+    "aws/aws-sdk-php": "Translate strings with AWS Translate.",
+    "symfony/var-dumper": "To use dd function."
   }
 }
