@@ -8,6 +8,7 @@ namespace Bond\Fields;
 trait AllFields
 {
     // must implement something like this
+    // TODO test abstract method here
     // protected function addField(Field $field) : self
     // {
     //     $this->sub_fields[] = $field;

@@ -38,6 +38,7 @@ if (!function_exists('meta')) {
     }
 }
 
+// TODO maybe rename to env, just check Laravel code to see what's up, check if phpdotenv creates a env function too, that would conflict
 if (!function_exists('c')) {
     function c(string $name)
     {
