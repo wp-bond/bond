@@ -169,6 +169,11 @@ class Translate
             return $string;
         }
 
+        // Skip if is not multilanguage
+        if (!Languages::isMultilanguage()) {
+            return $string;
+        }
+
         // Fallback to gettext
         if (!self::hasService()) {
             if ($context) {
@@ -259,9 +264,14 @@ class Translate
 
         // save to disk
         if ($updated) {
-            $path = config()->rootThemePath() . '/languages/' . $language_code . '.json';
 
             ksort(self::$glossaries[$language_code], SORT_NATURAL);
+
+            $path = config()->rootThemePath() . '/languages/' . $language_code . '.json';
+
+            if (!file_exists(config()->rootThemePath() . '/languages')) {
+                mkdir(config()->rootThemePath() . '/languages', 0755, true);
+            }
 
             file_put_contents($path, json_encode(self::$glossaries[$language_code], JSON_PRETTY_PRINT));
         }
