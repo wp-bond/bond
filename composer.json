@@ -20,6 +20,7 @@
     "mobiledetect/mobiledetectlib": "^2.8",
     "nesbot/carbon": "^2.32",
     "symfony/polyfill-mbstring": "^1.15",
+    "symfony/polyfill-php80": "^1.17",
     "voku/portable-ascii": "^1.4"
   },
   "autoload": {

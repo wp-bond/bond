@@ -1,9 +1,29 @@
 <?php
 
+// use Bond\Application;
 use Bond\Config;
 use Bond\Utils\Translate;
 use Bond\Meta;
+use Bond\Utils\Str;
 use Bond\View;
+
+// if (!function_exists('app')) {
+//     /**
+//      * Get the available container instance.
+//      *
+//      * @param  string|null  $abstract
+//      * @param  array  $parameters
+//      * @return mixed|\Bond\Application
+//      */
+//     function app($abstract = null, array $parameters = [])
+//     {
+//         if (is_null($abstract)) {
+//             return Application::getInstance();
+//         }
+
+//         return Application::getInstance()->make($abstract, $parameters);
+//     }
+// }
 
 if (!function_exists('config')) {
     function config(?string $key = null)
@@ -40,11 +60,11 @@ if (!function_exists('meta')) {
 
 // TODO maybe rename to env, just check Laravel code to see what's up, check if phpdotenv creates a env function too, that would conflict
 if (!function_exists('c')) {
-    function c(string $name)
+    function c(string $name, $default = null)
     {
         return defined($name)
             ? constant($name)
-            : null;
+            : $default;
     }
 }
 
@@ -61,6 +81,13 @@ if (!function_exists('tx')) {
     function tx($string, string $context, string $language_code = null): string
     {
         return Translate::get($string, $language_code, $context);
+    }
+}
+
+if (!function_exists('esc_json')) {
+    function esc_json($data): string
+    {
+        return Str::escJson($data);
     }
 }
 

@@ -39,7 +39,7 @@ class Post extends Fluent
                     function () use ($id) {
                         if ($post = Cast::wpPost($id)) {
                             $values = Obj::vars($post);
-                            if ($fields = \get_fields($id)) {
+                            if (config()->hasAcf() && $fields = \get_fields($id)) {
                                 $values += $fields;
                             }
                             return $values;
