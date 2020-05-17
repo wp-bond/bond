@@ -94,6 +94,7 @@ class Config extends Fluent
         return $this->url() . $this->themeDir();
     }
 
+    // TODO consider changing to basePath
     public function rootThemePath(): string
     {
         return \ROOT_APP_PATH . '/themes/' . $this->themeId();

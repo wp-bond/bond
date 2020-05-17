@@ -258,7 +258,7 @@ class Fluent implements
     /**
      * Convert the model to its string representation.
      *
-     *
+     * Rightfully empty
      */
     public function __toString(): string
     {

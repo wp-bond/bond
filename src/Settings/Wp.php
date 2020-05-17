@@ -45,12 +45,6 @@ class Wp
 
         foreach ($sizes as $size => $values) {
 
-            // define constants for easier handling
-            $constant_name = Str::constant($size);
-            if (!defined($constant_name)) {
-                define($constant_name, $size);
-            }
-
             // these are set in the WP options, see below
             if (in_array($size, [
                 'thumbnail',
