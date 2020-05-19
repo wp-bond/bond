@@ -91,11 +91,12 @@ if (!function_exists('esc_json')) {
     }
 }
 
+
 if (!function_exists('mix')) {
 
     /**
      * Get the path to a versioned Mix file.
-     * SHOULD BE UPPDATED LATER WHEN THERE IS CONFIG CONTAINER
+     * SHOULD BE UPDATED LATER WHEN THERE IS CONFIG CONTAINER
      *
      * @param  string  $path
      * @return string
