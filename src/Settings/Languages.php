@@ -82,7 +82,7 @@ class Languages
         return self::code();
     }
 
-    public static function setCurrent(string $code)
+    public static function setCurrent(?string $code)
     {
         $code = self::code($code) ?: self::getDefault();
 
