@@ -22,7 +22,7 @@ class Admin
             static::addFooterCredits();
             static::manageArchiveColumns();
             static::replaceDashboard();
-            if (config()->isProduction() || !\current_user_can('manage_options')) {
+            if (app()->isProduction() || !\current_user_can('manage_options')) {
                 static::removeAdministrationMenus();
             }
         }
@@ -45,7 +45,7 @@ class Admin
 
     public static function removeUpdateNag()
     {
-        if (config()->isProduction() || !\current_user_can('update_core')) {
+        if (app()->isProduction() || !\current_user_can('update_core')) {
             \add_action('admin_head', function () {
                 \remove_action('admin_notices', 'update_nag', 3);
             }, 1);

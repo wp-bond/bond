@@ -98,8 +98,8 @@ class Meta
 
         // set the defaults
         if (is_front_page()) {
-            $this->title[] = config('app.name');
-            // $this->images[] = config()->url().'/apple-touch-icon-1200.png';
+            $this->title[] = app()->name();
+            // $this->images[] = app()->url().'/apple-touch-icon-1200.png';
 
             // if (function_exists('get_field'))
             //     $this->description = get_field('field_meta_description', 'options');
@@ -107,16 +107,14 @@ class Meta
             // if (!empty($post))
             //     $this->description = !empty($post->post_excerpt) ? $post->post_excerpt : $post->post_content;
 
-            $this->url = config()->url() . Languages::urlPrefix() . '/';
+            $this->url = app()->url() . Languages::urlPrefix() . '/';
             return;
         }
 
         // get request uri splitting on the query string
         $uri = explode('?', $_SERVER['REQUEST_URI']);
 
-        $this->url = config()->url() . $uri[0];
-
-        // $this->title = wp_title($this->title_separator, false, 'left').config('app.name');
+        $this->url = app()->url() . $uri[0];
 
         if (is_404()) {
             $this->title[] = __('Page not found');
@@ -192,7 +190,7 @@ class Meta
         }
 
         // append site name
-        $this->title[] = config('app.name');
+        $this->title[] = app()->name();
 
         //implement http://ogp.me/#type_article
     }
@@ -256,14 +254,14 @@ class Meta
                 $url = $this->alternate[$code] ?? '';
             } else {
                 if (is_front_page()) {
-                    $url = config()->url();
+                    $url = app()->url();
                     //
                 } elseif (is_archive()) {
-                    $url = config()->url()
+                    $url = app()->url()
                         . Link::postType($post_type, $code);
                     //
                 } elseif ($post && \is_singular()) {
-                    $url = config()->url()
+                    $url = app()->url()
                         . $post->link($code);
                 }
             }
@@ -279,9 +277,9 @@ class Meta
         echo "\n" . '<script>';
         echo 'window.LANGUAGE_CODE="' . Languages::code() . '";';
         echo 'window.LANG="' . Languages::shortCode() . '";';
-        echo 'window.IS_MOBILE=Boolean("' . config()->isMobile() . '");';
-        echo 'window.IS_TABLET=Boolean("' . config()->isTablet() . '");';
-        echo 'window.IS_DESKTOP=Boolean("' . config()->isDesktop() . '");';
+        echo 'window.IS_MOBILE=Boolean("' . app()->isMobile() . '");';
+        echo 'window.IS_TABLET=Boolean("' . app()->isTablet() . '");';
+        echo 'window.IS_DESKTOP=Boolean("' . app()->isDesktop() . '");';
         echo '</script>' . "\n";
     }
 
@@ -306,7 +304,7 @@ class Meta
             $title = is_array($this->title) ? implode($this->separator(), $this->title) : $this->title;
             $title = Str::clean($title);
         } else {
-            $title = wp_title($this->title_separator, false, 'right') . config('app.name');
+            $title = wp_title($this->title_separator, false, 'right') . app()->name();
         }
 
         return $title;
@@ -356,7 +354,7 @@ class Meta
     public function printOgTags()
     {
         echo '<meta property="og:type" content="' . $this->og_type . '">' . "\n";
-        echo '<meta property="og:site_name" content="' . config('app.name') . '">' . "\n";
+        echo '<meta property="og:site_name" content="' . app()->name() . '">' . "\n";
         echo '<meta property="og:locale" content="' . Languages::locale() . '">' . "\n";
 
         //og images
@@ -435,7 +433,7 @@ class Meta
             echo '<meta name="twitter:site" content="@' . config('services.twitter.user') . '">' . "\n";
         }
 
-        echo '<meta name="twitter:domain" content="' . Str::domain(config()->url()) . '">' . "\n";
+        echo '<meta name="twitter:domain" content="' . Str::domain(app()->url()) . '">' . "\n";
 
         if (!empty($this->twitter_creator)) {
             echo '<meta name="twitter:creator" content="@' . (strpos($this->twitter_creator, '@') === 0 ? substr($this->twitter_creator, 1) : $this->twitter_creator) . '">' . "\n";

@@ -1,60 +1,44 @@
 <?php
 
-// use Bond\Application;
-use Bond\Config;
+use Bond\App;
 use Bond\Utils\Translate;
-use Bond\Meta;
 use Bond\Utils\Str;
-use Bond\View;
 
-// if (!function_exists('app')) {
-//     /**
-//      * Get the available container instance.
-//      *
-//      * @param  string|null  $abstract
-//      * @param  array  $parameters
-//      * @return mixed|\Bond\Application
-//      */
-//     function app($abstract = null, array $parameters = [])
-//     {
-//         if (is_null($abstract)) {
-//             return Application::getInstance();
-//         }
-
-//         return Application::getInstance()->make($abstract, $parameters);
-//     }
-// }
+if (!function_exists('app')) {
+    /**
+     * Get the instance from the container, or the container itself.
+     *
+     * @param  string|null  $id Identifier of the entry to look for.
+     * @return mixed|\Bond\App
+     */
+    function app($id = null)
+    {
+        return is_null($id)
+            ? App::getInstance()
+            : App::getInstance()->get($id);
+    }
+}
 
 if (!function_exists('config')) {
     function config(?string $key = null)
     {
-        static $config = null;
-        if (!$config) {
-            $config = new Config();
-        }
-        return $key ? $config->{$key} : $config;
+        return $key
+            ? app('config')->{$key}
+            : app('config');
     }
 }
 
 if (!function_exists('view')) {
     function view()
     {
-        static $view = null;
-        if (!$view) {
-            $view = new View();
-        }
-        return $view;
+        return app('view');
     }
 }
 
 if (!function_exists('meta')) {
     function meta()
     {
-        static $meta = null;
-        if (!$meta) {
-            $meta = new Meta();
-        }
-        return $meta;
+        return app('meta');
     }
 }
 
@@ -109,12 +93,12 @@ if (!function_exists('mix')) {
 
         $path = '/' . ltrim($path, '/');
 
-        if (file_exists(config()->themePath() . '/hot')) {
+        if (file_exists(app()->themePath() . '/hot')) {
             return "//localhost:8080{$path}";
         }
 
         if (!$manifest) {
-            if (!file_exists($manifestPath = config()->themePath() . '/mix-manifest.json')) {
+            if (!file_exists($manifestPath = app()->themePath() . '/mix-manifest.json')) {
                 throw new Exception('The Mix manifest does not exist.');
             }
 
@@ -129,7 +113,7 @@ if (!function_exists('mix')) {
         }
 
         if ($theme_url) {
-            return config()->themeDir() . $manifest[$path];
+            return app()->themeDir() . $manifest[$path];
         }
         return $manifest[$path];
     }
@@ -140,6 +124,6 @@ if (!function_exists('mix_inline')) {
     {
         $path = mix($path, false);
         $path = parse_url($path, PHP_URL_PATH);
-        return file_get_contents(config()->themePath() . $path);
+        return file_get_contents(app()->themePath() . $path);
     }
 }

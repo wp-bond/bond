@@ -72,7 +72,7 @@ class Cache
     private static function getPath($key, $extension): string
     {
         $file_path = trim($key, '/') . '.' . $extension;
-        $cache_path = config('cache.path');
+        $cache_path = app()->cachePath();
 
         // create folder if needed
         $dir = '';
@@ -148,7 +148,7 @@ class Cache
             return;
         }
         $key = trim($key, '/');
-        $path = config('cache.path') . '/' . $key;
+        $path = app()->cachePath() . '/' . $key;
         $name = null;
 
         if (!file_exists($path) || !is_dir($path)) {

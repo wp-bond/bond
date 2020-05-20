@@ -2,6 +2,7 @@
 
 namespace Bond\Settings;
 
+// This is Utils!?
 class Register
 {
 

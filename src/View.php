@@ -51,11 +51,6 @@ class View
     /**
      * @var string
      */
-    protected $views_dir = 'views';
-
-    /**
-     * @var string
-     */
     protected $templates_dir = 'templates';
 
     /**
@@ -471,9 +466,9 @@ class View
         static $suffix = null;
 
         if (!$suffix) {
-            if (config()->isMobile()) {
+            if (app()->isMobile()) {
                 $suffix = '-mobile';
-            } elseif (config()->isTablet()) {
+            } elseif (app()->isTablet()) {
                 $suffix = '-tablet';
             } else {
                 $suffix = '-desktop';
@@ -538,7 +533,8 @@ class View
     protected function scanDirHelper($dir_name): array
     {
         $result = [];
-        $base_path = config()->rootThemePath() . '/' . $this->views_dir . '/' . $dir_name;
+        $base_path = app()->viewsPath()
+            . DIRECTORY_SEPARATOR . $dir_name;
 
         if (is_dir($base_path)) {
             $dir = new \RecursiveDirectoryIterator(

@@ -10,7 +10,7 @@ use Bond\Utils\Query;
 use Bond\Utils\Str;
 use Bond\Utils\Translate;
 
-class App
+class Bond
 {
 
     // Links
@@ -131,7 +131,7 @@ class App
 
     public static function ensureTitlesAndSlugs($post_types)
     {
-        if (!config()->hasAcf()) {
+        if (!app()->hasAcf()) {
             return;
         }
 

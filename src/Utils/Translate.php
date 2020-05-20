@@ -17,6 +17,9 @@ use Bond\Settings\Languages;
 
 class Translate
 {
+    // TODO transform this class in non-static and move out from utils
+    // it is part Settings, part Service
+
     private static array $glossaries = [];
 
     private static string $service;
@@ -27,7 +30,7 @@ class Translate
         // runs on priority 9, before the default priority 10
         // so it's already translated if needed
 
-        if (!config()->hasAcf()) {
+        if (!app()->hasAcf()) {
             return;
         }
 
@@ -177,16 +180,16 @@ class Translate
         // Fallback to gettext
         if (!self::hasService()) {
             if ($context) {
-                return _x($string, $context, config()->id());
+                return _x($string, $context, app()->id());
             }
-            return __($string, config()->id());
+            return __($string, app()->id());
         }
 
         // fallback to current language
         $language_code = Languages::code($language_code);
 
         // if is dev translate all languages
-        if (config()->isDevelopment()) {
+        if (app()->isDevelopment()) {
             $res = $string;
 
             foreach (Languages::codes() as $code) {
@@ -221,7 +224,8 @@ class Translate
 
         // Load glossary if not already
         if (!isset(self::$glossaries[$language_code])) {
-            $path = config()->rootThemePath() . '/languages/' . $language_code . '.json';
+            $path = app()->languagesPath()
+                . DIRECTORY_SEPARATOR . $language_code . '.json';
 
             if (is_readable($path)) {
                 self::$glossaries[$language_code] = json_decode(file_get_contents($path), true);
@@ -267,11 +271,13 @@ class Translate
 
             ksort(self::$glossaries[$language_code], SORT_NATURAL);
 
-            $path = config()->rootThemePath() . '/languages/' . $language_code . '.json';
-
-            if (!file_exists(config()->rootThemePath() . '/languages')) {
-                mkdir(config()->rootThemePath() . '/languages', 0755, true);
+            // create folder if needed
+            if (!file_exists(app()->languagesPath())) {
+                mkdir(app()->languagesPath(), 0755, true);
             }
+
+            $path = app()->languagesPath()
+                . DIRECTORY_SEPARATOR . $language_code . '.json';
 
             file_put_contents($path, json_encode(self::$glossaries[$language_code], JSON_PRETTY_PRINT));
         }

@@ -22,6 +22,7 @@ class Cast
     protected static array $taxonomies = [];
 
 
+    // TODO consider moving to app container
     protected static function loadClasses()
     {
         if (static::$loaded_classes) {

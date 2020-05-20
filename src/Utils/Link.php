@@ -12,10 +12,10 @@ class Link
     public static function url(string $url): string
     {
         if (strpos($url, '/') === 0) {
-            return config()->url() . $url;
+            return app()->url() . $url;
         }
         if (strpos($url, 'http') !== 0) {
-            return config()->url() . '/' . $url;
+            return app()->url() . '/' . $url;
         }
         return $url;
     }
@@ -83,7 +83,7 @@ class Link
     public static function search(string $language_code = null): string
     {
         return static::path(
-            config('links.search_path') ?? 'search',
+            config('app.search_path') ?? 'search',
             $language_code
         );
     }

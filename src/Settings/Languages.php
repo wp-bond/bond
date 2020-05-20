@@ -132,7 +132,7 @@ class Languages
         }
         global $locale, $l10n;
 
-        $charset = config()->isDevelopment() ? '.UTF-8' : '.utf8';
+        $charset = app()->isDevelopment() ? '.UTF-8' : '.utf8';
         // TODO find a way to detect this
 
         // check environment charset with
@@ -154,11 +154,11 @@ class Languages
         $locale = $to;
 
         // clear WP i18n
-        unset($l10n[config()->id()]);
+        unset($l10n[app()->id()]);
 
         // load WP gettext, if not handling translations automatically
         if (!Translate::hasService()) {
-            \load_theme_textdomain(config()->id(), config()->rootThemePath() . '/languages');
+            \load_theme_textdomain(app()->id(), app()->languagesPath());
         }
     }
 

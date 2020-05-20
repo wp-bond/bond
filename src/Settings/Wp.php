@@ -113,7 +113,7 @@ class Wp
             // http://codex.wordpress.org/Option_Reference
 
             //general
-            \update_option('blogname', config('app.name'));
+            \update_option('blogname', app()->name());
             \update_option('blogdescription', '');
             \update_option('admin_email', config('app.developer_email'));
 

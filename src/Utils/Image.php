@@ -74,7 +74,7 @@ class Image
 
         // without site url
         if ($image && !$site_url) {
-            return str_replace(config()->url(), '', $image);
+            return str_replace(app()->url(), '', $image);
         }
 
         return $image ?: null;

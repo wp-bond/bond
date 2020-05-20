@@ -14,13 +14,13 @@ class Html
             $result[] = 'lang-' . Languages::shortCode();
 
             // devices
-            if (config()->isMobile()) {
+            if (app()->isMobile()) {
                 $result[] = 'is-mobile';
             }
-            if (config()->isTablet()) {
+            if (app()->isTablet()) {
                 $result[] = 'is-tablet';
             }
-            if (config()->isDesktop()) {
+            if (app()->isDesktop()) {
                 $result[] = 'is-desktop';
             }
 
@@ -124,7 +124,7 @@ class Html
 
         // output RSS to html
         \add_action('wp_head', function () {
-            echo '<link rel="alternate" type="application/rss+xml" href="' . config()->url() . '/feed" title="' . config('app.name') . ' RSS">';
+            echo '<link rel="alternate" type="application/rss+xml" href="' . app()->url() . '/feed" title="' . app()->name() . ' RSS">';
         });
 
         // load custom template
