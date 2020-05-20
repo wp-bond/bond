@@ -1,11 +1,9 @@
 <?php
 
-namespace Bond\Settings;
+namespace Bond\Utils;
 
-// This is Utils!?
 class Register
 {
-
 
     public static function postType($post_type, array $params = [])
     {
