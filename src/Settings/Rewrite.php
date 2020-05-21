@@ -2,6 +2,8 @@
 
 namespace Bond\Settings;
 
+use Bond\Utils\Link;
+
 class Rewrite
 {
     public static function reset()
@@ -78,10 +80,14 @@ class Rewrite
 
 
     public static function search(
-        $path = 'search',
+        $path = null,
         bool $paged = false,
         array $extra_params = []
     ) {
+        if (!$path) {
+            $path = Link::search();
+        }
+
         if (!is_array($path)) {
             $path = explode('/', trim($path, '/'));
         }
@@ -95,7 +101,7 @@ class Rewrite
 
             // vars
             $_path = $prefix . $_path;
-            $params_string = !empty($extra_params) ? '&' . http_build_query($extra_params) : '';
+            $params_string = static::params($extra_params);
 
             // rewrite
 
@@ -152,7 +158,7 @@ class Rewrite
 
             // vars
             $_path = $prefix . $_path;
-            $params_string = !empty($extra_params) ? '&' . http_build_query($extra_params) : '';
+            $params_string = static::params($extra_params);
 
             // rewrite
 
@@ -227,6 +233,7 @@ class Rewrite
             // translate
             $_page = $page;
             $_path = $path;
+
             array_walk($_page, [static::class, 'twalk'], $code);
             array_walk($_path, [static::class, 'twalk'], $code);
             $_page = implode('/', $_page);
@@ -234,7 +241,7 @@ class Rewrite
 
             // vars
             $_path = $prefix . $_path;
-            $params_string = !empty($extra_params) ? '&' . http_build_query($extra_params) : '';
+            $params_string = static::params($extra_params);
             $param = Languages::isDefault($code) ? 'pagename' : 'page';
 
             // rewrite
@@ -246,6 +253,13 @@ class Rewrite
         }
     }
 
+
+    protected static function params(array $params): string
+    {
+        return !empty($params) ?
+            '&' . urldecode(http_build_query($params))
+            : '';
+    }
 
 
     protected static function twalk(&$value, $index, $code)
