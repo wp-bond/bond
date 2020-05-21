@@ -9,6 +9,7 @@ use DirectoryIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
+// TODO may very soon move into Services with PSR-16
 class Cache
 {
 

@@ -23,6 +23,28 @@ class Cast
 
 
     // TODO consider moving to app container
+    // would completelly change the API
+    // would have to be non-static itself, to allow different mappings of post_type => concrete
+    // would go out of Utils, into Support or Service or other
+    // would have the api as cast()->post($post) instead of Cast::post()
+    // or would be change to type()->post($post) or typeMap()->post()
+
+    // would be a broad idea, to move Meta and others too
+    // to have inject the app in their constructor
+    // that way we trully can have several Meta, instead of hard-coded app() calls, that would fall into the default app anyway, invalidating the non-static usage after all
+
+    // language, most control classes would move too
+    // one app can have one language, the other can have another
+    // in this case, we would spli Languages into Locale and Languages
+    // where Locale is Settings still, and Languages can be one per app
+
+    // feels strange on Links, but anyway, it's a way to have different links providers for each app
+    // let's say we want to completly customize how to links are generated
+    // link()->post($post) link()->search()
+
+    // !!!! the worst issue is the Fluent using the Languages, which would it fallback? Maybe not a issue regarding cast() ??!?
+
+
     protected static function loadClasses()
     {
         if (static::$loaded_classes) {
