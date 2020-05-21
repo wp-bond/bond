@@ -150,8 +150,11 @@ class Config extends Fluent
         // Settings
         Wp::updateSettings();
 
-        // Protects WP redirect on multilanguage front pages
-        if (Languages::isMultilanguage()) {
+        // Protects WP redirect on front pages
+        if (
+            Languages::isMultilanguage()
+            || $this->wp->front_page_redirect === false
+        ) {
             Wp::preventFrontPageRedirect();
         }
 
