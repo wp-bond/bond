@@ -15,15 +15,32 @@ class Post extends Fluent
 {
     use WithFields;
 
-    // TODO add WP_Post props and test
-    // set null?
     public int $ID;
     public string $post_type;
 
-
-    // TODO maybe load the fields at construtor too?
-    // do some tests as a !empty($this->somedata) would always be empty as it doesn't reach the __get autoload
-
+    protected array $exclude = [
+        // 'post_title',
+        // 'post_name',
+        // 'post_mime_type',
+        // 'post_author',
+        // 'post_parent',
+        // 'post_date',
+        // 'post_date_gmt',
+        // 'post_modified',
+        // 'post_modified_gmt',
+        // 'post_content',
+        'post_content_filtered',
+        // 'post_excerpt',
+        // 'menu_order',
+        'ping_status',
+        'to_ping',
+        'pinged',
+        'guid',
+        'comment_status',
+        'comment_count',
+        'post_password', // always!
+        'filter',
+    ];
 
     public function __construct($post = null)
     {
@@ -39,6 +56,7 @@ class Post extends Fluent
                     function () use ($id) {
                         if ($post = Cast::wpPost($id)) {
                             $values = Obj::vars($post);
+
                             if (app()->hasAcf() && $fields = \get_fields($id)) {
                                 $values += $fields;
                             }
@@ -55,15 +73,17 @@ class Post extends Fluent
         }
     }
 
+    public function add($values): self
+    {
+        $values = array_diff_key($values, array_flip($this->exclude));
+        return parent::add($values);
+    }
+
 
     public function terms(string $taxonomy = null, array $args = []): Terms
     {
         return Query::postTerms($this->ID, $taxonomy, $args);
     }
-
-
-
-
 
     public function slug(string $language_code = null): string
     {
@@ -72,7 +92,6 @@ class Post extends Fluent
         }
         return $this->post_name;
     }
-
 
     public function link(string $language_code = null): string
     {
