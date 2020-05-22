@@ -436,12 +436,16 @@ class View
             throw new InvalidArgumentException('Only Array or Fluent');
         }
 
+
+
         // merge input data with the global
         if ($include_global_data) {
             // optimize this?
-            $data = new Fluent();
-            $data->add($this->all());
-            $data->add($data->all());
+            foreach ($this->all() as $k => $v) {
+                if (!isset($data[$k])) {
+                    $data[$k] = $v;
+                }
+            }
         }
 
         // localize
