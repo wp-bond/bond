@@ -2,7 +2,6 @@
 
 namespace Bond;
 
-use Bond\Support\Fluent;
 use Bond\Support\FluentList;
 use Bond\Utils\Cast;
 
@@ -24,14 +23,5 @@ class Posts extends FluentList
         if ($post) {
             array_splice($this->items, $index, 0, [$post]);
         }
-    }
-
-    public function values($for = ''): Fluent
-    {
-        $values = [];
-        foreach ($this->items as $post) {
-            $values[] = $post->values($for);
-        }
-        return new Fluent($values);
     }
 }

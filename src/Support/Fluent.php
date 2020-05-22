@@ -27,21 +27,36 @@ class Fluent implements
     Serializable,
     JsonSerializable
 {
+    // set properties that should not be added here
+    protected array $exclude;
+
 
     public function __construct($values = null)
     {
         $this->add($values);
     }
 
-
-
     public function add($values): self
     {
         if (!empty($values)) {
 
-            if (!is_array($values) && !is_object($values)) {
+            if (is_object($values)) {
+                $values = Obj::vars($values);
+            }
+
+            if (!is_array($values)) {
                 throw new InvalidArgumentException('Only add arrays or objects to Fluent');
             }
+
+            // don't let unwanted values in
+            if (isset($this->exclude)) {
+                $values = array_diff_key(
+                    $values,
+                    array_flip($this->exclude)
+                );
+            }
+
+            // transfer in
 
             foreach ($values as $key => $value) {
                 if (isset($this->{$key}) && $this->{$key} instanceof Fluent) {
@@ -52,6 +67,11 @@ class Fluent implements
             }
         }
         return $this;
+    }
+
+    public function values(string $for = ''): Fluent
+    {
+        return new Fluent($for ? null : $this->all());
     }
 
     public function all(): array
@@ -66,7 +86,7 @@ class Fluent implements
 
     public function toJson($options = 0, $depth = 512): string
     {
-        return json_encode($this->toArray(), $options, $depth);
+        return json_encode($this, $options, $depth);
     }
 
     public function get($key, string $language_code = null)
@@ -264,4 +284,15 @@ class Fluent implements
     {
         return '';
     }
+
+    /**
+     * Deep clone.
+     */
+    // TODO, some test with clone to understand better
+    // public function __clone()
+    // {
+    //     foreach ($this as $key => $value) {
+    //         $this[$key] = Obj::clone($value);
+    //     }
+    // }
 }

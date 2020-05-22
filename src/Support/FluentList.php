@@ -2,7 +2,6 @@
 
 namespace Bond\Support;
 
-
 use IteratorAggregate;
 use ArrayAccess;
 use JsonSerializable;
@@ -43,14 +42,25 @@ class FluentList implements
         array_splice($this->items, $index, 0, [Cast::fluent($item)]);
     }
 
-    public function get(): array
+    public function values($for = ''): Fluent
+    {
+        $values = [];
+        foreach ($this->all() as $item) {
+            if ($item) {
+                $values[] = $item->values($for);
+            }
+        }
+        return new Fluent($values);
+    }
+
+    public function all(): array
     {
         return $this->items;
     }
 
     public function toArray(): array
     {
-        return Obj::toArray($this->items, true);
+        return Obj::toArray($this->all(), true);
     }
 
     public function toJson($options = 0, $depth = 512): string
@@ -63,7 +73,7 @@ class FluentList implements
      */
     public function count(): int
     {
-        return count($this->items);
+        return count($this->all());
     }
 
     /**
@@ -71,53 +81,7 @@ class FluentList implements
      */
     public function getIterator(): ArrayIterator
     {
-        return new ArrayIterator($this->items);
-    }
-
-    /**
-     * Serialize the array to JSON.
-     *
-     * @see http://php.net/jsonserializable.jsonserialize
-     * @return array
-     */
-    public function jsonSerialize(): array
-    {
-        return $this->toArray();
-    }
-
-    /**
-     * @return string
-     */
-    public function serialize(): string
-    {
-        return serialize($this->toArray());
-    }
-
-    /**
-     * @param string $serialized
-     * @return mixed
-     *
-     * @throws \InvalidArgumentException
-     */
-    public function unserialize($serialized)
-    {
-        if (is_string($serialized)) {
-
-            $items = unserialize($serialized);
-            $this->set($items);
-        } else {
-            throw new \InvalidArgumentException('Invalid serialized data type.');
-        }
-    }
-
-    /**
-     * Convert the model to its string representation.
-     *
-     * @return string
-     */
-    public function __toString(): string
-    {
-        return $this->toJson();
+        return new ArrayIterator($this->all());
     }
 
     /**
@@ -153,5 +117,50 @@ class FluentList implements
     public function offsetExists($offset): bool
     {
         return isset($this->items[$offset]);
+    }
+
+    /**
+     * Serialize the array to JSON.
+     *
+     * @see http://php.net/jsonserializable.jsonserialize
+     * @return array
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->toArray();
+    }
+
+    /**
+     * @return string
+     */
+    public function serialize(): string
+    {
+        return serialize($this->toArray());
+    }
+
+    /**
+     * @param string $serialized
+     * @return mixed
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function unserialize($serialized)
+    {
+        if (is_string($serialized)) {
+            $items = unserialize($serialized);
+            $this->set($items);
+        } else {
+            throw new \InvalidArgumentException('Invalid serialized data type.');
+        }
+    }
+
+    /**
+     * Convert the model to its string representation.
+     *
+     * Rightfully empty
+     */
+    public function __toString(): string
+    {
+        return '';
     }
 }

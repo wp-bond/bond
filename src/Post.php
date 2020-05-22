@@ -4,20 +4,17 @@ namespace Bond;
 
 use Bond\Utils\Link;
 use Bond\Support\Fluent;
-use Bond\Support\WithFields;
 use Bond\Utils\Cache;
 use Bond\Utils\Cast;
-use Bond\Utils\Obj;
 use Bond\Utils\Query;
 use Bond\Settings\Languages;
 
 class Post extends Fluent
 {
-    use WithFields;
-
     public int $ID;
     public string $post_type;
 
+    // set properties that should not be added here
     protected array $exclude = [
         // 'post_title',
         // 'post_name',
@@ -42,47 +39,63 @@ class Post extends Fluent
         'filter',
     ];
 
-    public function __construct($post = null)
+    public function __construct($values = null, bool $skip_cache = false)
     {
-        if (config('cache.posts')) {
-
-            $id = Cast::postId($post);
-
-            if ($id) {
-                $values = Cache::json(
-                    'bond/posts/' . $id,
-                    config('cache.posts_ttl') ?? 60 * 10,
-
-                    function () use ($id) {
-                        if ($post = Cast::wpPost($id)) {
-                            $values = Obj::vars($post);
-
-                            if (app()->hasAcf() && $fields = \get_fields($id)) {
-                                $values += $fields;
-                            }
-                            return $values;
-                        }
-                        return [];
-                    }
-                );
-                $this->has_loaded_fields = true;
-                parent::__construct($values);
-            }
+        if (!$skip_cache && config('cache.posts')) {
+            $this->initFromCache($values);
         } else {
-            parent::__construct(Cast::wpPost($post));
+            $this->init($values);
         }
     }
 
-    public function add($values): self
+    protected function initFromCache($values)
     {
-        $values = array_diff_key($values, array_flip($this->exclude));
-        return parent::add($values);
+        if ($id = Cast::postId($values)) {
+
+            $has_initted = false;
+
+            $res = Cache::json(
+                'bond/posts/' . $id,
+                config('cache.posts_ttl') ?? 60 * 10,
+
+                function () use ($values, &$has_initted) {
+                    $this->init($values);
+                    $has_initted = true;
+                    return $this->toArray();
+                }
+            );
+            if (!$has_initted) {
+                $this->add($res);
+            }
+        } else {
+            $this->init($values);
+        }
     }
 
-
-    public function terms(string $taxonomy = null, array $args = []): Terms
+    protected function init($values)
     {
-        return Query::postTerms($this->ID, $taxonomy, $args);
+        if (empty($values)) {
+            return;
+        }
+
+        // add the WP post
+        $this->add(Cast::wpPost($values));
+
+        // Load fields
+        $this->loadFields();
+    }
+
+    public function loadFields()
+    {
+        $this->add($this->getFields());
+    }
+
+    public function getFields(): ?array
+    {
+        if (isset($this->ID) && app()->hasAcf()) {
+            return \get_fields($this->ID) ?: null;
+        }
+        return null;
     }
 
     public function slug(string $language_code = null): string
@@ -114,5 +127,10 @@ class Post extends Fluent
     public function isDisabled(string $language_code = null): bool
     {
         return !empty($this->get('is_disabled', $language_code));
+    }
+
+    public function terms(string $taxonomy = null, array $args = []): Terms
+    {
+        return Query::postTerms($this->ID, $taxonomy, $args);
     }
 }
