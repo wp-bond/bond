@@ -42,7 +42,7 @@ class FluentList implements
         array_splice($this->items, $index, 0, [Cast::fluent($item)]);
     }
 
-    public function values($for = ''): Fluent
+    public function values($for = ''): array
     {
         $values = [];
         foreach ($this->all() as $item) {
@@ -50,7 +50,7 @@ class FluentList implements
                 $values[] = $item->values($for);
             }
         }
-        return new Fluent($values);
+        return $values;
     }
 
     public function all(): array
