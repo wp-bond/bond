@@ -2,6 +2,8 @@
 
 namespace Bond\Utils;
 
+use ReflectionClass;
+
 class Obj
 {
     /**
@@ -10,6 +12,10 @@ class Obj
      */
     public static function vars($object, bool $skip_null = false): array
     {
+        if (is_null($object)) {
+            return [];
+        }
+
         $values = get_object_vars($object);
 
         if ($skip_null) {
@@ -64,5 +70,34 @@ class Obj
         }
 
         return $result;
+    }
+
+
+    /**
+     * Recursive clone.
+     *
+     * @see https://bugs.php.net/bug.php?id=49664
+     * @param mixed $object
+     * @return mixed
+     * @throws ReflectionException
+     */
+    public static function clone($object)
+    {
+        if (is_array($object)) {
+            foreach ($object as $key => $value) {
+                $object[$key] = static::clone($value);
+            }
+            return $object;
+        }
+
+        if (!is_object($object)) {
+            return $object;
+        }
+
+        if (!(new ReflectionClass($object))->isCloneable()) {
+            return $object;
+        }
+
+        return clone $object;
     }
 }
