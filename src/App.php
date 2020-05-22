@@ -198,6 +198,7 @@ class App extends Container
         return $this;
     }
 
+    // LATER, if appPath is not used, remove
     public function appPath(): string
     {
         return $this->basePath()
