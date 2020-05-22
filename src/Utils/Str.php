@@ -258,6 +258,21 @@ class Str
         return strtolower(ASCII::to_filename($filename));
     }
 
+    public static function az($value)
+    {
+        $value = static::ascii($value);
+
+        // Remove all characters that are not dashes, letters, numbers, or underscore.
+        $value = preg_replace('![^\-\pL\pN\_]+!u', '', $value);
+
+        return $value;
+    }
+
+    public static function azLower($value)
+    {
+        return static::lower(static::az($value));
+    }
+
 
     /**
      * Generate a URL friendly "slug" from a given string.

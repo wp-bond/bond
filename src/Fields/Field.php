@@ -4,7 +4,6 @@ namespace Bond\Fields;
 
 
 use Bond\Settings\Languages;
-use Bond\Support\Fluent;
 use ArrayAccess;
 use Bond\Utils\Obj;
 use Bond\Utils\Str;
@@ -26,7 +25,7 @@ class Field implements ArrayAccess
 
     public function __construct(string $name, array $settings = [])
     {
-        $settings['name'] = Str::snake($name);
+        $settings['name'] = Str::az($name);
 
         foreach ($settings as $key => $value) {
             $this->{(string) $key} = $value;

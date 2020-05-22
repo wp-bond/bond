@@ -36,7 +36,7 @@ class FieldGroup
         }
 
         // always snake case
-        $key = Str::snake($key);
+        $key = Str::az($key);
 
         // can't have same key
         $group_key = 'group_' . $key;
