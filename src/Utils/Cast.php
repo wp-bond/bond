@@ -120,6 +120,9 @@ class Cast
 
     public static function array($value): array
     {
+        if (is_null($value)) {
+            return [];
+        }
         if (is_array($value)) {
             return $value;
         }
@@ -138,7 +141,40 @@ class Cast
         return (array) $value;
     }
 
+    public static function arrayRecursive($object, string $only = null): array
+    {
+        if (is_null($object)) {
+            return [];
+        }
+        if (!is_object($object) && !is_array($object)) {
+            return [];
+        }
 
+        $result = [];
+        foreach ($object as $key => $value) {
+
+            if (is_array($value)) {
+                $result[$key] = static::arrayRecursive($value, $only);
+            } elseif ($only) {
+                if (is_a($value, $only)) {
+                    $result[$key] = static::arrayRecursive($value, $only);
+                } else {
+                    $result[$key] = $value;
+                }
+            } elseif (is_object($value)) {
+                if (method_exists($value, 'toArray')) {
+                    $result[$key] = static::arrayRecursive($value->toArray(), $only);
+                } elseif (method_exists($value, 'getArrayCopy')) {
+                    $result[$key] = static::arrayRecursive($value->getArrayCopy(), $only);
+                } else {
+                    $result[$key] = static::arrayRecursive(get_object_vars($value), $only);
+                }
+            } else {
+                $result[$key] = $value;
+            }
+        }
+        return $result;
+    }
 
     public static function post($post): ?Post
     {
@@ -224,8 +260,6 @@ class Cast
         }
         return (int) $post;
     }
-
-
 
 
 
