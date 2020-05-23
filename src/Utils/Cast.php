@@ -176,47 +176,70 @@ class Cast
         return $result;
     }
 
-    public static function post($post): ?Post
+
+
+    // TODO testing, implement to term too later
+    public static function post($post, string $post_type = null): ?Post
     {
         if (empty($post)) {
             return null;
-        }
-        if ($post instanceof Post) {
-            return $post;
         }
 
         // load matches
         static::loadClasses();
 
-        // allow pre-populated values, without querying the database
-        if (
-            $post instanceof WP_Post
-            || (is_object($post) && isset($post->post_type) && $post->post_type)
-        ) {
-            $class = static::$posts[$post->post_type] ?? Post::class;
-            return new $class($post);
+        // short-circuit if already Post
+        if ($post instanceof Post) {
+
+            // just ensure its what was request
+            if ($post_type) {
+                if ($post->post_type === $post_type) {
+                    return $post;
+                }
+                $class = static::$posts[$post_type] ?? Post::class;
+                return new $class($post);
+            }
+            return $post;
         }
 
-        if (is_array($post) && !empty($post['post_type'])) {
-            $class = static::$posts[$post['post_type']] ?? Post::class;
-            return new $class($post);
+        // try to define post type
+        if (!$post_type) {
+            if (
+                is_object($post)
+                && isset($post->post_type)
+                && $post->post_type
+            ) {
+                $post_type = $post->post_type;
+                //
+            } elseif (!empty($post['post_type'])) {
+                $post_type = $post['post_type'];
+                //
+            } elseif ($id = self::postId($post)) {
+                // if the ID is known, we will override the provided post
+                // sorry
+                $post = self::wpPost($id);
+                if ($post) {
+                    $post_type = $post->post_type;
+                } else {
+                    // if post doesn't exist on WP
+                    return null;
+                }
+            }
+            // else it's fine, will fallback to Post
         }
 
-        // query the database
-        $post = self::wpPost($post);
-        if ($post) {
-            $class = static::$posts[$post->post_type] ?? Post::class;
-            return new $class($post);
-        }
-        return null;
+        $class = static::$posts[$post_type] ?? Post::class;
+        return new $class($post);
     }
 
-    public static function posts($posts): Posts
+
+
+    public static function posts($posts, string $post_type = null): Posts
     {
         $result = [];
         if (!empty($posts)) {
             foreach ($posts as $post) {
-                if ($post = self::post($post)) {
+                if ($post = self::post($post, $post_type)) {
                     $result[] = $post;
                 }
             }
@@ -253,10 +276,10 @@ class Cast
             return 0;
         }
         if (is_object($post)) {
-            return (int) ($post->ID ?? $post->id ?? 0);
+            return (int) ($post->ID ?? 0);
         }
         if (is_array($post)) {
-            return (int) ($post['ID'] ?? $post['id'] ?? 0);
+            return (int) ($post['ID'] ?? 0);
         }
         return (int) $post;
     }
