@@ -103,6 +103,22 @@ class Wp
         \add_filter('rest_url', [Str::class, 'https'], 999999);
     }
 
+    public static function disableUserRegistration()
+    {
+        if (!static::isAdminWithTheme()) {
+            return;
+        }
+
+        \add_filter('rewrite_rules_array', function (array $rules) {
+            $rules['.*wp-register.php$'] = 'index.php?error=403';
+            return $rules;
+        });
+
+        \add_action('after_setup_theme', function () {
+            \update_option('users_can_register', false);
+        });
+    }
+
     public static function updateSettings()
     {
         if (!static::isAdminWithTheme()) {
@@ -139,6 +155,11 @@ class Wp
             \update_option('page_for_posts', false);
             \update_option('posts_per_page', 12);
             \update_option('posts_per_rss', 12);
+
+            // \update_option('show_on_front', 'posts'); // page/posts
+            // // \update_option('page_on_front', Query::id('home', 'page'));
+            // \update_option('page_on_front', false);
+            // \update_option('page_for_posts', false);
 
 
             // writing
