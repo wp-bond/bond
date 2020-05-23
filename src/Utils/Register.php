@@ -5,6 +5,25 @@ namespace Bond\Utils;
 class Register
 {
 
+    // copy&paste
+    // Register::postType(self::$post_type, [
+    //     'labels' => [
+    //         'name' => t('Articles'),
+    //         'singular_name' => t('Article'),
+    //         'add_new' => t('Add article'),
+    //         'add_new_item' => t('Add new article'),
+    //         'edit_item' => t('Edit article'),
+    //         'new_item' => t('New article'),
+    //         'view_item' => t('View article'),
+    //         'search_items' => t('Search article'),
+    //         'not_found' => t('No article found'),
+    //         'not_found_in_trash' => t('No article found in trash'),
+    //     ],
+    //     'menu_icon' => 'dashicons-admin-page',
+    //     'menu_position' => 30,
+    //     'taxonomies' => static::$taxonomies,
+    // ]);
+
     public static function postType($post_type, array $params = [])
     {
         $base_args = [

@@ -22,7 +22,7 @@ class Translate
 
     private static array $glossaries = [];
 
-    private static string $service;
+    private static string $service = '';
 
 
     public static function onSavePost($post_types)

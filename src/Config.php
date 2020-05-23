@@ -71,11 +71,11 @@ class Config extends Fluent
             }
 
             // setup
-            $this->{'setup' . ucfirst($key)}();
+            $this->{$key . 'Settings'}();
         }
     }
 
-    protected function setupLanguages()
+    protected function languagesSettings()
     {
         if ($this->languages->codes) {
             foreach ($this->languages->codes as $code => $values) {
@@ -85,16 +85,18 @@ class Config extends Fluent
         Languages::setCurrentFromRequest();
     }
 
-    protected function setupTranslation()
+    protected function translationSettings()
     {
-        Translate::setService($this->translation->service ?: '');
+        if ($this->translation->service) {
+            Translate::setService($this->translation->service);
+        }
 
         if (isset($this->translation->translate_on_save)) {
             Translate::onSavePost($this->translation->translate_on_save);
         }
     }
 
-    protected function setupApp()
+    protected function appSettings()
     {
         // Timezone
         if ($this->app->timezone) {
@@ -122,12 +124,12 @@ class Config extends Fluent
         }
     }
 
-    protected function setupCache()
+    protected function cacheSettings()
     {
         // empty, here for subclasses override
     }
 
-    protected function setupImage()
+    protected function imageSettings()
     {
         Wp::sanitizeFilenames(); // always
 
@@ -145,10 +147,12 @@ class Config extends Fluent
     }
 
 
-    protected function setupWp()
+    protected function wpSettings()
     {
         // Settings
-        Wp::updateSettings();
+        if ($this->wp->settings) {
+            Wp::updateSettings();
+        }
 
         // Protects WP redirect on front pages
         if (
@@ -163,7 +167,7 @@ class Config extends Fluent
         }
     }
 
-    protected function setupServices()
+    protected function servicesSettings()
     {
         // ACF
         if (app()->hasAcf()) {
@@ -177,7 +181,7 @@ class Config extends Fluent
         }
     }
 
-    protected function setupAdmin()
+    protected function adminSettings()
     {
         if ($this->admin->theming) {
             Admin::enableTheming();
@@ -194,7 +198,7 @@ class Config extends Fluent
         }
     }
 
-    protected function setupHtml()
+    protected function htmlSettings()
     {
         if ($this->html->rss === false) {
             Html::disableRss();
@@ -224,7 +228,7 @@ class Config extends Fluent
         }
     }
 
-    protected function setupApi()
+    protected function apiSettings()
     {
         if ($this->api->disable) {
             Api::disable();
