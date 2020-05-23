@@ -6,7 +6,7 @@ use Carbon\Carbon;
 
 class Date
 {
-    // allow timezone customization?
+    // TODO allow more timezone customization? right yes?
 
 
     public static function time($date = true): int
@@ -16,14 +16,38 @@ class Date
     }
 
 
-    public static function iso($date = true, $format = 'Y-MM-DD HH:mm:ss'): string
-    {
+    public static function wp(
+        $date = true,
+        string $from_timezone = null,
+        string $to_timezone = null
+    ): string {
+
+        $date = static::carbon($date, $from_timezone);
+
+        if ($date) {
+            if ($from_timezone && !$to_timezone) {
+                $to_timezone = config()->app->timezone;
+            }
+            if ($to_timezone) {
+                $date->setTimezone($to_timezone);
+            }
+            return $date->isoFormat('Y-MM-DD HH:mm:ss');
+        }
+        return '';
+    }
+
+
+    public static function iso(
+        $date = true,
+        $format = 'Y-MM-DD HH:mm:ss'
+    ): string {
         $date = static::carbon($date);
         return $date ? $date->isoFormat($format) : '';
     }
 
-
-    public static function carbon($date = true): ?Carbon
+    // TODO maybe move to Cast
+    // should look beter
+    public static function carbon($date = true, string $timezone = null): ?Carbon
     {
         if (empty($date)) {
             return null;
@@ -46,7 +70,7 @@ class Date
 
         return new Carbon(
             $date === true ? null : $date,
-            config()->app->timezone
+            $timezone ?: config()->app->timezone
         );
     }
 }
