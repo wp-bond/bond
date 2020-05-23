@@ -18,6 +18,16 @@ class Rewrite
         \add_filter('post_tag_rewrite_rules', '__return_empty_array');
         \add_filter('category_rewrite_rules', '__return_empty_array');
         \add_filter('post_format_rewrite_rules', '__return_empty_array');
+
+        // cleanup
+        \add_filter('rewrite_rules_array', function (array $rules) {
+
+            unset($rules['favicon\.ico$']);
+            unset($rules['robots\.txt$']);
+            unset($rules['.*wp-(atom|rdf|rss|rss2|feed|commentsrss2)\.php$']);
+
+            return $rules;
+        });
     }
 
 
@@ -69,12 +79,13 @@ class Rewrite
             }
         }
 
+        // not needed anymore
         // All other pages
-        \add_rewrite_rule(
-            '(.?.+?)/?$',
-            'index.php?pagename=$matches[1]',
-            'bottom'
-        );
+        // \add_rewrite_rule(
+        //     '(.?.+?)/?$',
+        //     'index.php?pagename=$matches[1]',
+        //     'bottom'
+        // );
     }
 
 
@@ -145,6 +156,30 @@ class Rewrite
         array $extra_params = []
     ) {
 
+        static::archive(
+            $post_type,
+            $path,
+            $paged,
+            $year,
+            $extra_params
+        );
+
+        static::single(
+            $post_type,
+            $path,
+            $extra_params
+        );
+    }
+
+
+    public static function archive(
+        string $post_type,
+        array $path = [],
+        bool $paged = false,
+        bool $year = false,
+        array $extra_params = []
+    ) {
+
         if (empty($path)) {
             $path = [$post_type];
         }
@@ -192,19 +227,75 @@ class Rewrite
                 );
             }
 
-            // single
-            \add_rewrite_rule(
-                $_path . '/([^/]+)/?$',
-                'index.php?' . $post_type . '=$matches[1]'
-                    . $params_string,
-                'top'
-            );
-
             // front page
             \add_rewrite_rule(
                 $_path . '/?$',
-                'index.php?post_type=' . $post_type . '&page_control=archive_front_page'
+                'index.php?post_type=' . $post_type
                     . $params_string,
+                'top'
+            );
+        }
+    }
+
+
+    public static function single(
+        string $post_type,
+        ?array $path = null,
+        array $extra_params = []
+    ) {
+
+        if (is_null($path)) {
+            $path = [$post_type];
+        }
+
+        foreach (static::languagePrefixes() as $code => $prefix) {
+
+            // translate
+            $_path = $path;
+            array_walk($_path, [static::class, 'twalk'], $code);
+            $_path = implode('/', $_path);
+
+            // vars
+            $_path = $prefix . $_path;
+            $params_string = static::params($extra_params);
+            $order = 'bottom';
+
+            if ($_path) {
+                $_path .= '/';
+                $order = 'top';
+            }
+
+            // rewrite
+
+            \add_rewrite_rule(
+                $_path . '([^/]+)/?$',
+                'index.php?' . $post_type . '=$matches[1]'
+                    . $params_string,
+                $order
+            );
+        }
+    }
+
+    public static function rewrite(
+        array $path = [],
+        array $params = []
+    ) {
+
+        foreach (static::languagePrefixes() as $code => $prefix) {
+
+            // translate
+            $_path = $path;
+            array_walk($_path, [static::class, 'twalk'], $code);
+            $_path = implode('/', $_path);
+
+            // vars
+            $_path = $prefix . $_path;
+            $params_string = static::params($params);
+
+            // rewrite
+            \add_rewrite_rule(
+                $_path . '/?$',
+                'index.php?' . $params_string,
                 'top'
             );
         }
