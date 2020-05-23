@@ -570,4 +570,47 @@ class Query
         // fallback
         return ucfirst($taxonomy);
     }
+
+
+    public static function upsert(array $params): int
+    {
+        // for now just circunvent the post_modified
+        // later handle the post_meta to update our providers
+
+        $handler = function ($data) use ($params) {
+
+            if (isset($params['post_modified'])) {
+                $data['post_modified'] = $params['post_modified'];
+
+                if (!isset($params['post_modified_gmt'])) {
+                    $data['post_modified_gmt'] = Date::wp(
+                        $params['post_modified'],
+                        null,
+                        'GMT'
+                    );
+                }
+            }
+            if (isset($params['post_modified_gmt'])) {
+                $data['post_modified_gmt'] = $params['post_modified_gmt'];
+
+                if (!isset($params['post_modified'])) {
+                    $data['post_modified'] = Date::wp(
+                        $params['post_modified_gmt'],
+                        'GMT'
+                    );
+                }
+            }
+
+            return $data;
+        };
+
+
+        \add_filter('wp_insert_post_data',  $handler, 99);
+
+        $id = wp_insert_post($params);
+
+        \remove_filter('wp_insert_post_data',  $handler, 99);
+
+        return (int) $id;
+    }
 }
