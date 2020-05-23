@@ -124,7 +124,7 @@ class Html
 
         // output RSS to html
         \add_action('wp_head', function () {
-            echo '<link rel="alternate" type="application/rss+xml" href="' . app()->url() . '/feed" title="' . app()->name() . ' RSS">';
+            echo '<link rel="alternate" type="application/rss+xml" href="' . app()->url() . '/feed" title="' . app()->name() . ' RSS">' . "\n";
         });
 
         // load custom template
