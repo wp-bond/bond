@@ -153,6 +153,9 @@ class Config extends Fluent
         if ($this->wp->settings) {
             Wp::updateSettings();
         }
+        if ($this->wp->disable_user_registration) {
+            Wp::disableUserRegistration();
+        }
 
         // Protects WP redirect on front pages
         if (
