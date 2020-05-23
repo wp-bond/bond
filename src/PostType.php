@@ -41,6 +41,8 @@ abstract class PostType
         }
     }
 
+    // TODO IDEA, we could automatically provide directly in View
+    // just the posts actually, since we don't need to rely on global $post / $posts;
     public static function archive()
     {
         global $posts;

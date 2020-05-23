@@ -1,8 +1,10 @@
 <?php
 
 use Bond\App;
+use Bond\Meta;
 use Bond\Utils\Translate;
 use Bond\Utils\Str;
+use Bond\View;
 
 if (!function_exists('app')) {
     /**
@@ -29,14 +31,14 @@ if (!function_exists('config')) {
 }
 
 if (!function_exists('view')) {
-    function view()
+    function view(): View
     {
         return app('view');
     }
 }
 
 if (!function_exists('meta')) {
-    function meta()
+    function meta(): Meta
     {
         return app('meta');
     }
