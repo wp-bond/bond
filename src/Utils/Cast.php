@@ -202,7 +202,7 @@ class Cast
             return $post;
         }
 
-        // try to define post type
+        // try to find post type
         if (!$post_type) {
             if (
                 is_object($post)
@@ -214,9 +214,12 @@ class Cast
             } elseif (!empty($post['post_type'])) {
                 $post_type = $post['post_type'];
                 //
+
+                //
+                //
+                // TODO Something is wrong here, is there a way to rely on cache down here? We know the ID, we should not fetch WP Post, we should check cache first
             } elseif ($id = self::postId($post)) {
                 // if the ID is known, we will override the provided post
-                // sorry
                 $post = self::wpPost($id);
                 if ($post) {
                     $post_type = $post->post_type;
@@ -413,10 +416,10 @@ class Cast
             return 0;
         }
         if (is_object($term)) {
-            return (int) ($term->term_id ?? $term->id ?? 0);
+            return (int) ($term->term_id ?? 0);
         }
         if (is_array($term)) {
-            return (int) ($term['term_id'] ?? $term['id'] ?? 0);
+            return (int) ($term['term_id'] ?? 0);
         }
         return (int) $term;
     }

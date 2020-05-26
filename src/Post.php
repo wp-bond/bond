@@ -8,6 +8,7 @@ use Bond\Utils\Cache;
 use Bond\Utils\Cast;
 use Bond\Utils\Query;
 use Bond\Settings\Languages;
+use WP_Post;
 
 class Post extends Fluent
 {
@@ -50,11 +51,14 @@ class Post extends Fluent
 
     protected function initFromCache($values)
     {
+        // try to know the ID
+        // if not, just continue without cache
+
         if ($id = Cast::postId($values)) {
 
             $has_initted = false;
 
-            $res = Cache::json(
+            $cached = Cache::json(
                 'bond/posts/' . $id,
                 config('cache.posts_ttl') ?? 60 * 10,
 
@@ -65,7 +69,7 @@ class Post extends Fluent
                 }
             );
             if (!$has_initted) {
-                $this->add($res);
+                $this->add($cached);
             }
         } else {
             $this->init($values);
@@ -78,11 +82,34 @@ class Post extends Fluent
             return;
         }
 
-        // add the WP post
-        $this->add(Cast::wpPost($values));
+        // if is numeric we'll fetch the WP_Post and load fields
+        // if is WP_Post we'll just add it and load fields
+        if (is_numeric($values) || $values instanceof WP_Post) {
+            $post = Cast::wpPost($values);
+            if ($post) {
+                $this->add($post);
+                $this->loadFields();
+            }
+            return;
+        }
 
-        // Load fields
-        $this->loadFields();
+        // if is string we'll try to find by slug and load fields
+        if (is_string($values)) {
+            if (isset($this->post_type)) {
+                $post = Query::wpPostBySlug(
+                    $values,
+                    $this->post_type
+                );
+                if ($post) {
+                    $this->add($post);
+                    $this->loadFields();
+                }
+            }
+            return;
+        }
+
+        // otherwise (object or array) are honored as the full value to added WITHOUT loading fields
+        $this->add($values);
     }
 
     public function loadFields()

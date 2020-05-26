@@ -7,6 +7,8 @@ use Bond\Utils\Cache;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use Bond\Settings\Languages;
+use Bond\Utils\Query;
+use WP_Term;
 
 class Term extends Fluent
 {
@@ -28,7 +30,7 @@ class Term extends Fluent
 
             $has_initted = false;
 
-            $res = $this->add(Cache::json(
+            $cached = $this->add(Cache::json(
                 'bond/terms/' . $id,
                 config('cache.terms_ttl') ?? 60 * 10,
 
@@ -39,7 +41,7 @@ class Term extends Fluent
                 }
             ));
             if (!$has_initted) {
-                $this->add($res);
+                $this->add($cached);
             }
         } else {
             $this->init($values);
@@ -52,11 +54,34 @@ class Term extends Fluent
             return;
         }
 
-        // add the WP term
-        $this->add(Cast::wpTerm($values));
+        // if is numeric we'll fetch the WP_Term and load fields
+        // if is WP_Term we'll just add it and load fields
+        if (is_numeric($values) || $values instanceof WP_Term) {
+            $term = Cast::wpTerm($values);
+            if ($term) {
+                $this->add($term);
+                $this->loadFields();
+            }
+            return;
+        }
 
-        // Load fields
-        $this->loadFields();
+        // if is string we'll try to find by slug and load fields
+        if (is_string($values)) {
+            if (isset($this->taxonomy)) {
+                $term = Query::wpTermBySlug(
+                    $values,
+                    $this->taxonomy
+                );
+                if ($term) {
+                    $this->add($term);
+                    $this->loadFields();
+                }
+            }
+            return;
+        }
+
+        // otherwise (object or array) are honored as the full value to added WITHOUT loading fields
+        $this->add($values);
     }
 
     public function loadFields()
