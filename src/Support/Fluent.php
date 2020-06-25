@@ -7,7 +7,6 @@ use Bond\Settings\Languages;
 use IteratorAggregate;
 use ArrayAccess;
 use JsonSerializable;
-use Serializable;
 use Countable;
 use ArrayIterator;
 use Bond\Utils\Arr;
@@ -24,7 +23,6 @@ class Fluent implements
     ArrayAccess,
     Countable,
     IteratorAggregate,
-    Serializable,
     JsonSerializable
 {
     // set properties that should not be added here
@@ -254,25 +252,14 @@ class Fluent implements
         return $this->toArray();
     }
 
-    public function serialize(): string
+    public function __serialize(): array
     {
-        return serialize($this->toArray());
+        return $this->toArray();
     }
 
-    /**
-     * @param string $serialized
-     * @return mixed
-     *
-     * @throws \InvalidArgumentException
-     */
-    public function unserialize($serialized)
+    public function __unserialize(array $values)
     {
-        if (is_string($serialized)) {
-            $values = unserialize($serialized);
-            $this->add($values);
-        } else {
-            throw new \InvalidArgumentException('Invalid serialized data type.');
-        }
+        $this->add($values);
     }
 
     /**

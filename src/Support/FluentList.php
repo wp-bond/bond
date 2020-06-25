@@ -5,7 +5,6 @@ namespace Bond\Support;
 use IteratorAggregate;
 use ArrayAccess;
 use JsonSerializable;
-use Serializable;
 use Countable;
 use ArrayIterator;
 use Bond\Utils\Cast;
@@ -18,7 +17,6 @@ class FluentList implements
     ArrayAccess,
     Countable,
     IteratorAggregate,
-    Serializable,
     JsonSerializable
 {
     protected array $items = [];
@@ -130,28 +128,14 @@ class FluentList implements
         return $this->toArray();
     }
 
-    /**
-     * @return string
-     */
-    public function serialize(): string
+    public function __serialize(): array
     {
-        return serialize($this->toArray());
+        return $this->toArray();
     }
 
-    /**
-     * @param string $serialized
-     * @return mixed
-     *
-     * @throws \InvalidArgumentException
-     */
-    public function unserialize($serialized)
+    public function __unserialize(array $items)
     {
-        if (is_string($serialized)) {
-            $items = unserialize($serialized);
-            $this->set($items);
-        } else {
-            throw new \InvalidArgumentException('Invalid serialized data type.');
-        }
+        $this->set($items);
     }
 
     /**
