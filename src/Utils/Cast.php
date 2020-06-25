@@ -179,6 +179,14 @@ class Cast
 
 
     // TODO testing, implement to term too later
+
+    // TODO maybe use class at the post_type param
+    // IMPORTANT use class as param may be better, it would allow the dev to really request the post as he wants, instead of depending it was registered or not
+
+    // or just allow both!
+
+    // or post_type is fine, as it's a shortcut, if it's implemented in many places, it's just better to not have to change everywhere, and just change the casting map
+
     public static function post($post, string $post_type = null): ?Post
     {
         if (empty($post)) {
@@ -188,19 +196,128 @@ class Cast
         // load matches
         static::loadClasses();
 
-        // short-circuit if already Post
-        if ($post instanceof Post) {
 
-            // just ensure its what was request
-            if ($post_type) {
-                if ($post->post_type === $post_type) {
-                    return $post;
-                }
-                $class = static::$posts[$post_type] ?? Post::class;
-                return new $class($post);
-            }
-            return $post;
+        // short-circuit if already Post
+        // just ensure its what was request
+        if ($post instanceof Post) {
+            return static::maybeConvert($post, $post_type);
         }
+
+        //
+        if (config('cache.posts')) {
+
+            // 1
+            if (is_numeric($post)) {
+
+                $id = (int) $post;
+
+                $post = Cache::php(
+                    'bond/posts/' . $id,
+                    config('cache.posts_ttl') ?? 60 * 10,
+
+                    function () use ($id) {
+
+                        $post = Cast::wpPost($id);
+                        if (!$post) {
+                            return null;
+                        }
+
+                        $class = static::$posts[$post->post_type] ?? Post::class;
+
+                        return Cache::putPhp(
+                            'bond/posts/' . $post->post_type . '/' . $post->post_name,
+                            new $class($post)
+                        );
+                    }
+                );
+                return static::maybeConvert($post, $post_type);
+            }
+
+            // 2
+            if (is_string($post)) {
+
+                if (!$post_type) {
+                    return null;
+                }
+
+                $slug = $post;
+
+                return Cache::php(
+                    'bond/posts/' . $post_type . '/' . $slug,
+                    config('cache.posts_ttl') ?? 60 * 10,
+
+                    function () use ($slug, $post_type) {
+
+                        $post = Query::wpPostBySlug(
+                            $slug,
+                            $post_type
+                        );
+                        if (!$post) {
+                            return null;
+                        }
+
+                        $class = static::$posts[$post_type] ?? Post::class;
+
+                        return Cache::putPhp(
+                            'bond/posts/' . $post->ID,
+                            new $class($post)
+                        );
+                    }
+                );
+            }
+
+            // 3a - has a post ID
+            $id = self::postId($post);
+            if ($id) {
+                $post = self::wpPost($id);
+            }
+
+            // 3b - is WP_Post
+            if ($post instanceof WP_Post) {
+
+                $post = Cache::php(
+                    'bond/posts/' . $post->ID,
+                    config('cache.posts_ttl') ?? 60 * 10,
+
+                    function () use ($post) {
+
+                        $class = static::$posts[$post->post_type] ?? Post::class;
+
+                        return Cache::putPhp(
+                            'bond/posts/' . $post->post_type . '/' . $post->post_name,
+                            new $class($post)
+                        );
+                    }
+                );
+                return static::maybeConvert($post, $post_type);
+            }
+        } else {
+            // without cache
+
+            // 1 - get WP_Post by ID
+            // 2 - or get WP_Post by slug
+
+            if (is_numeric($post)) {
+                $post = Cast::wpPost($post);
+                if (!$post) {
+                    return null;
+                }
+            } elseif (is_string($post)) {
+                if (!$post_type) {
+                    return null;
+                }
+                $post = Query::wpPostBySlug(
+                    $post,
+                    $post_type
+                );
+                if (!$post) {
+                    return null;
+                }
+            }
+        }
+
+        // Finally
+        // if WP_Post, object or array
 
         // try to find post type
         if (!$post_type) {
@@ -213,28 +330,28 @@ class Cast
                 //
             } elseif (!empty($post['post_type'])) {
                 $post_type = $post['post_type'];
-                //
-
-                //
-                //
-                // TODO Something is wrong here, is there a way to rely on cache down here? We know the ID, we should not fetch WP Post, we should check cache first
-            } elseif ($id = self::postId($post)) {
-                // if the ID is known, we will override the provided post
-                $post = self::wpPost($id);
-                if ($post) {
-                    $post_type = $post->post_type;
-                } else {
-                    // if post doesn't exist on WP
-                    return null;
-                }
             }
             // else it's fine, will fallback to Post
         }
 
+        // create the Post
         $class = static::$posts[$post_type] ?? Post::class;
         return new $class($post);
     }
 
+
+    protected static function maybeConvert(?Post $post, ?string $post_type): ?Post
+    {
+        if (
+            $post
+            && $post_type
+            && $post_type !== $post->post_type
+        ) {
+            $class = static::$posts[$post_type] ?? Post::class;
+            return new $class($post);
+        }
+        return $post;
+    }
 
 
     public static function posts($posts, string $post_type = null): Posts

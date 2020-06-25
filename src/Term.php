@@ -15,6 +15,9 @@ class Term extends Fluent
     public int $term_id;
     public string $taxonomy;
 
+
+    // TODO move cache logic into Cast
+
     public function __construct($values = null, bool $skip_cache = false)
     {
         if (!$skip_cache && config('cache.terms')) {

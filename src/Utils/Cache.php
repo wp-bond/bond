@@ -42,7 +42,7 @@ class Cache
         return null;
     }
 
-
+    // TODO remove the return, cleaner usage
     public static function putPhp(string $key, $data)
     {
         $path = self::getPath($key, 'php');
@@ -80,6 +80,7 @@ class Cache
     }
 
 
+    // TODO remove the return, cleaner usage
     public static function putJson(string $key, $data)
     {
         $path = self::getPath($key, 'json');

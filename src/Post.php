@@ -2,9 +2,9 @@
 
 namespace Bond;
 
+// use Bond\Fields\FieldTypes\Text;
 use Bond\Utils\Link;
 use Bond\Support\Fluent;
-use Bond\Utils\Cache;
 use Bond\Utils\Cast;
 use Bond\Utils\Query;
 use Bond\Settings\Languages;
@@ -14,6 +14,25 @@ class Post extends Fluent
 {
     public int $ID;
     public string $post_type;
+
+    // public FieldManager $fields;
+
+    // public Text $my_awesome_field;
+
+    // MAYBE
+    // here the idea is to allow any property as being a field DB data
+    // and then allow a field class to take control of that data
+
+    // $this->images would return an array of id for example
+    // then each field provides its own helpers`
+    // $this->fields('images')->limit(2)->pictureTag()
+    // $this->fields()->image->upload($_FILES)
+
+    // it s a split of concerns:
+    // the source data, and the manager of that data
+
+
+
 
     // set properties that should not be added here
     protected array $exclude = [
@@ -40,40 +59,25 @@ class Post extends Fluent
         'filter',
     ];
 
-    public function __construct($values = null, bool $skip_cache = false)
+    public function __construct($values = null)
     {
-        if (!$skip_cache && config('cache.posts')) {
-            $this->initFromCache($values);
-        } else {
-            $this->init($values);
-        }
-    }
+        // register all fields upfront
+        // $this->my_awesome_field = new Text('my_awesome_field');
+        // ISSUE the only issue is the key must be set... with duplicate code
+        // MAYBE we don't even need.. right? if Vue field could suffice with random id
 
-    protected function initFromCache($values)
-    {
-        // try to know the ID
-        // if not, just continue without cache
+        // another issue is performance? as all posts would have duplicate field code! Yes, but essentially the same as MongoModel, where we would add a trait anyway with all methods
 
-        if ($id = Cast::postId($values)) {
+        // MAYBE we could auto initialize, altought, most of the time it wouldn't be with default options.. at least a label is needed in most cases
+        // $ref = new ReflectionClass($this);
+        // dd(
+        //     $ref->getProperties(ReflectionProperty::IS_PUBLIC),
+        //     $ref->getProperties(ReflectionProperty::IS_PUBLIC)[2]->getType()
+        // );
+        // TO IMPROVE performance we would just cache in static, even later with the WeakRefs in php 8
 
-            $has_initted = false;
 
-            $cached = Cache::json(
-                'bond/posts/' . $id,
-                config('cache.posts_ttl') ?? 60 * 10,
-
-                function () use ($values, &$has_initted) {
-                    $this->init($values);
-                    $has_initted = true;
-                    return $this->toArray();
-                }
-            );
-            if (!$has_initted) {
-                $this->add($cached);
-            }
-        } else {
-            $this->init($values);
-        }
+        $this->init($values);
     }
 
     protected function init($values)
@@ -95,6 +99,7 @@ class Post extends Fluent
 
         // if is string we'll try to find by slug and load fields
         if (is_string($values)) {
+
             if (isset($this->post_type)) {
                 $post = Query::wpPostBySlug(
                     $values,
@@ -108,7 +113,8 @@ class Post extends Fluent
             return;
         }
 
-        // otherwise (object or array) are honored as the full value to added WITHOUT loading fields
+        // otherwise (object or array) are honored as the full value
+        // and added WITHOUT loading fields
         $this->add($values);
     }
 
