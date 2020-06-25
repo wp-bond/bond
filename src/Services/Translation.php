@@ -263,7 +263,7 @@ class Translation
 
 
     // WordPress Helpers
-    public function onSavePost($post_types)
+    public function translateOnSavePost($post_types)
     {
         // runs on priority 9, before the default priority 10
         // so it's already translated if needed
@@ -275,21 +275,21 @@ class Translation
         if ($post_types === true) {
             \add_action(
                 'Bond/save_post',
-                [$this, 'allFields'],
+                [$this, 'translateAllFields'],
                 9
             );
         } elseif (is_array($post_types)) {
             foreach ($post_types as $post_type) {
                 \add_action(
                     'Bond/save_post/' . $post_type,
-                    [$this, 'allFields'],
+                    [$this, 'translateAllFields'],
                     9
                 );
             }
         }
     }
 
-    protected function allFields($post)
+    public function translateAllFields($post)
     {
         if (!Languages::isMultilanguage()) {
             return;

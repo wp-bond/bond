@@ -95,7 +95,7 @@ class Config extends Fluent
         }
 
         if (isset($this->translation->translate_on_save)) {
-            $translation->onSavePost($this->translation->translate_on_save);
+            $translation->translateOnSavePost($this->translation->translate_on_save);
         }
     }
 
