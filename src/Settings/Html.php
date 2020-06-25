@@ -139,15 +139,6 @@ class Html
         \add_filter('show_admin_bar', '__return_false');
     }
 
-    public static function disableRestHeader()
-    {
-        // from html head
-        \remove_action('wp_head', 'rest_output_link_wp_head', 10);
-
-        // Remove the Link header for the WP REST API
-        // [link] => <http://www.example.com/wp-json/>; rel="https://api.w.org/"
-        \remove_action('template_redirect', 'rest_output_link_header', 11, 0);
-    }
 
     public static function disableShortlink()
     {
