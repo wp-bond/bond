@@ -8,7 +8,6 @@ use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use Bond\Utils\Query;
 use Bond\Utils\Str;
-use Bond\Utils\Translate;
 
 class Bond
 {
@@ -199,7 +198,7 @@ class Bond
             if (empty($title)) {
                 \update_field(
                     'title' . $suffix,
-                    Translate::fromTo($default_code, $code, $default_title) ?: $default_title,
+                    app('translation')->fromTo($default_code, $code, $default_title) ?: $default_title,
                     $post->ID
                 );
             }

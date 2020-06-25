@@ -2,8 +2,7 @@
 
 namespace Bond;
 
-use Bond\Utils\Translate;
-use Exception;
+use Bond\Services\Translation;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Mobile_Detect;
@@ -55,24 +54,25 @@ class App extends Container
     {
         // register itself as the main App
         static::setInstance($this);
-        $this->add('app', $this, true);
+        $this->share('app', $this);
 
         // register default helpers
-        $this->add('config', Config::class, true);
-        $this->add('view', View::class, true);
-        $this->add('meta', Meta::class, true);
-        // $this->add('translation', Translate::class, true);
+        $this->share('config', new Config($this));
+        $this->share('view', View::class);
+        $this->share('meta', Meta::class);
+        $this->share('translation', Translation::class);
 
         // register aliases
         foreach ([
             App::class => 'app',
+            Config::class => 'config',
             View::class => 'view',
             Meta::class => 'meta',
-            // Translate::class => 'translation',
+            Translation::class => 'translation',
         ] as $alias => $definition) {
-            $this->add($alias, function () use ($definition) {
+            $this->share($alias, function () use ($definition) {
                 return $this->get($definition);
-            }, true);
+            });
         }
 
         // Reflection fallback

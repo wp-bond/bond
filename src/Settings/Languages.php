@@ -3,7 +3,6 @@
 namespace Bond\Settings;
 
 use Bond\Utils\Str;
-use Bond\Utils\Translate;
 use Carbon\Carbon;
 
 // TODO test the use case of working with just a single language then change to multilanguage afterwards
@@ -157,7 +156,7 @@ class Languages
         unset($l10n[app()->id()]);
 
         // load WP gettext, if not handling translations automatically
-        if (!Translate::hasService()) {
+        if (!app('translation')->hasService()) {
             \load_theme_textdomain(app()->id(), app()->languagesPath());
         }
     }

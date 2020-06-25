@@ -2,7 +2,6 @@
 
 use Bond\App;
 use Bond\Meta;
-use Bond\Utils\Translate;
 use Bond\Utils\Str;
 use Bond\View;
 
@@ -58,7 +57,8 @@ if (!function_exists('t')) {
 
     function t($string, string $language_code = null): string
     {
-        return Translate::get($string, $language_code);
+        return app('translation')
+            ->get($string, $language_code);
     }
 }
 
@@ -66,7 +66,8 @@ if (!function_exists('tx')) {
 
     function tx($string, string $context, string $language_code = null): string
     {
-        return Translate::get($string, $language_code, $context);
+        return app('translation')
+            ->get($string, $language_code, $context);
     }
 }
 

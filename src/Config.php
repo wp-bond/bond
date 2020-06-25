@@ -9,14 +9,15 @@ use Bond\Settings\Html;
 use Bond\Settings\Languages;
 use Bond\Settings\Wp;
 use Bond\Support\Fluent;
-use Bond\Utils\Translate;
 use Exception;
 
 class Config extends Fluent
 {
+    protected App $container;
 
-    public function __construct()
+    public function __construct(App $container)
     {
+        $this->container = $container;
         $this->app = [];
         $this->cache = [];
         $this->languages = [];
@@ -87,12 +88,14 @@ class Config extends Fluent
 
     protected function translationSettings()
     {
+        $translation = $this->container->get('translation');
+
         if ($this->translation->service) {
-            Translate::setService($this->translation->service);
+            $translation->setService($this->translation->service);
         }
 
         if (isset($this->translation->translate_on_save)) {
-            Translate::onSavePost($this->translation->translate_on_save);
+            $translation->onSavePost($this->translation->translate_on_save);
         }
     }
 
@@ -236,11 +239,20 @@ class Config extends Fluent
         if ($this->api->disable) {
             Api::disable();
         }
+        if ($this->api->prefix) {
+            Api::changePrefix($this->api->prefix);
+        }
         if ($this->api->header === false) {
             Api::disableHeader();
         }
         if ($this->api->default_routes === false) {
             Api::disableDefaultRoutes();
+        }
+        if ($this->api->root_route === false) {
+            Api::disableRootRoute();
+        }
+        if ($this->api->oembed === false) {
+            Api::disableOembed();
         }
         if ($this->api->only_logged_in) {
             Api::onlyLoggedIn();
