@@ -10,9 +10,18 @@ class Api
 
     public static function disable()
     {
+        // disable headers
         static::disableHeader();
-        static::disableDefaultRoutes();
-        // TODO will be more strict, really disable entirelly
+
+        // disable API entirelly
+        \remove_action('init', 'rest_api_init');
+    }
+
+    public static function changePrefix(string $name)
+    {
+        \add_filter('rest_url_prefix', function () use ($name) {
+            return $name;
+        });
     }
 
     public static function disableHeader()
@@ -28,7 +37,35 @@ class Api
 
     public static function disableDefaultRoutes()
     {
+        // does not disable if is on admin
+        if (\is_admin()) {
+            return;
+        }
+
+        // default routes
         \remove_action('rest_api_init', 'create_initial_rest_routes', 99);
+    }
+
+
+    public static function disableRootRoute()
+    {
+        // does not disable if is on admin
+        if (\is_admin()) {
+            return;
+        }
+
+        // root endpoint
+        \add_filter('rest_endpoints', function ($endpoints) {
+            unset($endpoints['/']);
+            return $endpoints;
+        });
+    }
+
+
+    public static function disableOembed()
+    {
+        // oembeds
+        \remove_action('rest_api_init', 'wp_oembed_register_route');
     }
 
     public static function onlyLoggedIn()
