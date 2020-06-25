@@ -10,6 +10,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
 // TODO may very soon move into Services with PSR-16
+
+// implement a isEnabled() method
 class Cache
 {
 
@@ -41,6 +43,16 @@ class Cache
     }
 
 
+    public static function putPhp(string $key, $data)
+    {
+        $path = self::getPath($key, 'php');
+
+        file_put_contents($path, serialize($data));
+
+        return $data;
+    }
+
+
     public static function json(
         string $key,
         $ttl,
@@ -68,6 +80,16 @@ class Cache
     }
 
 
+    public static function putJson(string $key, $data)
+    {
+        $path = self::getPath($key, 'json');
+
+        $data = json_encode($data);
+
+        file_put_contents($path, $data);
+
+        return json_decode($data, true);
+    }
 
 
     private static function getPath($key, $extension): string
