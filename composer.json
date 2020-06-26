@@ -15,6 +15,9 @@
       "homepage": "https://addd.studio"
     }
   ],
+  "config": {
+    "sort-packages": true
+  },
   "require": {
     "php": ">=7.4",
     "league/container": "^3.3",
