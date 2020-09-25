@@ -23,6 +23,8 @@
     "league/container": "^3.3",
     "mobiledetect/mobiledetectlib": "^2.8",
     "nesbot/carbon": "^2.32",
+    "psr/container": "^1.0",
+    "psr/simple-cache": "^1.0",
     "symfony/polyfill-mbstring": "^1.15",
     "symfony/polyfill-php80": "^1.17",
     "voku/portable-ascii": "^1.4"
