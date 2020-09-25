@@ -163,9 +163,9 @@ class Config extends Fluent
         // Protects WP redirect on front pages
         if (
             Languages::isMultilanguage()
-            || $this->wp->front_page_redirect === false
+            || $this->wp->disable_front_page_redirect
         ) {
-            Wp::preventFrontPageRedirect();
+            Wp::disableFrontPageRedirect();
         }
 
         if ($this->wp->force_https) {
@@ -206,30 +206,31 @@ class Config extends Fluent
 
     protected function htmlSettings()
     {
-        if ($this->html->rss === false) {
+        if ($this->html->disable_rss) {
             Html::disableRss();
-        } elseif ($this->html->rss) {
+        }
+        if ($this->html->enable_rss) {
             Html::enableRss();
         }
-        if ($this->html->emojis === false) {
+        if ($this->html->disable_emojis) {
             Html::disableEmojis();
         }
-        if ($this->html->shortlink === false) {
+        if ($this->html->disable_shortlink) {
             Html::disableShortlink();
         }
-        if ($this->html->wp_embed === false) {
+        if ($this->html->disable_wp_embed) {
             Html::disableWpEmbed();
         }
-        if ($this->html->block_library === false) {
+        if ($this->html->disable_block_library) {
             Html::disableBlockLibrary();
         }
-        if ($this->html->body_classes === false) {
+        if ($this->html->reset_body_classes) {
             Html::resetBodyClasses();
         }
-        if ($this->html->jetpack_includes === false) {
+        if ($this->html->disable_jetpack_includes) {
             Html::disableJetpackIncludes();
         }
-        if ($this->html->admin_bar === false) {
+        if ($this->html->disable_admin_bar) {
             Html::disableAdminBar();
         }
     }
@@ -242,16 +243,16 @@ class Config extends Fluent
         if ($this->api->prefix) {
             Api::changePrefix($this->api->prefix);
         }
-        if ($this->api->header === false) {
+        if ($this->api->disable_header) {
             Api::disableHeader();
         }
-        if ($this->api->default_routes === false) {
+        if ($this->api->disable_default_routes) {
             Api::disableDefaultRoutes();
         }
-        if ($this->api->root_route === false) {
+        if ($this->api->disable_root_route) {
             Api::disableRootRoute();
         }
-        if ($this->api->oembed === false) {
+        if ($this->api->disable_oembed) {
             Api::disableOembed();
         }
         if ($this->api->only_logged_in) {
