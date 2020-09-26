@@ -119,6 +119,17 @@ class Wp
         });
     }
 
+
+    public static function disableSitemaps()
+    {
+        \add_filter('wp_sitemaps_enabled', '__return_false');
+
+        \add_action('init', function () {
+            \remove_action('init', 'wp_sitemaps_get_server');
+        }, 5);
+    }
+
+
     public static function updateSettings()
     {
         if (!static::isAdminWithTheme()) {

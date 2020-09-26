@@ -171,6 +171,9 @@ class Config extends Fluent
         if ($this->wp->force_https) {
             Wp::forceHttps();
         }
+        if ($this->wp->disable_sitemaps) {
+            Wp::disableSitemaps();
+        }
     }
 
     protected function servicesSettings()
