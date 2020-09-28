@@ -14,8 +14,7 @@ use Bond\Utils\Str;
 // Idea, maybe fluent conditionals ->conditional(or()->and(), or());
 
 /**
- * @method self label(string $label)
- * @method self instructions(string $instructions)
+
  */
 class Field implements ArrayAccess
 {
@@ -30,6 +29,18 @@ class Field implements ArrayAccess
         foreach ($settings as $key => $value) {
             $this->{(string) $key} = $value;
         }
+    }
+
+    public function label(string $name): self
+    {
+        $this->label = $name;
+        return $this;
+    }
+
+    public function instructions(string $instructions): self
+    {
+        $this->instructions = $instructions;
+        return $this;
     }
 
     public function multilanguage(array $options = []): self
@@ -68,6 +79,12 @@ class Field implements ArrayAccess
             $this->wrapper = [];
         }
         $this->wrapper['id'] = $id;
+        return $this;
+    }
+
+    public function defaultValue($value): self
+    {
+        $this->default_value = $value;
         return $this;
     }
 

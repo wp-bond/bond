@@ -2,13 +2,16 @@
 
 namespace Bond\Fields;
 
+use Bond\Fields\Properties\HasReturnFormat;
+
 /**
  *
  */
 class Relationship extends Field
 {
+    use HasReturnFormat;
+
     protected string $type = 'relationship';
-    public string $return_format = 'id';
     public array $filters = [
         'search',
         'post_type',
@@ -72,12 +75,6 @@ class Relationship extends Field
     public function max(int $max): self
     {
         $this->max = $max;
-        return $this;
-    }
-
-    public function returnFormat(string $type): self
-    {
-        $this->return_format = $type;
         return $this;
     }
 }
