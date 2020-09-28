@@ -130,6 +130,14 @@ class App extends Container
                 continue;
             }
 
+            // add to View
+            if (
+                is_subclass_of($classname, PostType::class)
+                && method_exists($classname, 'addToView')
+            ) {
+                call_user_func($classname . '::addToView');
+            }
+
             // call the register static method
             if (method_exists($classname, 'boot')) {
                 call_user_func($classname . '::boot');
