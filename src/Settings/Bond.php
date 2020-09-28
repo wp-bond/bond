@@ -49,15 +49,17 @@ class Bond
 
     public static function addSavePostHook()
     {
-        \add_action('save_post', [self::class, 'savePostHook'], 10, 3);
+        \add_action('save_post', [self::class, 'savePostHook'], 10, 2);
+        \add_action('edit_attachment', [self::class, 'savePostHook']);
     }
 
     public static function removeSavePostHook()
     {
-        \remove_action('save_post', [self::class, 'savePostHook'], 10, 3);
+        \remove_action('save_post', [self::class, 'savePostHook'], 10, 2);
+        \remove_action('edit_attachment', [self::class, 'savePostHook']);
     }
 
-    public static function savePostHook($post_id, $post, $update)
+    public static function savePostHook($post_id, $post = null)
     {
         if (\wp_is_post_revision($post_id)) {
             return;
@@ -69,6 +71,11 @@ class Bond
         // turn off posts cache
         $original_state = config()->cache->posts ?? false;
         config()->cache->posts = false;
+
+        // in case it's attachment, it misses the post object
+        if (!$post) {
+            $post = Cast::post($post_id);
+        }
 
         // clear cache
         Cache::forget($post->post_type);
