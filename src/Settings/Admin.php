@@ -8,6 +8,7 @@ class Admin
 {
     private static $archive_columns = [];
     private static $tax_archive_columns = [];
+    private static $users_archive_columns = [];
 
 
     public static function enableTheming()
@@ -152,6 +153,7 @@ class Admin
 
     public static function manageArchiveColumns()
     {
+        // Posts
         \add_action(
             'manage_pages_custom_column',
             [static::class, 'handleArchiveColumn'],
@@ -171,6 +173,15 @@ class Admin
             2
         );
 
+        // Users
+        \add_action(
+            'manage_users_custom_column',
+            [static::class, 'handleUsersArchiveColumn'],
+            10,
+            3
+        );
+
+        // Taxonomies
         // wait until taxonomies are registered
         \add_action('wp_loaded', function () {
             global $wp_taxonomies;
@@ -203,6 +214,7 @@ class Admin
         echo self::$archive_columns[$name]($post);
     }
 
+
     public static function addTaxonomyArchiveColumn($name, callable $handler)
     {
         self::$tax_archive_columns[$name] = $handler;
@@ -220,6 +232,26 @@ class Admin
         return self::$tax_archive_columns[$name]($term);
     }
 
+
+    public static function addUsersArchiveColumn($name, callable $handler)
+    {
+        self::$users_archive_columns[$name] = $handler;
+    }
+
+    public static function handleUsersArchiveColumn(
+        $content,
+        $name,
+        $user_id
+    ) {
+        if (!isset(self::$users_archive_columns[$name])) {
+            return $content;
+        }
+        $user = Cast::user($user_id);
+        if (!$user) {
+            return $content;
+        }
+        return self::$users_archive_columns[$name]($user);
+    }
 
 
     public static function replaceDashboard()
