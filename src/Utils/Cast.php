@@ -9,9 +9,11 @@ use Bond\Support\Fluent;
 use Bond\Taxonomy;
 use Bond\Term;
 use Bond\Terms;
+use Bond\User;
 use stdClass;
 use WP_Post;
 use WP_Term;
+use WP_User;
 
 class Cast
 {
@@ -20,6 +22,7 @@ class Cast
     protected static array $post_types = [];
     protected static array $terms = [];
     protected static array $taxonomies = [];
+    protected static array $users = [];
 
 
     // TODO consider moving to app container
@@ -80,6 +83,14 @@ class Cast
             if (is_subclass_of($_class, Taxonomy::class)) {
                 if (isset($_class::$taxonomy)) {
                     static::$taxonomies[$_class::$taxonomy] = $_class;
+                }
+            }
+
+            // users
+            if (is_subclass_of($_class, User::class)) {
+                $_user = new $_class();
+                if (isset($_user->role)) {
+                    static::$users[$_user->role] = $_class;
                 }
             }
         }
@@ -539,5 +550,98 @@ class Cast
             return (int) ($term['term_id'] ?? 0);
         }
         return (int) $term;
+    }
+
+
+    // Users
+
+    // we do not cache users data
+    public static function user($user): ?User
+    {
+        if (empty($user)) {
+            return null;
+        }
+
+        // load matches
+        static::loadClasses();
+
+        // short-circuit if already User
+        if ($user instanceof User) {
+            return $user;
+        }
+
+        // get WP_User if string or numeric
+        if (is_numeric($user) || is_string($user)) {
+            $user = Cast::wpUser($user);
+            if (!$user) {
+                return null;
+            }
+        }
+
+        // try to find role
+        $role = null;
+        if ($user instanceof WP_User && !empty($user->roles)) {
+            $role = $user->roles[0];
+        } elseif (is_object($user) && !empty($user->role)) {
+            $role = $user->role;
+        } elseif (is_array($user) && !empty($user['role'])) {
+            $role = $user['role'];
+        }
+
+        // create the User
+        $class = static::$users[$role] ?? User::class;
+        return new $class($user);
+    }
+
+    public static function wpUser($user): ?WP_User
+    {
+        if (empty($user)) {
+            return null;
+        }
+        if ($user instanceof WP_User) {
+            return $user;
+        }
+
+        $id = self::userId($user);
+        if ($id) {
+            $user = \get_user_by('id', $id);
+        } else {
+            $lookup = (string) $user;
+            $user = \get_user_by('slug', $lookup);
+            if (!$user) {
+                $user = \get_user_by('email', $lookup);
+            }
+            if (!$user) {
+                $user = \get_user_by('login', $lookup);
+            }
+        }
+        return $user instanceof WP_User ? $user : null;
+    }
+
+    public static function wpUsers($users): array
+    {
+        $result = [];
+        if (!empty($users)) {
+            foreach ($users as $user) {
+                if ($user = self::wpUser($user)) {
+                    $result[] = $user;
+                }
+            }
+        }
+        return $result;
+    }
+
+    public static function userId($user): int
+    {
+        if (empty($user)) {
+            return 0;
+        }
+        if (is_object($user)) {
+            return (int) ($user->ID ?? 0);
+        }
+        if (is_array($user)) {
+            return (int) ($user['ID'] ?? 0);
+        }
+        return (int) $user;
     }
 }
