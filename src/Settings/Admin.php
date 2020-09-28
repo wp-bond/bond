@@ -203,8 +203,14 @@ class Admin
             return;
         }
 
+        if ($post_type === 'attachment') {
+            $hook = 'manage_media_columns';
+        } else {
+            $hook = 'manage_' . $post_type . '_posts_columns';
+        }
+
         \add_filter(
-            'manage_' . $post_type . '_posts_columns',
+            $hook,
             function ($defaults) use ($columns) {
                 return self::ensureCheckboxColumn($columns);
             }
