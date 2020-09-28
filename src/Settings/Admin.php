@@ -156,19 +156,19 @@ class Admin
         // Posts
         \add_action(
             'manage_pages_custom_column',
-            [static::class, 'handleArchiveColumn'],
+            [static::class, 'handleColumn'],
             10,
             2
         );
         \add_action(
             'manage_posts_custom_column',
-            [static::class, 'handleArchiveColumn'],
+            [static::class, 'handleColumn'],
             10,
             2
         );
         \add_action(
             'manage_media_custom_column',
-            [static::class, 'handleArchiveColumn'],
+            [static::class, 'handleColumn'],
             10,
             2
         );
@@ -176,7 +176,7 @@ class Admin
         // Users
         \add_action(
             'manage_users_custom_column',
-            [static::class, 'handleUsersArchiveColumn'],
+            [static::class, 'handleUsersColumn'],
             10,
             3
         );
@@ -189,7 +189,7 @@ class Admin
             foreach (array_keys($wp_taxonomies) as $taxonomy) {
                 \add_filter(
                     'manage_' . $taxonomy . '_custom_column',
-                    [static::class, 'handleTaxonomyArchiveColumn'],
+                    [static::class, 'handleTaxonomyColumn'],
                     10,
                     3
                 );
@@ -197,12 +197,26 @@ class Admin
         });
     }
 
-    public static function addArchiveColumn($name, callable $handler)
+    public static function setColumns(string $post_type, array $columns)
+    {
+        if (!\is_admin()) {
+            return;
+        }
+
+        \add_filter(
+            'manage_' . $post_type . '_posts_columns',
+            function ($defaults) use ($columns) {
+                return self::ensureCheckboxColumn($columns);
+            }
+        );
+    }
+
+    public static function addColumnHandler($name, callable $handler)
     {
         self::$archive_columns[$name] = $handler;
     }
 
-    public static function handleArchiveColumn($name, $post_id)
+    public static function handleColumn($name, $post_id)
     {
         if (!isset(self::$archive_columns[$name])) {
             return;
@@ -215,12 +229,26 @@ class Admin
     }
 
 
+    public static function setTaxonomyColumns(string $taxonomy, array $columns)
+    {
+        if (!\is_admin()) {
+            return;
+        }
+
+        \add_filter(
+            'manage_edit-' . $taxonomy . '_columns',
+            function ($defaults) use ($columns) {
+                return self::ensureCheckboxColumn($columns);
+            }
+        );
+    }
+
     public static function addTaxonomyArchiveColumn($name, callable $handler)
     {
         self::$tax_archive_columns[$name] = $handler;
     }
 
-    public static function handleTaxonomyArchiveColumn($content, $name, $term_id)
+    public static function handleTaxonomyColumn($content, $name, $term_id)
     {
         if (!isset(self::$tax_archive_columns[$name])) {
             return $content;
@@ -233,12 +261,26 @@ class Admin
     }
 
 
-    public static function addUsersArchiveColumn($name, callable $handler)
+    public static function setUsersColumns(array $columns)
+    {
+        if (!\is_admin()) {
+            return;
+        }
+
+        \add_filter(
+            'manage_users_columns',
+            function ($defaults) use ($columns) {
+                return self::ensureCheckboxColumn($columns);
+            }
+        );
+    }
+
+    public static function addUsersColumnHandler($name, callable $handler)
     {
         self::$users_archive_columns[$name] = $handler;
     }
 
-    public static function handleUsersArchiveColumn(
+    public static function handleUsersColumn(
         $content,
         $name,
         $user_id
@@ -341,5 +383,17 @@ class Admin
 <?php
 
         });
+    }
+
+
+    private static function ensureCheckboxColumn(array
+    $columns): array
+    {
+        if (!isset($columns['cb'])) {
+            $columns = array_merge([
+                'cb' => '<input type="checkbox" />',
+            ], $columns);
+        }
+        return $columns;
     }
 }
