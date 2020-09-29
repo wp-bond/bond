@@ -2,21 +2,33 @@
 
 namespace Bond\Fields;
 
-use Bond\Fields\Properties\HasReturnFormat;
+use Bond\Fields\Properties\HasReturnFormatFiles;
 
 /**
  *
  */
 class Relationship extends Field
 {
-    use HasReturnFormat;
-
     protected string $type = 'relationship';
     public array $filters = [
         'search',
         'post_type',
         'taxonomy',
     ];
+    public string $return_format = 'id';
+
+
+    public function returnId(): self
+    {
+        $this->return_format = 'id';
+        return $this;
+    }
+
+    public function returnObject(): self
+    {
+        $this->return_format = 'object';
+        return $this;
+    }
 
     public function postType(array $post_types): self
     {

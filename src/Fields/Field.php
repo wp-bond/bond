@@ -13,6 +13,8 @@ use Bond\Utils\Str;
 
 // Idea, maybe fluent conditionals ->conditional(or()->and(), or());
 
+// TODO maybe transform in abstract to not allow a undefined field
+
 /**
 
  */

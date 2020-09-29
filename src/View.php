@@ -455,6 +455,9 @@ class View
         \do_action('Bond/load/' . $dir_name . '/' . $found);
 
 
+        // TODO maybe bind the closure, to not extract here..
+        // https://www.php.net/manual/en/class.closure.php
+
         // extract data as php vars
         extract($data->all());
 

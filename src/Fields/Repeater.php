@@ -17,13 +17,4 @@ class Repeater extends Field
         $this->sub_fields[] = $field;
         return $this;
     }
-
-    // TODO provide a method like this:
-    // helps to not break the chain, but also visually organizes code
-
-    // $group->repeaterField('example')
-    //     ->subFields(function ($repeater) {
-    //         $repeater->textField('sample');
-    //         $repeater->textField('anothersample');
-    //     });
 }

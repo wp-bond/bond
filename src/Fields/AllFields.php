@@ -2,6 +2,8 @@
 
 namespace Bond\Fields;
 
+use Closure;
+
 /**
  * Adds all fields methods
  */
@@ -14,6 +16,40 @@ trait AllFields
     //     $this->sub_fields[] = $field;
     //     return $this;
     // }
+
+
+    // Test this more later
+    // It works, but no IDE autofill
+    // May just be better to allow only the flat var-based scope
+    public function fields(Closure $closure): self
+    {
+        // can have autofill, if dev adds the type declaration
+        $closure($this);
+
+        // can not have autofill
+        // except if the dev adds a annotation inside the closure
+        // /** @var Repeater $this */
+        // $closure->bindTo($this)();
+        return $this;
+    }
+    // this method allow this syntax (better understanding of the nesting levels)
+    // $flex->layout('test')
+    //     ->label(t('Label'))
+    //     ->fields(function () {
+    //         $this->imageField('bkg_image')
+    //             ->label(t('Background Image'))
+    //             ->previewSize(MEDIUM);
+
+    //         $this->repeaterField('images')
+    //             ->layout('table')
+    //             ->buttonLabel(t('Add Image'))
+    //             ->fields(function () {
+
+    //                 $this->imageField('image')
+    //                     ->label(t('Image'))
+    //                     ->previewSize(MEDIUM);
+    //             });
+    //     });
 
     private function _addField(Field $field)
     {
@@ -69,6 +105,13 @@ trait AllFields
     {
         return $this->_addField(new Boolean($name));
     }
+
+    public function radioField($name): Radio
+    {
+        return $this->_addField(new Radio($name));
+    }
+
+
 
     // Content
 
