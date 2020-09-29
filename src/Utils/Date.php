@@ -3,6 +3,8 @@
 namespace Bond\Utils;
 
 use Carbon\Carbon;
+use DateTime;
+use Exception;
 
 class Date
 {
@@ -45,10 +47,11 @@ class Date
         return $date ? $date->isoFormat($format) : '';
     }
 
-    // TODO maybe move to Cast
-    // should look beter
-    public static function carbon($date = true, string $timezone = null): ?Carbon
-    {
+
+    public static function carbon(
+        $date = true,
+        string $timezone = null
+    ): ?Carbon {
         if (empty($date)) {
             return null;
         }
@@ -72,5 +75,19 @@ class Date
             $date === true ? null : $date,
             $timezone ?: config()->app->timezone
         );
+    }
+
+    public static function mongoDb(
+        $date = true,
+        string $timezone = null
+    ): ?\MongoDB\BSON\UTCDateTime {
+
+        if ($date instanceof \MongoDB\BSON\UTCDateTime) {
+            return $date;
+        }
+
+        $date = self::carbon($date, $timezone);
+
+        return $date ? new \MongoDB\BSON\UTCDateTime($date) : null;
     }
 }
