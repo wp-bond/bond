@@ -128,6 +128,15 @@ class Fluent implements
         return $this->getByDot($key);
     }
 
+    public function getTranslations($key): array
+    {
+        $t = [];
+        foreach (Languages::codes() as $code) {
+            $t[$code] = $this->get($key, $code);
+        }
+        return $t;
+    }
+
     private function getByDot($key, string $language_code = null)
     {
         $target = $this;
