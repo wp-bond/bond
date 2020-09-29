@@ -153,9 +153,8 @@ class Config extends Fluent
     protected function wpSettings()
     {
         // Settings
-        if ($this->wp->settings) {
-            Wp::updateSettings();
-        }
+        Wp::updateSettings();
+
         if ($this->wp->disable_user_registration) {
             Wp::disableUserRegistration();
         }
