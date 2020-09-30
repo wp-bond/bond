@@ -3,6 +3,8 @@
 namespace Bond;
 
 use Bond\Services\Translation;
+use Bond\Utils\Cache;
+use Bond\Utils\Cast;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Mobile_Detect;
@@ -94,6 +96,11 @@ class App extends Container
             // initialize Meta, registers WP hooks
             $this->get('meta');
         }
+
+        // Save post/terms hook
+        $this->addSavePostHook();
+        $this->addSaveTermHook();
+        $this->addSaveUserHook();
 
         // Calls the boot/bootAdmin method on all classes at the App folder
         $this->bootApp();
@@ -298,5 +305,158 @@ class App extends Container
 
         // we consider all others as Desktop
         $this->is_desktop = !$this->is_mobile && !$this->is_tablet;
+    }
+
+
+
+    // Save Posts Hook
+
+    public function addSavePostHook()
+    {
+        \add_action('save_post', [$this, 'savePostHook'], 10, 2);
+        \add_action('edit_attachment', [$this, 'savePostHook']);
+    }
+
+    public function removeSavePostHook()
+    {
+        \remove_action('save_post', [$this, 'savePostHook'], 10, 2);
+        \remove_action('edit_attachment', [$this, 'savePostHook']);
+    }
+
+    public function savePostHook($post_id, $post = null)
+    {
+        if (\wp_is_post_revision($post_id)) {
+            return;
+        }
+
+        // remove action to prevent infinite loop
+        $this->removeSavePostHook();
+
+        // turn off cache
+        $original_state = config()->cache->enabled ?? false;
+        config()->cache->enabled = false;
+
+        // in case it's attachment, it misses the post object
+        if (!$post) {
+            $post = Cast::post($post_id);
+        }
+
+        // clear cache
+        Cache::forget($post->post_type);
+        Cache::forget('bond/posts');
+        Cache::forget('global');
+
+        // do action
+        $post = Cast::post($post);
+        \do_action('Bond/save_post', $post);
+        \do_action('Bond/save_post/' . $post->post_type, $post);
+
+        // TODO maybe consider the delete_post hook
+        // OR a more specific usage Bond/post_publish Bond/post_draft ?
+
+        // TODO review these hooks naming, "save" it not exactly right
+        // could be updated, for when it's updated
+        // inserted or created, when created the first time
+        // deleted, when deleted
+
+        // turn on posts cache
+        config()->cache->enabled = $original_state;
+
+        // re-add action
+        $this->addSavePostHook();
+    }
+
+
+    // Save Terms Hook
+
+    public function addSaveTermHook()
+    {
+        \add_action('edited_term', [$this, 'saveTermHook'], 10, 3);
+    }
+    public function removeSaveTermHook()
+    {
+        \remove_action('edited_term', [$this, 'saveTermHook'], 10, 3);
+    }
+
+    public function saveTermHook($term_id, $tt_id, $taxonomy)
+    {
+        // remove action to prevent infinite loop
+        $this->removeSaveTermHook();
+
+        // turn off cache
+        $original_state = config()->cache->enabled ?? false;
+        config()->cache->enabled = false;
+
+        // clear cache
+        Cache::forget($taxonomy);
+        Cache::forget('bond/terms');
+        Cache::forget('global');
+
+        // do action
+        $term = Cast::term($term_id);
+        \do_action('Bond/save_term', $term);
+        \do_action('Bond/save_term/' . $taxonomy, $term);
+
+        // TODO save_term doesn't get the delete right?
+
+        // turn on posts cache
+        config()->cache->enabled = $original_state;
+
+        // re-add action
+        $this->addSaveTermHook();
+    }
+
+
+
+    // Save Users Hook
+
+    public function addSaveUserHook()
+    {
+        \add_action('profile_update', [$this, 'saveUserHook']);
+        \add_action('user_register', [$this, 'saveUserHook']);
+        \add_action('deleted_user', [$this, 'deletedUserHook']);
+    }
+
+    public function removeSaveUserHook()
+    {
+        \remove_action('profile_update', [$this, 'saveUserHook']);
+        \remove_action('user_register', [$this, 'saveUserHook']);
+        \remove_action('deleted_user', [$this, 'deletedUserHook']);
+    }
+
+    public function saveUserHook($user_id)
+    {
+        // remove action to prevent infinite loop
+        $this->removeSaveUserHook();
+
+        // turn off cache
+        $original_state = config()->cache->enabled ?? false;
+        config()->cache->enabled = false;
+
+        // clear cache
+        Cache::forget('global');
+
+        // do action
+        $user = Cast::user($user_id);
+        \do_action('Bond/save_user', $user);
+        \do_action('Bond/save_user/' . $user->role, $user);
+
+        // turn on posts cache
+        config()->cache->enabled = $original_state;
+
+        // re-add action
+        $this->addSaveUserHook();
+    }
+
+    public function deletedUserHook($user_id)
+    {
+        // clear cache
+        Cache::forget('global');
+
+        // do action
+        \do_action('Bond/deleted_user', $user_id);
+
+        // NOTE, this hook is correct to send only the ID, as it is already deleted from database
+        // MAYBE offer the "delete" where it's emits just before deleting
     }
 }

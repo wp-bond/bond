@@ -114,10 +114,6 @@ class Config extends Fluent
             // date_default_timezone_set($this->app->timezone);
         }
 
-        // Save post/terms hook
-        Bond::addSavePostHook();
-        Bond::addSaveTermHook();
-
         if ($this->app->map_links) {
             Bond::mapLinks();
         }
