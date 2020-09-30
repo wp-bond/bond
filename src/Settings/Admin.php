@@ -364,16 +364,25 @@ class Admin
 
     public static function hideTitle($post_types)
     {
-        if (empty($post_types)) {
+        if (!Wp::isAdminWithTheme() || empty($post_types)) {
             return;
         }
 
+        $post_types = (array) $post_types;
+
         \add_action('acf/input/admin_head', function () use ($post_types) {
             global $current_screen;
-            // dd($current_screen->id);
+            // dd($current_screen);
 
-            if (is_array($post_types) && !in_array($current_screen->id, $post_types)) {
+            if (!in_array($current_screen->id, $post_types)) {
                 return;
+            }
+
+            if ($current_screen->id === 'page') {
+                global $post;
+                if ((int)$post->ID === (int)get_option('page_on_front')) {
+                    return;
+                }
             }
 
             ?>
