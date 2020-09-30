@@ -121,10 +121,6 @@ class Config extends Fluent
         if ($this->app->map_links) {
             Bond::mapLinks();
         }
-        // TODO will change name
-        if ($this->app->set_multilanguage_titles_and_slugs) {
-            Bond::ensureTitlesAndSlugs($this->app->set_multilanguage_titles_and_slugs);
-        }
     }
 
     protected function cacheSettings()
@@ -196,13 +192,6 @@ class Config extends Fluent
         }
         if ($this->admin->hide_posts) {
             Admin::hidePosts();
-        }
-
-        // actions that can run only on backend
-        if (\is_admin()) {
-            if ($this->admin->hide_title) {
-                Admin::hideTitle($this->admin->hide_title);
-            }
         }
     }
 
