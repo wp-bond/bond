@@ -24,4 +24,22 @@ class FlexibleContent extends Field
         $this->layouts[] = $field;
         return $this;
     }
+
+    public function buttonLabel(string $label): self
+    {
+        $this->button_label = $label;
+        return $this;
+    }
+
+    public function min(int $min): self
+    {
+        $this->min = $min;
+        return $this;
+    }
+
+    public function max(int $max): self
+    {
+        $this->max = $max;
+        return $this;
+    }
 }
