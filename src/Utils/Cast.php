@@ -215,7 +215,7 @@ class Cast
         }
 
         //
-        if (config('cache.posts')) {
+        if (config('cache.enabled')) {
 
             // 1
             if (is_numeric($post)) {
@@ -224,7 +224,7 @@ class Cast
 
                 $post = Cache::php(
                     'bond/posts/' . $id,
-                    config('cache.posts_ttl') ?? 60 * 10,
+                    config('cache.ttl') ?? 60 * 10,
 
                     function () use ($id) {
 
@@ -255,7 +255,7 @@ class Cast
 
                 return Cache::php(
                     'bond/posts/' . $post_type . '/' . $slug,
-                    config('cache.posts_ttl') ?? 60 * 10,
+                    config('cache.ttl') ?? 60 * 10,
 
                     function () use ($slug, $post_type) {
 
@@ -288,7 +288,7 @@ class Cast
 
                 $post = Cache::php(
                     'bond/posts/' . $post->ID,
-                    config('cache.posts_ttl') ?? 60 * 10,
+                    config('cache.ttl') ?? 60 * 10,
 
                     function () use ($post) {
 

@@ -20,7 +20,7 @@ class Term extends Fluent
 
     public function __construct($values = null, bool $skip_cache = false)
     {
-        if (!$skip_cache && config('cache.terms')) {
+        if (!$skip_cache && config('cache.enabled')) {
             $this->initFromCache($values);
         } else {
             $this->init($values);
@@ -35,7 +35,7 @@ class Term extends Fluent
 
             $cached = $this->add(Cache::json(
                 'bond/terms/' . $id,
-                config('cache.terms_ttl') ?? 60 * 10,
+                config('cache.ttl') ?? 60 * 10,
 
                 function () use ($values, &$has_initted) {
                     $this->init($values);
