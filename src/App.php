@@ -5,6 +5,7 @@ namespace Bond;
 use Bond\Services\Translation;
 use Bond\Utils\Cache;
 use Bond\Utils\Cast;
+use Bond\Utils\Link;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Mobile_Detect;
@@ -101,6 +102,9 @@ class App extends Container
         $this->addSavePostHook();
         $this->addSaveTermHook();
         $this->addSaveUserHook();
+
+        // Map Links
+        $this->mapLinks();
 
         // Calls the boot/bootAdmin method on all classes at the App folder
         $this->bootApp();
@@ -306,6 +310,41 @@ class App extends Container
         // we consider all others as Desktop
         $this->is_desktop = !$this->is_mobile && !$this->is_tablet;
     }
+
+
+
+
+    // Link mapping
+
+    public function mapLinks()
+    {
+        // posts
+        $fn = function ($wp_link, $post) {
+            return ($link = Link::post($post))
+                ? Link::url($link)
+                : $wp_link;
+        };
+        \add_filter('post_type_link', $fn, 10, 2);
+        \add_filter('page_link', $fn, 10, 2);
+
+        // posts archives
+        \add_filter('post_type_archive_link', function ($wp_link, $post_type) {
+            return ($link = Link::postType($post_type))
+                ? Link::url($link)
+                : $wp_link;
+        }, 10, 2);
+
+        // terms
+        \add_filter('term_link', function ($wp_link, $term) {
+            return ($link = Link::term($term))
+                ? Link::url($link)
+                : $wp_link;
+        }, 10, 2);
+
+        // there are no terms archive links in WP
+        // no need to filter
+    }
+
 
 
 

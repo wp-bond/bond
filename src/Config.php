@@ -4,7 +4,6 @@ namespace Bond;
 
 use Bond\Settings\Admin;
 use Bond\Settings\Api;
-use Bond\Settings\Bond;
 use Bond\Settings\Html;
 use Bond\Settings\Languages;
 use Bond\Settings\Wp;
@@ -112,10 +111,6 @@ class Config extends Fluent
             // may just remove, but will need doc to let users know
 
             // date_default_timezone_set($this->app->timezone);
-        }
-
-        if ($this->app->map_links) {
-            Bond::mapLinks();
         }
     }
 
