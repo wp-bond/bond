@@ -40,6 +40,15 @@ class FluentList implements
         array_splice($this->items, $index, 0, [Cast::fluent($item)]);
     }
 
+    public function addMany($items, $index = -1)
+    {
+        $all = [];
+        foreach ($items as $item) {
+            $all[] = Cast::fluent($item);
+        }
+        array_splice($this->items, $index, 0, $all);
+    }
+
     public function values($for = ''): array
     {
         $values = [];
