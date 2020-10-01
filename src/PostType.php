@@ -6,12 +6,16 @@ use Bond\Utils\Cache;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use Bond\Utils\Query;
+use Bond\Utils\Register;
 use Bond\Utils\Str;
 
 abstract class PostType
 {
     public static string $post_type;
     public static array $taxonomies = [];
+    public static string $name;
+    public static string $singular_name;
+    public static array $register_options = [];
 
     // we may elect some more props here
 
@@ -21,6 +25,38 @@ abstract class PostType
         return Link::forPostTypes(static::$post_type, $language_code);
     }
 
+    public static function register()
+    {
+        if (!isset(static::$post_type)) {
+            return;
+        }
+        if (in_array(static::$post_type, [
+            'post',
+            'page',
+            'attachment',
+        ])) {
+            return;
+        }
+
+        // auto set names
+        // we won't handle plural, but at least helps
+        if (!isset(static::$name)) {
+            static::$name = Str::title((static::$post_type), true);
+        }
+        if (!isset(static::$singular_name)) {
+            static::$singular_name = Str::title((static::$post_type), true);
+        }
+
+        // register post type
+        Register::postType(
+            static::$post_type,
+            array_merge([
+                'name' => static::$name,
+                'singular_name' => static::$singular_name,
+                'taxonomies' => static::$taxonomies,
+            ], static::$register_options)
+        );
+    }
 
     public static function addToView()
     {
@@ -60,7 +96,9 @@ abstract class PostType
 
     public static function name(bool $singular = false): string
     {
-        return Query::postTypeName(static::$post_type, $singular);
+        return $singular
+            ? static::$singular_name ?? Query::postTypeName(static::$post_type, true)
+            : static::$name ?? Query::postTypeName(static::$post_type);
     }
 
     public static function count()

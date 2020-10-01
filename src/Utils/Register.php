@@ -2,6 +2,8 @@
 
 namespace Bond\Utils;
 
+// https://developer.wordpress.org/reference/functions/register_post_type/#menu_position
+
 class Register
 {
 
@@ -29,7 +31,7 @@ class Register
         $base_args = [
             'public' => true,
             'menu_position' => null,
-            'menu_icon' => 'dashicons-images-alt2',
+            'menu_icon' => '',
             'supports' => [
                 'title',
                 // 'editor',
@@ -39,6 +41,7 @@ class Register
                 // 'custom-fields',
                 'revisions',
                 // 'page-attributes',
+                // 'post-formats',
             ],
             'taxonomies' => [],
             'has_archive' => true,
@@ -47,6 +50,36 @@ class Register
             'rewrite' => false,
         ];
         $params = array_merge($base_args, $params);
+
+        // auto labels
+        if (!isset($params['labels']) && isset($params['name']) && isset($params['singular_name'])) {
+
+            $name = $params['name'];
+            $singular_name = $params['singular_name'];
+            $lower = Str::lower($singular_name);
+            $x = 'register';
+
+            $params['labels'] = [
+                'name' => tx($name, $x),
+                'singular_name' => tx($singular_name, $x),
+                'add_new' => tx('Add', $x)
+                    . ' ' . tx($lower, $x),
+                'add_new_item' => tx('Add new', $x)
+                    . ' ' . tx($lower, $x),
+                'edit_item' => tx('Edit', $x)
+                    . ' ' . tx($lower, $x),
+                'new_item' => tx('New', $x)
+                    . ' ' . tx($lower, $x),
+                'view_item' => tx('View', $x)
+                    . ' ' . tx($lower, $x),
+                'search_items' => tx('Search', $x)
+                    . ' ' . tx($lower, $x),
+                'not_found' => tx('No ' . $lower, $x)
+                    . ' ' . tx('found', $x),
+                'not_found_in_trash' => tx('No ' . $lower, $x)
+                    . ' ' . t('found in trash', $x),
+            ];
+        }
 
         \add_action('init', function () use ($post_type, $params) {
             \register_post_type($post_type, $params);

@@ -379,8 +379,14 @@ class Str
     }
 
 
-    public static function title($value)
+    public static function title($string, bool $remove_dashes = false): string
     {
-        return mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
+        $string = (string) $string;
+
+        if ($remove_dashes) {
+            $string = str_replace(['-', '_'], ' ', $string);
+        }
+
+        return mb_convert_case($string, MB_CASE_TITLE, 'UTF-8');
     }
 }

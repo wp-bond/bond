@@ -142,12 +142,16 @@ class App extends Container
             }
 
             // add to View
-            if (
-                is_subclass_of($classname, PostType::class)
-                && method_exists($classname, 'addToView')
-            ) {
-                call_user_func($classname . '::addToView');
+            if (is_subclass_of($classname, PostType::class)) {
+                if (method_exists($classname, 'addToView')) {
+                    call_user_func($classname . '::addToView');
+                }
+                if (method_exists($classname, 'register')) {
+                    call_user_func($classname . '::register');
+                }
             }
+
+            // TODO maybe require a Bootable interface too
 
             // call the register static method
             if (method_exists($classname, 'boot')) {
