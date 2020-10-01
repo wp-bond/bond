@@ -377,7 +377,7 @@ class App extends Container
 
         // in case it's attachment, it misses the post object
         if (!$post) {
-            $post = Cast::post($post_id);
+            $post = Cast::wpPost($post_id);
         }
 
         // clear cache
@@ -385,10 +385,17 @@ class App extends Container
         Cache::forget('bond/posts');
         Cache::forget('global');
 
-        // do action
-        $post = Cast::post($post);
-        \do_action('Bond/save_post', $post);
-        \do_action('Bond/save_post/' . $post->post_type, $post);
+
+        // Translate before
+        \do_action('Bond/translate_post', $post_id);
+
+        // Now emit actions
+        if (\has_action('Bond/save_post')) {
+            \do_action('Bond/save_post', Cast::post($post));
+        }
+        if (\has_action('Bond/save_post/' . $post->post_type)) {
+            \do_action('Bond/save_post/' . $post->post_type, Cast::post($post));
+        }
 
         // TODO maybe consider the delete_post hook
         // OR a more specific usage Bond/post_publish Bond/post_draft ?
@@ -432,9 +439,12 @@ class App extends Container
         Cache::forget('global');
 
         // do action
-        $term = Cast::term($term_id);
-        \do_action('Bond/save_term', $term);
-        \do_action('Bond/save_term/' . $taxonomy, $term);
+        if (\has_action('Bond/save_term')) {
+            \do_action('Bond/save_term', Cast::term($term_id));
+        }
+        if (\has_action('Bond/save_term/' . $taxonomy)) {
+            \do_action('Bond/save_term/' . $taxonomy, Cast::term($term_id));
+        }
 
         // TODO save_term doesn't get the delete right?
 
@@ -476,9 +486,13 @@ class App extends Container
         Cache::forget('global');
 
         // do action
+        if (\has_action('Bond/save_user')) {
+            \do_action('Bond/save_user', Cast::user($user_id));
+        }
         $user = Cast::user($user_id);
-        \do_action('Bond/save_user', $user);
-        \do_action('Bond/save_user/' . $user->role, $user);
+        if (\has_action('Bond/save_user/' . $user->role)) {
+            \do_action('Bond/save_user/' . $user->role, $user);
+        }
 
         // turn on posts cache
         config()->cache->enabled = $original_state;

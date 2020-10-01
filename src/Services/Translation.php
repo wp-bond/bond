@@ -3,6 +3,8 @@
 namespace Bond\Services;
 
 use Bond\Settings\Languages;
+use Bond\Utils\Cast;
+use Bond\Utils\Query;
 use Bond\Utils\Str;
 
 // AWS Translate
@@ -21,6 +23,7 @@ class Translation
 
     public function __construct()
     {
+        $this->addTranslatePostHook();
     }
 
     public function setService(string $service)
@@ -262,40 +265,41 @@ class Translation
 
 
 
-    // WordPress Helpers
-    public function translateOnSavePost($post_types)
+
+    // Translate Posts Hook
+
+    public function addTranslatePostHook()
     {
-        // runs on priority 9, before the default priority 10
-        // so it's already translated if needed
-
-        if (!app()->hasAcf()) {
-            return;
-        }
-
-        if ($post_types === true) {
-            \add_action(
-                'Bond/save_post',
-                [$this, 'translateAllFields'],
-                9
-            );
-        } elseif (is_array($post_types)) {
-            foreach ($post_types as $post_type) {
-                \add_action(
-                    'Bond/save_post/' . $post_type,
-                    [$this, 'translateAllFields'],
-                    9
-                );
-            }
-        }
+        \add_action('Bond/translate_post', [$this, 'translatePostHook'], 1);
     }
 
-    public function translateAllFields($post)
+    public function removeTranslatePostHook()
+    {
+        \remove_action('Bond/translate_post', [$this, 'translatePostHook'], 1);
+    }
+
+    public function translatePostHook(int $post_id)
     {
         if (!Languages::isMultilanguage()) {
             return;
         }
 
-        $fields = \get_fields($post->ID);
+        // Translate all fields
+        // auto activated, later can allow config
+        $this->translateAllFields($post_id);
+
+        // Mulilanguage titles and slugs
+        $this->ensureTitleAndSlug($post_id);
+    }
+
+
+    public function translateAllFields(int $post_id)
+    {
+        if (!$this->hasService() || !app()->hasAcf()) {
+            return;
+        }
+
+        $fields = \get_fields($post_id);
         if (empty($fields)) {
             return;
         }
@@ -309,7 +313,7 @@ class Translation
         // dd($translated, $updated);
 
         foreach ($translated as $name => $value) {
-            \update_field($name, $value, $post->ID);
+            \update_field($name, $value, $post_id);
         }
     }
 
@@ -380,5 +384,200 @@ class Translation
         }
 
         return $translated;
+    }
+
+
+    public function ensureTitleAndSlug(int $post_id)
+    {
+        if (!app()->hasAcf()) {
+            return;
+        }
+
+        $post = Cast::wpPost($post_id);
+        if (!$post) {
+            return;
+        }
+        // not for front page
+        if ($post->post_type === 'page' && \is_front_page()) {
+            return;
+        }
+
+        $codes = Languages::codes();
+
+        // get default language's title
+        $default_code = Languages::getDefault();
+        $default_suffix = Languages::fieldsSuffix($default_code);
+        $default_title = \get_field('title' . $default_suffix, $post->ID);
+
+        // or get the next best match
+        if (empty($default_title)) {
+            foreach ($codes as $code) {
+                if ($code === $default_code) {
+                    continue;
+                }
+
+                $suffix = Languages::fieldsSuffix($code);
+                $title = \get_field('title' . $suffix, $post->ID);
+
+                // if found, we will translate and set the default_title
+                if (!empty($title)) {
+                    $default_title = $this->fromTo($code, $default_code, $title);
+
+                    \update_field(
+                        'title' . $default_suffix,
+                        $default_title,
+                        $post->ID
+                    );
+                    break;
+                }
+            }
+        }
+
+        // no title yet, just skip
+        if (empty($default_title)) {
+            return;
+        }
+
+        // if WP title is different, update it
+        if ($post->post_title !== $default_title) {
+            \wp_update_post([
+                'ID' => $post->ID,
+                'post_title' => $default_title,
+            ]);
+            $post->post_title = $default_title;
+        }
+
+        // we don't allow empty titles
+        foreach ($codes as $code) {
+            if ($code === $default_code) {
+                continue;
+            }
+
+            $suffix = Languages::fieldsSuffix($code);
+            $title = \get_field('title' . $suffix, $post->ID);
+
+            if (empty($title)) {
+                \update_field(
+                    'title' . $suffix,
+                    $this->fromTo($default_code, $code, $default_title) ?: $default_title,
+                    $post->ID
+                );
+            }
+        }
+
+
+        // title is done
+        // now it's time for the slug
+
+        // not published yet, don't need to handle
+        if (empty($post->post_name)) {
+            return;
+        }
+
+        $is_hierarchical = \is_post_type_hierarchical($post->post_type);
+
+        foreach ($codes as $code) {
+            $suffix = Languages::fieldsSuffix($code);
+
+            $slug = \get_field('slug' . $suffix, $post->ID);
+
+            // remove parent pages
+            if (strpos($slug, '/') !== false) {
+                $slug = substr($slug, strrpos($slug, '/') + 1);
+            }
+
+            // get from title if empty
+            if (empty($slug)) {
+                $slug = \get_field('title' . $suffix, $post->ID);
+            }
+
+            // sanitize user input
+            $slug = Str::slug($slug);
+
+
+            // handle
+            if (Languages::isDefault($code)) {
+
+                // define full path if is hierarchical
+                $parent_path = [];
+                if ($is_hierarchical) {
+                    $p = $post;
+
+                    while ($p->post_parent) {
+                        $p = \get_post($p->post_parent);
+                        $parent_path[] = $p->post_name;
+                    }
+                    $parent_path = array_reverse($parent_path);
+
+                    $post_path = implode('/', array_merge($parent_path, [$slug]));
+                } else {
+                    $post_path = $slug;
+                }
+
+                // always update both WP and ACF
+                // WP always needs, as the user can change anytime
+                // ACF needs the first time, or if programatically changed
+                $id = \wp_update_post([
+                    'ID' => $post->ID,
+                    'post_name' => $slug,
+                ]);
+                if ($id) {
+
+                    // sync with the actual WP slug
+                    // the slug above might have changed in some scenarios, like multiple posts with same slug
+                    // so we fetch again
+                    $slug = Query::slug($id);
+
+                    // join if hierarchical
+                    if ($is_hierarchical) {
+                        $post_path = implode('/', array_merge($parent_path, [$slug]));
+                    } else {
+                        $post_path = $slug;
+                    }
+                }
+                \update_field('slug' . $suffix, $post_path, $post->ID);
+            } else {
+
+
+                // prepend parent path
+                // only one level down, because the parent already has the translated slug
+                if ($is_hierarchical) {
+                    $parent_path = [];
+
+                    if ($post->post_parent) {
+                        $p = Cast::post($post->post_parent);
+                        if ($p) {
+                            $parent_path[] = $p->slug($code);
+                        }
+                    }
+
+                    $post_path_intent = implode('/', array_merge($parent_path, [$slug]));
+                } else {
+                    $post_path_intent = $slug;
+                }
+
+                $post_path = $post_path_intent;
+
+                // search for posts with same slug, and increment until necessary
+                $i = 1;
+                while (Query::wpPostBySlug(
+                    $post_path,
+                    $post->post_type,
+                    $code,
+                    [
+                        'post__not_in' => [$post->ID],
+                    ]
+                )) {
+                    $post_path = $post_path_intent . '-' . (++$i);
+                }
+
+                // done, update ACF field
+                \update_field(
+                    'slug' . $suffix,
+                    $post_path,
+                    $post->ID
+                );
+            }
+        }
     }
 }

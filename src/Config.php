@@ -92,10 +92,6 @@ class Config extends Fluent
         if ($this->translation->service) {
             $translation->setService($this->translation->service);
         }
-
-        if (isset($this->translation->translate_on_save)) {
-            $translation->translateOnSavePost($this->translation->translate_on_save);
-        }
     }
 
     protected function appSettings()
