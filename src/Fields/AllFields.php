@@ -99,6 +99,12 @@ trait AllFields
         return $this->_addField(new Message($name));
     }
 
+    public function rangeField($name): Range
+    {
+        return $this->_addField(new Range($name));
+    }
+
+
     // Choice
 
     public function booleanField($name): Boolean
@@ -109,6 +115,11 @@ trait AllFields
     public function radioField($name): Radio
     {
         return $this->_addField(new Radio($name));
+    }
+
+    public function selectField($name): Select
+    {
+        return $this->_addField(new Select($name));
     }
 
 
