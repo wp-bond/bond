@@ -156,7 +156,7 @@ class Languages
         unset($l10n[app()->id()]);
 
         // load WP gettext, if not handling translations automatically
-        if (!app('translation')->hasService()) {
+        if (!app()->get('translation')->hasService()) {
             \load_theme_textdomain(app()->id(), app()->languagesPath());
         }
     }

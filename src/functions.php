@@ -7,16 +7,11 @@ use Bond\View;
 
 if (!function_exists('app')) {
     /**
-     * Get the instance from the container, or the container itself.
-     *
-     * @param  string|null  $id Identifier of the entry to look for.
-     * @return mixed|\Bond\App
+     * Get the main App container.
      */
-    function app($id = null)
+    function app(): App
     {
-        return is_null($id)
-            ? App::getInstance()
-            : App::getInstance()->get($id);
+        return App::getInstance();
     }
 }
 
@@ -24,22 +19,22 @@ if (!function_exists('config')) {
     function config(?string $key = null)
     {
         return $key
-            ? app('config')->{$key}
-            : app('config');
+            ? app()->get('config')->{$key}
+            : app()->get('config');
     }
 }
 
 if (!function_exists('view')) {
     function view(): View
     {
-        return app('view');
+        return app()->get('view');
     }
 }
 
 if (!function_exists('meta')) {
     function meta(): Meta
     {
-        return app('meta');
+        return app()->get('meta');
     }
 }
 
@@ -57,7 +52,7 @@ if (!function_exists('t')) {
 
     function t($string, string $language_code = null): string
     {
-        return app('translation')
+        return app()->get('translation')
             ->get($string, $language_code);
     }
 }
@@ -66,7 +61,7 @@ if (!function_exists('tx')) {
 
     function tx($string, string $context, string $language_code = null): string
     {
-        return app('translation')
+        return app()->get('translation')
             ->get($string, $language_code, $context);
     }
 }

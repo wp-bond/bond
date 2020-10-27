@@ -11,14 +11,13 @@ use League\Container\ReflectionContainer;
 use Mobile_Detect;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use Psr\Container\ContainerInterface;
 
 class App extends Container
 {
     /**
      * The current App
      */
-    protected static ?ContainerInterface $instance;
+    protected static App $instance;
 
     protected string $theme_id;
     protected string $base_path;
@@ -43,14 +42,14 @@ class App extends Container
         $this->registerBaseBindings();
     }
 
-    public static function getInstance()
+    public static function getInstance(): self
     {
         return static::$instance ??= new static;
     }
 
-    public static function setInstance(ContainerInterface $app = null)
+    public static function setInstance(App $app)
     {
-        return static::$instance = $app;
+        static::$instance = $app;
     }
 
     protected function registerBaseBindings()
