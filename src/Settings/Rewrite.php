@@ -79,13 +79,12 @@ class Rewrite
             }
         }
 
-        // not needed anymore
         // All other pages
-        // \add_rewrite_rule(
-        //     '(.?.+?)/?$',
-        //     'index.php?pagename=$matches[1]',
-        //     'bottom'
-        // );
+        \add_rewrite_rule(
+            '(.?.+?)/?$',
+            'index.php?pagename=$matches[1]',
+            'bottom'
+        );
     }
 
 
