@@ -9,7 +9,7 @@ use voku\helper\ASCII;
  *
  * For more advanced use cases look for illuminate/support.
  *
- * Some methods here are adapted from Laravel's Illuminate\Support\Str class, credit goes to Laravel LLC / Taylor Otwell. Note: Don't rely this class to be equivalent to Laravel Str, some logic are intentionally different, for example snake case and slug.
+ * Some methods here are adapted from Laravel's Illuminate\Support\Str class, credit goes to Laravel LLC / Taylor Otwell, MIT licence. Note: Don't rely this class to be equivalent to Laravel Str, some logic are intentionally different, for example snake case and slug.
  */
 class Str
 {

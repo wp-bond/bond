@@ -24,6 +24,12 @@ class Translation
     public function __construct()
     {
         $this->addTranslatePostHook();
+        // TODO add options pages too
+
+        // add_action('acf/save_post', function ($post_id) {
+        //     if ($post_id === 'options') {
+        //     }
+        // });
     }
 
     public function setService(string $service)
@@ -299,6 +305,8 @@ class Translation
             return;
         }
 
+        // TODO it's not working well for file fields with url inside Flex fields
+        // could use get_field_objects($post_id, false) to reconstruct the keys, with the values not formated
         $fields = \get_fields($post_id);
         if (empty($fields)) {
             return;

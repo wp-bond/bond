@@ -11,6 +11,14 @@ use RecursiveIteratorIterator;
 
 // TODO may very soon move into Services with PSR-16
 
+// ver o problema que o filemtime tem um cache de 120segundos
+// e é praticamente impossivel exigir que os usuários mexam no INI
+
+// mas se limpar o cache no Put e no Forget, não teria problema nenhum, o filemtime pode ser respeitado
+
+// https://www.php.net/manual/en/function.clearstatcache.php
+
+
 // implement a isEnabled() method
 class Cache
 {
