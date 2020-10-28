@@ -375,16 +375,25 @@ class Translation
                         if ($c === $code) {
                             continue;
                         }
+
+                        // key
                         $lang_key = $unlocalized_key . Languages::fieldsSuffix($c);
 
-                        if (!empty($target[$lang_key])) {
-                            $t = $this->fromTo($c, $code, $target[$lang_key]);
+                        // value
+                        $v = $target[$lang_key] ?? '';
+                        if (empty($v) || !is_string($v)) {
+                            continue;
+                        }
+                        if (Str::isEmail($v) || Str::isUrl($v)) {
+                            continue;
+                        }
 
-                            if ($t) {
-                                $translated[$key] = $t;
-                                $changed++;
-                                break 2;
-                            }
+                        // translated
+                        $t = $this->fromTo($c, $code, $v);
+                        if ($t) {
+                            $translated[$key] = $t;
+                            $changed++;
+                            break 2;
                         }
                     }
                 }
