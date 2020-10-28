@@ -8,6 +8,11 @@ class Rewrite
 {
     public static function reset()
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         \add_filter('post_rewrite_rules', '__return_empty_array');
         \add_filter('date_rewrite_rules', '__return_empty_array');
         \add_filter('root_rewrite_rules', '__return_empty_array');
@@ -52,6 +57,11 @@ class Rewrite
 
     public static function pages()
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         // Multilanguage Pages
         if (Languages::isMultilanguage()) {
 
@@ -94,6 +104,11 @@ class Rewrite
         bool $paged = false,
         array $extra_params = []
     ) {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         if (!$path) {
             $path = Link::search();
         }
@@ -137,6 +152,11 @@ class Rewrite
 
     public static function rss()
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         foreach (static::languagePrefixes() as $code => $prefix) {
             \add_rewrite_rule(
                 $prefix . 'feed/?$',
@@ -154,7 +174,6 @@ class Rewrite
         bool $year = false,
         array $extra_params = []
     ) {
-
         static::archive(
             $post_type,
             $path,
@@ -162,7 +181,6 @@ class Rewrite
             $year,
             $extra_params
         );
-
         static::single(
             $post_type,
             $path,
@@ -178,6 +196,10 @@ class Rewrite
         bool $year = false,
         array $extra_params = []
     ) {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
 
         if (empty($path)) {
             $path = [$post_type];
@@ -242,6 +264,10 @@ class Rewrite
         ?array $path = null,
         array $extra_params = []
     ) {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
 
         if (is_null($path)) {
             $path = [$post_type];
@@ -279,6 +305,10 @@ class Rewrite
         array $path = [],
         array $params = []
     ) {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
 
         foreach (static::languagePrefixes() as $code => $prefix) {
 
@@ -306,6 +336,10 @@ class Rewrite
         $path = null,
         array $extra_params = []
     ) {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
 
         if (!is_array($page)) {
             $page = explode('/', trim($page, '/'));

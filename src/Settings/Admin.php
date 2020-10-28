@@ -14,24 +14,26 @@ class Admin
     public static function enableTheming()
     {
         static::addLoginCss();
-
-        if (\is_admin()) {
-            static::addAdminCss();
-            static::addEditorCss();
-            static::disableAdminColorPicker();
-            static::removeUpdateNag();
-            static::addFooterCredits();
-            static::manageArchiveColumns();
-            static::replaceDashboard();
-            if (app()->isProduction() || !\current_user_can('manage_options')) {
-                static::removeAdministrationMenus();
-            }
+        static::addAdminCss();
+        static::addEditorCss();
+        static::disableAdminColorPicker();
+        static::removeUpdateNag();
+        static::addFooterCredits();
+        static::manageArchiveColumns();
+        static::replaceDashboard();
+        if (app()->isProduction() || !\current_user_can('manage_options')) {
+            static::removeAdministrationMenus();
         }
     }
 
 
     public static function setEditorImageSizes(array $sizes)
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         // required for media upload ui
         if (!isset($sizes['thumbnail'])) {
             $sizes['thumbnail'] = 'Thumbnail';
@@ -46,6 +48,11 @@ class Admin
 
     public static function removeUpdateNag()
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         if (app()->isProduction() || !\current_user_can('update_core')) {
             \add_action('admin_head', function () {
                 \remove_action('admin_notices', 'update_nag', 3);
@@ -55,6 +62,11 @@ class Admin
 
     public static function addEditorCss()
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         \add_action('admin_enqueue_scripts', function () {
             // global $current_screen;
             // echo $current_screen->id;exit;
@@ -78,6 +90,11 @@ class Admin
 
     public static function addAdminCss()
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         \add_action('admin_head', function () {
             echo '<link rel="stylesheet" href="' . mix('css/admin.css') . '">';
         });
@@ -141,6 +158,11 @@ class Admin
 
     public static function addFooterCredits()
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         \add_filter('admin_footer_text', function () {
             echo config('admin.footer_text');
         });
@@ -153,6 +175,11 @@ class Admin
 
     public static function manageArchiveColumns()
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         // Posts
         \add_action(
             'manage_pages_custom_column',
@@ -199,6 +226,7 @@ class Admin
 
     public static function setColumns(string $post_type, array $columns)
     {
+        // only needed on admin
         if (!\is_admin()) {
             return;
         }
@@ -219,6 +247,11 @@ class Admin
 
     public static function addColumnHandler($name, callable $handler)
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         self::$archive_columns[$name] = $handler;
     }
 
@@ -237,6 +270,7 @@ class Admin
 
     public static function setTaxonomyColumns(string $taxonomy, array $columns)
     {
+        // only needed on admin
         if (!\is_admin()) {
             return;
         }
@@ -249,8 +283,13 @@ class Admin
         );
     }
 
-    public static function addTaxonomyArchiveColumn($name, callable $handler)
+    public static function addTaxonomyColumnHandler($name, callable $handler)
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         self::$tax_archive_columns[$name] = $handler;
     }
 
@@ -269,6 +308,7 @@ class Admin
 
     public static function setUsersColumns(array $columns)
     {
+        // only needed on admin
         if (!\is_admin()) {
             return;
         }
@@ -283,6 +323,11 @@ class Admin
 
     public static function addUsersColumnHandler($name, callable $handler)
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         self::$users_archive_columns[$name] = $handler;
     }
 
@@ -304,6 +349,11 @@ class Admin
 
     public static function replaceDashboard()
     {
+        // only needed on admin
+        if (!\is_admin()) {
+            return;
+        }
+
         \add_action('wp_loaded', function () {
             if (isset($_GET['dashboard-html'])) {
                 view()->template('dashboard');
