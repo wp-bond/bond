@@ -389,4 +389,23 @@ class Str
 
         return mb_convert_case($string, MB_CASE_TITLE, 'UTF-8');
     }
+
+    public static function isUrl($string): bool
+    {
+        if (empty($string)) {
+            return false;
+        }
+        $string = (string) $string;
+
+        return filter_var($string, FILTER_VALIDATE_URL)
+            && checkdnsrr($string, 'A');
+    }
+
+    public static function isEmail($string): bool
+    {
+        if (empty($string)) {
+            return false;
+        }
+        return filter_var((string) $string, FILTER_VALIDATE_EMAIL);
+    }
 }
