@@ -1,11 +1,5 @@
 <?php
 
-//
-// IDEA
-//
-// Meta goes to ? App or Services [OK]
-// View goes to App
-
 use Bond\App\App;
 use Bond\App\View;
 use Bond\Services\Meta;
