@@ -60,6 +60,9 @@ class Admin
         }
     }
 
+
+    // TODO, allow to customize all these Vite assets via config
+
     public static function addEditorCss()
     {
         // only needed on admin
@@ -71,16 +74,21 @@ class Admin
             // global $current_screen;
             // echo $current_screen->id;exit;
 
-            // add_editor_style(trim(mix('/css/editor.css', false), '/')); // WP does not work yet with URL parameters
-
-            \add_editor_style('css/editor.css');
+            \add_editor_style(
+                vite()
+                    ->outDir('dist-wp-editor')
+                    ->getCssUrl(true)
+            );
         });
     }
 
     public static function addLoginCss()
     {
         \add_action('login_head', function () {
-            echo '<link rel="stylesheet" href="' . mix('css/admin.css') . '">';
+            echo vite()
+                ->port(3001)
+                ->entry('vite/wp/admin.js')
+                ->outDir('dist-wp-admin');
         });
 
         \add_filter('login_headerurl', function () {
@@ -96,7 +104,10 @@ class Admin
         }
 
         \add_action('admin_head', function () {
-            echo '<link rel="stylesheet" href="' . mix('css/admin.css') . '">';
+            echo vite()
+                ->port(3001)
+                ->entry('vite/wp/admin.js')
+                ->outDir('dist-wp-admin');
         });
     }
 
