@@ -1,10 +1,16 @@
 <?php
 
-use Bond\App;
-use Bond\Meta;
+//
+// IDEA
+//
+// Meta goes to ? App or Services [OK]
+// View goes to App
+
+use Bond\App\App;
+use Bond\App\View;
+use Bond\Services\Meta;
 use Bond\Tooling\Vite;
 use Bond\Utils\Str;
-use Bond\View;
 
 if (!function_exists('app')) {
     /**
