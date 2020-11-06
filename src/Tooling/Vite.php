@@ -2,6 +2,8 @@
 
 namespace Bond\Tooling;
 
+use Bond\Utils\File;
+
 /**
  * Usage:
  * echo vite();
@@ -138,12 +140,14 @@ class Vite
 
     protected function manifest(): array
     {
-        return json_decode(file_get_contents(
-            app()->themePath()
-                . '/' . $this->out_dir
-                . '/' . $this->assets_dir
-                . '/manifest.json'
-        ), true);
+        $content = File::get(app()->themePath()
+            . '/' . $this->out_dir
+            . '/' . $this->assets_dir
+            . '/manifest.json');
+
+        return $content
+            ? json_decode($content, true)
+            : [];
     }
 
     // This method is very useful for the local server
