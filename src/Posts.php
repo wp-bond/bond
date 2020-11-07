@@ -45,15 +45,15 @@ class Posts extends FluentList
 
     public function unique(): self
     {
-        $ids = $this->ids();
+        $unique = [];
 
-        for ($i = 0; $i < count($this->items); $i++) {
-            if (in_array($this->items[$i]->ID, $ids)) {
-                unset($this->items[$i]);
+        foreach ($this->items as $item) {
+            if (!isset($unique[$item->ID])) {
+                $unique[$item->ID] = $item;
             }
         }
 
-        $this->items = array_values($this->items);
+        $this->items = array_values($unique);
         return $this;
     }
 }
