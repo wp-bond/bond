@@ -39,9 +39,6 @@ class Translation
 
     public function hasService(): bool
     {
-        if (!isset($this->service)) {
-            $this->service = config('translation.service') ?? '';
-        }
         return $this->service === 'google' || $this->service === 'aws';
     }
 
@@ -254,6 +251,7 @@ class Translation
     protected function awsClient()
     {
         // TODO use Config to pass these settings
+        // don't call inside here
 
         static $client = null;
         if (!$client) {
@@ -273,6 +271,7 @@ class Translation
 
 
     // Translate Posts Hook
+    // TODO maybe should go into a specific class, App\Multilanguage
 
     public function addTranslatePostHook()
     {
@@ -404,6 +403,19 @@ class Translation
     }
 
 
+    protected array $wp_titles = [];
+
+    public function updateWpTitles($post_type = true)
+    {
+        if ($post_type === true) {
+            $this->wp_titles = ['all'];
+        } elseif ($post_type === false) {
+            $this->wp_titles = [];
+        } else {
+            $this->wp_titles[] = $post_type;
+        }
+    }
+
     public function ensureTitleAndSlug(int $post_id)
     {
         if (!app()->hasAcf()) {
@@ -456,7 +468,11 @@ class Translation
         }
 
         // if WP title is different, update it
-        if ($post->post_title !== $default_title) {
+        if (
+            $post->post_title !== $default_title
+            && (in_array('all', $this->wp_titles)
+                || in_array($post->post_type, $this->wp_titles))
+        ) {
             \wp_update_post([
                 'ID' => $post->ID,
                 'post_title' => $default_title,

@@ -92,6 +92,12 @@ class Config extends Fluent
         if ($this->translation->service) {
             $translation->setService($this->translation->service);
         }
+
+        if ($wp_titles = $this->translation->update_wp_titles) {
+            foreach ((array)$wp_titles as $post_type) {
+                $translation->updateWpTitles($post_type);
+            }
+        }
     }
 
     protected function appSettings()
