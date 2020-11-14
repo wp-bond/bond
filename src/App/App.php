@@ -3,6 +3,7 @@
 namespace Bond\App;
 
 use Bond\PostType;
+use Bond\Services\Meta;
 use Bond\Services\Translation;
 use Bond\Utils\Cache;
 use Bond\Utils\Cast;
@@ -90,11 +91,13 @@ class App extends Container
 
         $this->get('config')->load($this->configPath());
 
+
         if (\wp_using_themes()) {
-            // initialize View, registers WP hooks
+
+            // auto initialize View, registers WP hooks
             $this->get('view');
 
-            // initialize Meta, registers WP hooks
+            // auto initialize Meta, registers WP hooks
             $this->get('meta');
         }
 
