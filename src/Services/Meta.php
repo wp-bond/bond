@@ -53,17 +53,15 @@ class Meta
 
         // do not initialize when it is on WP admin
         // nor when programatically loading WP
-        if (!is_admin() && (!defined('WP_USE_THEMES') || \WP_USE_THEMES)) {
+        if (!Wp::isAdminWithTheme()) {
             $this->init();
         }
     }
 
     protected function init()
     {
-        add_action('wp', [$this, 'setDefaults'], 2);
-        add_action('wp_head', [$this, 'printAllTags'], 99);
-
-        $this->cleanupHead();
+        \add_action('wp', [$this, 'setDefaults'], 2);
+        \add_action('wp_head', [$this, 'printAllTags'], 99);
     }
 
     public function separator()
@@ -195,19 +193,6 @@ class Meta
         //implement http://ogp.me/#type_article
     }
 
-    public function cleanupHead()
-    {
-
-        remove_action('wp_head', 'wp_generator');                    // WP version
-        remove_action('wp_head', 'wp_shortlink_wp_head');            // shortlinks
-        remove_action('wp_head', 'adjacent_posts_rel_link_wp_head'); //prev/next urls
-        remove_action('wp_head', 'feed_links_extra', 3);             // links to the extra feeds such as category feeds
-        remove_action('wp_head', 'feed_links', 2);                   // the links to the general feeds: Post and Comment Feed
-        remove_action('wp_head', 'rsd_link');                        // EditURI link
-        remove_action('wp_head', 'wlwmanifest_link');                // windows live writer
-
-        // find more on /wp-includes/default-filters.php
-    }
 
     public function printAllTags()
     {

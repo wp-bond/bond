@@ -59,6 +59,33 @@ class Html
 
 
 
+    public static function cleanupHead()
+    {
+        // WP version
+        \remove_action('wp_head', 'wp_generator');
+
+        // shortlinks
+        \remove_action('wp_head', 'wp_shortlink_wp_head');
+
+        // prev/next urls
+        \remove_action('wp_head', 'adjacent_posts_rel_link_wp_head');
+
+        // links to the extra feeds such as category feeds
+        \remove_action('wp_head', 'feed_links_extra', 3);
+
+        // the links to the general feeds: Post and Comment Feed
+        \remove_action('wp_head', 'feed_links', 2);
+
+        // EditURI link
+        \remove_action('wp_head', 'rsd_link');
+
+        // windows live writer
+        \remove_action('wp_head', 'wlwmanifest_link');
+
+        // find more on /wp-includes/default-filters.php
+    }
+
+
     // public static function removeGalleryShortcode()
     // {
     //     \remove_shortcode('gallery');

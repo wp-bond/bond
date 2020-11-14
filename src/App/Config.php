@@ -196,6 +196,12 @@ class Config extends Fluent
         if ($this->html->enable_rss) {
             Html::enableRss();
         }
+        if ($this->html->reset_body_classes) {
+            Html::resetBodyClasses();
+        }
+        if ($this->html->cleanup_head) {
+            Html::cleanupHead();
+        }
         if ($this->html->disable_emojis) {
             Html::disableEmojis();
         }
@@ -207,9 +213,6 @@ class Config extends Fluent
         }
         if ($this->html->disable_block_library) {
             Html::disableBlockLibrary();
-        }
-        if ($this->html->reset_body_classes) {
-            Html::resetBodyClasses();
         }
         if ($this->html->disable_jetpack_includes) {
             Html::disableJetpackIncludes();
