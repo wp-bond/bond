@@ -71,14 +71,52 @@ class Vite
             . $this->cssTag();
     }
 
-    public function getJsUrl(bool $relative = false): string
+    public function jsUrl(bool $relative = false): string
     {
         return $this->assetUrl($this->entry, $relative);
     }
 
-    public function getCssUrl(bool $relative = false): string
+    public function cssUrl(bool $relative = false): string
     {
         return $this->assetUrl('style.css', $relative);
+    }
+
+    public function assetUrl(string $filename, bool $relative = false)
+    {
+        //we only need the filename
+        $filename = pathinfo($filename, PATHINFO_BASENAME);
+
+        // locate hashed files in production
+        $manifest = $this->manifest();
+
+        return ($relative ? '' : app()->themeDir())
+            . '/' . $this->out_dir
+            . '/' . $this->assets_dir
+            . '/' . ($manifest[$filename] ?? $filename);
+    }
+
+    // Helper to output the script tag
+    protected function jsTag(): string
+    {
+        $url = $this->isDev()
+            ? $this->host() . '/' . $this->entry
+            : $this->jsUrl();
+
+        return '<script type="module" src="'
+            . $url
+            . '"></script>';
+    }
+
+    // Helper to output style tag
+    protected function cssTag(): string
+    {
+        // not needed on dev, it's inject by Vite
+        if ($this->isDev()) {
+            return '';
+        }
+        return '<link rel="stylesheet" href="'
+            . $this->cssUrl()
+            . '">';
     }
 
     protected function isDev(): bool
@@ -98,44 +136,6 @@ class Vite
             return '<script type="module">import "' . $this->host() . '/vite/client"</script>';
         }
         return '';
-    }
-
-    // Helper to output the script tag
-    protected function jsTag(): string
-    {
-        $url = $this->isDev()
-            ? $this->host() . '/' . $this->entry
-            : $this->getJsUrl();
-
-        return '<script type="module" src="'
-            . $url
-            . '"></script>';
-    }
-
-    // Helper to output style tag
-    protected function cssTag(): string
-    {
-        // not needed on dev, it's inject by Vite
-        if ($this->isDev()) {
-            return '';
-        }
-        return '<link rel="stylesheet" href="'
-            . $this->getCssUrl()
-            . '">';
-    }
-
-    protected function assetUrl(string $filename, bool $relative = false)
-    {
-        //we only need the filename
-        $filename = pathinfo($filename, PATHINFO_BASENAME);
-
-        // locate hashed files in production
-        $manifest = $this->manifest();
-
-        return ($relative ? '' : app()->themeDir())
-            . '/' . $this->out_dir
-            . '/' . $this->assets_dir
-            . '/' . ($manifest[$filename] ?? $filename);
     }
 
     protected function manifest(): array
