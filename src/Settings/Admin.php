@@ -77,7 +77,7 @@ class Admin
             \add_editor_style(
                 vite()
                     ->outDir('dist-wp-editor')
-                    ->getCssUrl(true)
+                    ->cssUrl(true)
             );
         });
     }
