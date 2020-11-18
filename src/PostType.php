@@ -113,32 +113,34 @@ abstract class PostType
     }
 
 
-    // idea, but still would need to allow order options
-    // just think of the naming getAll or all
-    // also consider if the caching is disabled
+    public static function all(array $params = []): Posts
+    {
+        $fn = function () use ($params) {
+            $query_args = [
+                'post_type' => static::$post_type,
+                'posts_per_page' => -1,
+                'post_status' => 'publish',
+                'no_found_rows' => true,
+                'update_post_meta_cache' => false,
+                'update_post_term_cache' => false,
+                'orderby' => 'date',
+                'order' => 'DESC',
+                // order as class vars? could help to set the archive columns too
+            ];
+            $query_args = array_merge($query_args, $params);
+            $query = new \WP_Query($query_args);
 
-    // public static function getAll(array $params = [])
-    // {
-    //     return Cache::php(
-    //         static::$post_type . '/all' . (!empty($params) ? '-' . Str::slug($params) : ''),
-    //         -1,
-    //         function () use ($params) {
-    //             $query_args = [
-    //                 'post_type' => static::$post_type,
-    //                 'posts_per_page' => -1,
-    //                 'post_status' => 'publish',
-    //                 'no_found_rows' => true,
-    //                 'update_post_meta_cache' => false,
-    //                 'update_post_term_cache' => false,
-    //                 'orderby' => 'menu_order title',
-    //                 'order' => 'ASC',
-    //                 // order as class vars? could help to set the archive columns too
-    //             ];
-    //             $query_args = array_merge($query_args, $params);
-    //             $query = new \WP_Query($query_args);
+            return Cast::posts($query->posts);
+        };
 
-    //             return Cast::posts($query->posts);
-    //         }
-    //     );
-    // }
+        if (config('cache.enabled')) {
+            $cache_key = static::$post_type
+                . '/all'
+                . (!empty($params) ? '-' . Str::slug($params) : '');
+
+            return Cache::php($cache_key, -1, $fn);
+        }
+
+        return $fn();
+    }
 }
