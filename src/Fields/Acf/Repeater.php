@@ -7,7 +7,7 @@ namespace Bond\Fields\Acf;
  */
 class Repeater extends Field
 {
-    use AllFields;
+    use FieldsTrait;
 
     protected string $type = 'repeater';
     protected array $sub_fields = [];

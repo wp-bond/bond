@@ -7,7 +7,7 @@ namespace Bond\Fields\Acf;
  */
 class Group extends Field
 {
-    use AllFields;
+    use FieldsTrait;
 
     protected string $type = 'group';
     protected array $sub_fields = [];

@@ -9,7 +9,7 @@ namespace Bond\Fields\Acf;
  */
 class Layout extends Field
 {
-    use AllFields;
+    use FieldsTrait;
 
     // protected string $type = 'layout'; // there is no field type
     protected array $sub_fields = [];

@@ -12,7 +12,7 @@ use Bond\Settings\Languages;
 
 class FieldGroup
 {
-    use AllFields;
+    use FieldsTrait;
 
     private $settings;
     private $apply_multilanguage_tabs = false;

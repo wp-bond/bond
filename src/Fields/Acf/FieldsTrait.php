@@ -8,7 +8,7 @@ use Closure;
  *
  * Adds all fields methods
  */
-trait AllFields
+trait FieldsTrait
 {
     // must implement something like this
     // TODO test abstract method here
