@@ -35,7 +35,7 @@ class Field implements ArrayAccess
 
     public function label(string $name): self
     {
-        $this->label = $name;
+        $this->label = tx($name, 'fields');
         return $this;
     }
 

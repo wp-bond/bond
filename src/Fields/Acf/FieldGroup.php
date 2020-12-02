@@ -93,9 +93,9 @@ class FieldGroup
         return $this;
     }
 
-    public function title($title): self
+    public function title(string $title): self
     {
-        $this->settings['title'] = (string) $title;
+        $this->settings['title'] = tx($title, 'fields');
         if (!$this->settings['title']) {
             $this->settings['title'] = '&nbsp;';
         }
