@@ -7,7 +7,7 @@ use Bond\Fields\Acf\Properties\HasReturnFormatFiles;
 /**
  *
  */
-class File extends Field
+class FileField extends Field
 {
     protected string $type = 'file';
     public string $mime_types = 'pdf,zip';

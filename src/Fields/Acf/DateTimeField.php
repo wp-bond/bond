@@ -5,7 +5,7 @@ namespace Bond\Fields\Acf;
 /**
  *
  */
-class DateTime extends Field
+class DateTimeField extends Field
 {
     protected string $type = 'date_time_picker';
 

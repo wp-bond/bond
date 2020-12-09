@@ -7,9 +7,9 @@ namespace Bond\Fields\Acf;
 /**
  *
  */
-class Select extends Field
+class RadioField extends Field
 {
-    protected string $type = 'select';
+    protected string $type = 'radio';
     public string $return_format = 'value';
 
 
@@ -25,21 +25,27 @@ class Select extends Field
         return $this;
     }
 
-    public function multiple(bool $active = true): self
+    public function otherChoice(bool $active = true): self
     {
-        $this->multiple = $active;
+        $this->other_choice = $active;
         return $this;
     }
 
-    public function ui(bool $active = true): self
+    public function saveOtherChoice(bool $active = true): self
     {
-        $this->ui = $active;
+        $this->save_other_choice = $active;
         return $this;
     }
 
-    public function ajax(bool $active = true): self
+    public function layoutVertical(): self
     {
-        $this->ajax = $active;
+        $this->layout = 'vertical';
+        return $this;
+    }
+
+    public function layoutHorizontal(): self
+    {
+        $this->layout = 'horizontal';
         return $this;
     }
 

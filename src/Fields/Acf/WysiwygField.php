@@ -2,14 +2,9 @@
 
 namespace Bond\Fields\Acf;
 
-
-/**
- *
- */
-class Wysiwyg extends Field
+class WysiwygField extends Field
 {
     protected string $type = 'wysiwyg';
-
 
     public function allTabs(): self
     {

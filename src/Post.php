@@ -2,7 +2,6 @@
 
 namespace Bond;
 
-// use Bond\Fields\Acf\FieldTypes\Text;
 use Bond\Utils\Link;
 use Bond\Support\Fluent;
 use Bond\Utils\Cast;

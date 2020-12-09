@@ -5,7 +5,7 @@ namespace Bond\Fields\Acf;
 /**
  *
  */
-class OEmbed extends Field
+class OEmbedField extends Field
 {
     protected string $type = 'oembed';
     public int $width;

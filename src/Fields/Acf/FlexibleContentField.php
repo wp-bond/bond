@@ -2,24 +2,19 @@
 
 namespace Bond\Fields\Acf;
 
-/**
- * @method self buttonLabel(string $label)
- * @method self min(int $min)
- * @method self max(int $max)
- */
-class FlexibleContent extends Field
+class FlexibleContentField extends Field
 {
     protected string $type = 'flexible_content';
     protected array $layouts = [];
 
-    public function layout(string $name): Layout
+    public function layout(string $name): FlexibleContentLayout
     {
-        $field = new Layout($name);
+        $field = new FlexibleContentLayout($name);
         $this->addLayout($field);
         return $field;
     }
 
-    public function addLayout(Layout $field): self
+    public function addLayout(FlexibleContentLayout $field): self
     {
         $this->layouts[] = $field;
         return $this;

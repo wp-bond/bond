@@ -2,12 +2,14 @@
 
 namespace Bond\Fields\Acf;
 
+use Bond\Fields\Acf\Properties\HasSubFields;
+
 /**
  *
  */
-class Repeater extends Field
+class RepeaterField extends Field
 {
-    use FieldsTrait;
+    use HasSubFields;
 
     protected string $type = 'repeater';
     protected array $sub_fields = [];

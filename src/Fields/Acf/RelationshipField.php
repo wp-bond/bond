@@ -7,7 +7,7 @@ use Bond\Fields\Acf\Properties\HasReturnFormatFiles;
 /**
  *
  */
-class Relationship extends Field
+class RelationshipField extends Field
 {
     protected string $type = 'relationship';
     public array $filters = [

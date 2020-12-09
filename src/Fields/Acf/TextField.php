@@ -2,26 +2,22 @@
 
 namespace Bond\Fields\Acf;
 
-class Range extends Field
+/**
+ * @method self append(string $string)
+ */
+class TextField extends Field
 {
-    protected string $type = 'range';
+    protected string $type = 'text';
 
-
-    public function step(float $step): self
+    public function placeholder(string $text): self
     {
-        $this->step = $step;
+        $this->placeholder = $text;
         return $this;
     }
 
-    public function min(float $min): self
+    public function maxLength(int $chars): self
     {
-        $this->min = $min;
-        return $this;
-    }
-
-    public function max(float $max): self
-    {
-        $this->max = $max;
+        $this->maxlength = $chars;
         return $this;
     }
 

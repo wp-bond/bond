@@ -5,7 +5,7 @@ namespace Bond\Fields\Acf;
 /**
  *
  */
-class Url extends Field
+class UrlField extends Field
 {
     protected string $type = 'url';
 }

@@ -7,7 +7,7 @@ namespace Bond\Fields\Acf;
  * @method self placeholder(string $value) Appears within the input.
  * @method self rows(int $value)
  */
-class TextArea extends Field
+class TextAreaField extends Field
 {
     protected string $type = 'textarea';
 

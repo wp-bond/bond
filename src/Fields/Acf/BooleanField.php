@@ -5,8 +5,8 @@ namespace Bond\Fields\Acf;
 /**
  *
  */
-class PostObject extends Field
+class BooleanField extends Field
 {
-    protected string $type = 'post_object';
+    protected string $type = 'true_false';
     public bool $ui = true;
 }

@@ -2,12 +2,14 @@
 
 namespace Bond\Fields\Acf;
 
+use Bond\Fields\Acf\Properties\HasSubFields;
+
 /**
  *
  */
-class Group extends Field
+class GroupField extends Field
 {
-    use FieldsTrait;
+    use HasSubFields;
 
     protected string $type = 'group';
     protected array $sub_fields = [];

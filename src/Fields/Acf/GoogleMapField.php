@@ -5,7 +5,7 @@ namespace Bond\Fields\Acf;
 /**
  *
  */
-class GoogleMap extends Field
+class GoogleMapField extends Field
 {
     protected string $type = 'google_map';
 

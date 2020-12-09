@@ -5,7 +5,7 @@ namespace Bond\Fields\Acf;
 /**
  *
  */
-class Taxonomy extends Field
+class TaxonomyField extends Field
 {
     protected string $type = 'taxonomy';
 }

@@ -5,7 +5,7 @@ namespace Bond\Fields\Acf;
 /**
  *
  */
-class Message extends Field
+class MessageField extends Field
 {
     protected string $type = 'message';
 

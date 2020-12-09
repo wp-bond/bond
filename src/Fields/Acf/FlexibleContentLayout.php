@@ -2,14 +2,16 @@
 
 namespace Bond\Fields\Acf;
 
+use Bond\Fields\Acf\Properties\HasSubFields;
+
 /**
  * @method self display(string $display)
  * @method self min(int $min)
  * @method self max(int $max)
  */
-class Layout extends Field
+class FlexibleContentLayout extends Field
 {
-    use FieldsTrait;
+    use HasSubFields;
 
     // protected string $type = 'layout'; // there is no field type
     protected array $sub_fields = [];

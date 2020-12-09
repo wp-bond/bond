@@ -2,6 +2,7 @@
 
 namespace Bond\Fields\Acf;
 
+use Bond\Fields\Acf\Properties\HasSubFields;
 use Bond\Utils\Str;
 use Bond\Settings\Languages;
 
@@ -12,7 +13,7 @@ use Bond\Settings\Languages;
 
 class FieldGroup
 {
-    use FieldsTrait;
+    use HasSubFields;
 
     private $settings;
     private $apply_multilanguage_tabs = false;

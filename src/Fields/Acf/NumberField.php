@@ -5,7 +5,7 @@ namespace Bond\Fields\Acf;
 /**
  *
  */
-class Number extends Field
+class NumberField extends Field
 {
     protected string $type = 'number';
 }
