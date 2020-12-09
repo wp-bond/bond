@@ -38,7 +38,6 @@ class App extends Container
 
         // set local vars
         $this->env = c('APP_ENV') ?: 'production';
-        $this->deviceDetect();
 
         // register base bindings
         $this->registerBaseBindings();
@@ -200,16 +199,25 @@ class App extends Container
 
     public function isMobile(): bool
     {
+        if (!isset($this->is_mobile)) {
+            $this->deviceDetect();
+        }
         return $this->is_mobile;
     }
 
     public function isTablet(): bool
     {
+        if (!isset($this->is_tablet)) {
+            $this->deviceDetect();
+        }
         return $this->is_tablet;
     }
 
     public function isDesktop(): bool
     {
+        if (!isset($this->is_desktop)) {
+            $this->deviceDetect();
+        }
         return $this->is_desktop;
     }
 
@@ -240,7 +248,7 @@ class App extends Container
     public function cachePath(): string
     {
         return $this->basePath()
-            . DIRECTORY_SEPARATOR . 'cache';
+            . DIRECTORY_SEPARATOR . '.cache';
     }
 
     public function languagesPath(): string
