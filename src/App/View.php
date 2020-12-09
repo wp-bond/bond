@@ -647,6 +647,10 @@ class View
                     $result[] = $post_type;
                     $result[] = 'archive';
                 } else {
+
+                    if ($template = Query::pageTemplateName($post->ID)) {
+                        $result[] = $template;
+                    }
                     $result[] = 'page';
                     $result[] = 'singular';
                 }

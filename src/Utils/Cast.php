@@ -61,6 +61,14 @@ class Cast
                 $_post = new $_class();
                 if (isset($_post->post_type)) {
                     static::$posts[$_post->post_type] = $_class;
+
+                    // TODO only for pages?
+                    if (
+                        $_post->post_type === 'page'
+                        && $_post->page_template
+                    ) {
+                        static::$posts[$_post->post_type . '_' . $_post->page_template] = $_class;
+                    }
                 }
             }
 
@@ -198,6 +206,8 @@ class Cast
 
     // or post_type is fine, as it's a shortcut, if it's implemented in many places, it's just better to not have to change everywhere, and just change the casting map
 
+    // TODO maybe remove the convertion of post types
+    // if needed users do it directly
     public static function post($post, string $post_type = null): ?Post
     {
         if (empty($post)) {
@@ -233,7 +243,7 @@ class Cast
                             return null;
                         }
 
-                        $class = static::$posts[$post->post_type] ?? Post::class;
+                        $class = static::matchPostClass($post);
 
                         return Cache::putPhp(
                             'bond/posts/' . $post->post_type . '/' . $post->post_name,
@@ -267,7 +277,7 @@ class Cast
                             return null;
                         }
 
-                        $class = static::$posts[$post_type] ?? Post::class;
+                        $class = static::matchPostClass($post);
 
                         return Cache::putPhp(
                             'bond/posts/' . $post->ID,
@@ -292,7 +302,7 @@ class Cast
 
                     function () use ($post) {
 
-                        $class = static::$posts[$post->post_type] ?? Post::class;
+                        $class = static::matchPostClass($post);
 
                         return Cache::putPhp(
                             'bond/posts/' . $post->post_type . '/' . $post->post_name,
@@ -324,6 +334,11 @@ class Cast
                 if (!$post) {
                     return null;
                 }
+            } else {
+                $id = self::postId($post);
+                if ($id) {
+                    $post = self::wpPost($id);
+                }
             }
         }
 
@@ -346,10 +361,27 @@ class Cast
         }
 
         // create the Post
+        if ($post instanceof \WP_Post) {
+            $class = static::matchPostClass($post);
+            return new $class($post);
+        }
+
         $class = static::$posts[$post_type] ?? Post::class;
         return new $class($post);
     }
 
+    protected static function matchPostClass(\WP_Post $post): string
+    {
+        if (
+            $post->post_type === 'page'
+            && $template = Query::pageTemplateName($post->ID)
+        ) {
+            return static::$posts[$post->post_type . '_' . $template]
+                ?? static::$posts[$post->post_type]
+                ?? Post::class;
+        }
+        return static::$posts[$post->post_type] ?? Post::class;
+    }
 
     protected static function maybeConvert(?Post $post, ?string $post_type): ?Post
     {
