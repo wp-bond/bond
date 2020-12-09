@@ -13,27 +13,41 @@ use Exception;
 class Config extends Fluent
 {
     protected App $container;
+    public Fluent $app;
+    public Fluent $cache;
+    public Fluent $languages;
+    public Fluent $translation;
+    public Fluent $image;
+    public Fluent $meta;
+    public Fluent $wp;
+    public Fluent $services;
+    public Fluent $admin;
+    public Fluent $html;
+    public Fluent $api;
 
     public function __construct(App $container)
     {
         $this->container = $container;
-        $this->app = [];
-        $this->cache = [];
-        $this->languages = [];
-        $this->translation = [];
-        $this->image = [
+        $this->app = new Fluent();
+        $this->cache = new Fluent();
+        $this->languages = new Fluent();
+        $this->translation = new Fluent();
+        $this->image = new Fluent([
             'sizes' => [
                 'thumbnail' => [150, 150, true],
                 'medium' => [300, 300],
                 'medium_large' => [768, 0],
                 'large' => [1024, 1024],
             ],
-        ];
-        $this->wp = [];
-        $this->services = [];
-        $this->admin = [];
-        $this->html = [];
-        $this->api = [];
+        ]);
+        $this->meta = new Fluent([
+            'enabled' => true,
+        ]);
+        $this->wp = new Fluent();
+        $this->services = new Fluent();
+        $this->admin = new Fluent();
+        $this->html = new Fluent();
+        $this->api = new Fluent();
     }
 
     // Boot
@@ -55,6 +69,7 @@ class Config extends Fluent
             'app',
             'cache',
             'image',
+            'meta',
             'wp',
             'services',
             'admin',
@@ -138,6 +153,13 @@ class Config extends Fluent
         }
     }
 
+    protected function metaSettings()
+    {
+        // auto initialize Meta, registers WP hooks
+        if ($this->meta->enabled && \wp_using_themes()) {
+            $this->container->get('meta')->config($this->meta);
+        }
+    }
 
     protected function wpSettings()
     {

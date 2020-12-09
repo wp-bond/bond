@@ -95,9 +95,6 @@ class App extends Container
 
             // auto initialize View, registers WP hooks
             $this->get('view');
-
-            // auto initialize Meta, registers WP hooks
-            $this->get('meta');
         }
 
         // Save post/terms hook
@@ -109,10 +106,10 @@ class App extends Container
         $this->mapLinks();
 
         // Calls the boot/bootAdmin method on all classes at the App folder
-        $this->bootApp();
+        $this->bootAppFolder();
     }
 
-    protected function bootApp()
+    protected function bootAppFolder()
     {
         $path = $this->appPath();
         if (!is_dir($path)) {

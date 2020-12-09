@@ -4,6 +4,7 @@ namespace Bond\Services;
 
 use Bond\Settings\Wp;
 use Bond\Settings\Languages;
+use Bond\Support\Fluent;
 use Bond\Utils\Cast;
 use Bond\Utils\Image;
 use Bond\Utils\Link;
@@ -16,35 +17,45 @@ use Bond\Utils\Str;
 
 class Meta
 {
-    // common
-    public $title_separator = '-';
-    public $title = [];
-    public $description = '';
-    public $url = '';
-    public $images = []; // urls or ids
-    public $alternate = []; // associative by language code
+    // settings
+    protected string $title_separator = '-';
+    protected string $search_title = 'Search';
+
+    // values
+    public array $title = [];
+    public string $description = '';
+    public string $url = '';
+    public array $images = []; // urls or ids
+    public array $alternate = []; // associative by language code
 
     // author
-    public $author;
+    public string $author;
 
     // og
-    public $og_type = 'website';
-    public $og_title = '';
-    public $og_description = '';
-    public $article_section;
+    public string $og_type = 'website';
+    public string $og_title = '';
+    public string $og_description = '';
+    public string $article_section;
 
     // twitter
-    public $twitter_card = 'summary'; //summary_large_image
-    public $twitter_creator;
-    public $twitter_image_src;
-    public $twitter_image_width;
-    public $twitter_image_height;
-    public $twitter_player;
-    public $twitter_player_width;
-    public $twitter_player_height;
+    public string $twitter_card = 'summary'; //summary_large_image
+    public string $twitter_creator;
+    public string $twitter_image_src;
+    public string $twitter_image_width;
+    public string $twitter_image_height;
+    public string $twitter_player;
+    public string $twitter_player_width;
+    public string $twitter_player_height;
 
 
     public function __construct()
+    {
+        if (\wp_using_themes()) {
+            $this->init();
+        }
+    }
+
+    protected function init()
     {
         // required image size
         Wp::addImageSizes([
@@ -54,29 +65,24 @@ class Meta
         // do not initialize when it is on WP admin
         // nor when programatically loading WP
         if (!Wp::isAdminWithTheme()) {
-            $this->init();
+            \add_action('wp', [$this, 'setDefaults'], 2);
+            \add_action('wp_head', [$this, 'printAllTags'], 99);
         }
     }
 
-    protected function init()
+    public function config(Fluent $settings)
     {
-        \add_action('wp', [$this, 'setDefaults'], 2);
-        \add_action('wp_head', [$this, 'printAllTags'], 99);
+        if (isset($settings['title_separator'])) {
+            $this->title_separator = $settings['title_separator'];
+        }
+        if (isset($settings['search_title'])) {
+            $this->search_title = $settings['search_title'];
+        }
     }
 
-    public function separator()
+    private function separator()
     {
         return ' ' . $this->title_separator . ' ';
-    }
-
-    public function _separator()
-    {
-        return ' ' . $this->title_separator;
-    }
-
-    public function separator_()
-    {
-        return $this->title_separator . ' ';
     }
 
     public function setDefaults()
@@ -120,8 +126,8 @@ class Meta
             $this->title[] = Query::postTypeName($post_type);
         } elseif (is_search()) {
             global $s;
-            $this->title[] = __('Search') . (!empty($s) ? ': ' . $s : '');
-            // $this->title[] = __('Search') . (!empty($s) ? ': ' . $s : '');
+            $this->title[] = __($this->search_title) . (!empty($s) ? ': ' . $s : '');
+            // $this->title[] = __($this->search_title) . (!empty($s) ? ': ' . $s : '');
         } elseif (is_author()) {
             global $authordata; // same global as WP
 
