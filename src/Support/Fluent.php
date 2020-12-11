@@ -263,7 +263,7 @@ class Fluent implements
 
     public function __serialize(): array
     {
-        return $this->toArray();
+        return $this->all();
     }
 
     public function __unserialize(array $values)
