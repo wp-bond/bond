@@ -266,12 +266,12 @@ class Meta
     public function printJsVars()
     {
         echo "\n" . '<script>';
-        echo 'window.IS_PRODUCTION=Boolean("' . app()->isProduction() . '");';
-        echo 'window.LANGUAGE_CODE="' . Languages::code() . '";';
-        echo 'window.LANG="' . Languages::shortCode() . '";';
-        echo 'window.IS_MOBILE=Boolean("' . app()->isMobile() . '");';
-        echo 'window.IS_TABLET=Boolean("' . app()->isTablet() . '");';
-        echo 'window.IS_DESKTOP=Boolean("' . app()->isDesktop() . '");';
+        echo 'IS_PRODUCTION=Boolean("' . app()->isProduction() . '");';
+        echo 'LANGUAGE_CODE="' . Languages::code() . '";';
+        echo 'LANG="' . Languages::shortCode() . '";';
+        echo 'IS_MOBILE=Boolean("' . app()->isMobile() . '");';
+        echo 'IS_TABLET=Boolean("' . app()->isTablet() . '");';
+        echo 'IS_DESKTOP=Boolean("' . app()->isDesktop() . '");';
         echo '</script>' . "\n";
     }
 
