@@ -273,7 +273,7 @@ class App extends Container
 
     public function themeDir(): string
     {
-        return '/' . \WP_CONTENT_FOLDER
+        return '/' . c('WP_CONTENT_FOLDER', 'wp-content')
             . '/themes'
             . '/' . $this->themeId();
     }
