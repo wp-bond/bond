@@ -16,7 +16,9 @@ class Obj
             return [];
         }
 
-        $values = get_object_vars($object);
+        $values = is_array($object)
+            ? $object
+            : get_object_vars($object);
 
         if ($skip_null) {
             $filtered = [];
