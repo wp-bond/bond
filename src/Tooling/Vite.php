@@ -10,7 +10,7 @@ use Bond\Utils\File;
  *
  * echo vite()
  *     ->port(3001)
- *     ->entry('vite/wp/admin.js')
+ *     ->entry('admin.js')
  *     ->outDir('dist-wp-admin');
  *
  */
@@ -18,8 +18,8 @@ class Vite
 {
     protected string $hostname = 'http://localhost';
     protected int $port = 3000;
-    protected string $entry = 'vite/index.js';
-    protected string $assets_dir = '_assets';
+    protected string $entry = 'main.js';
+    protected string $assets_dir = 'assets';
     protected string $out_dir = 'dist';
 
     public function __construct()
@@ -78,7 +78,10 @@ class Vite
 
     public function cssUrl(bool $relative = false): string
     {
-        return $this->assetUrl('style.css', $relative);
+        return $this->assetUrl(
+            str_replace('.js', '.css', $this->entry),
+            $relative
+        );
     }
 
     public function assetUrl(string $filename, bool $relative = false)
@@ -91,8 +94,7 @@ class Vite
 
         return ($relative ? '' : app()->themeDir())
             . '/' . $this->out_dir
-            . '/' . $this->assets_dir
-            . '/' . ($manifest[$filename] ?? $filename);
+            . '/' . ($manifest[$filename]['file']);
     }
 
     // Helper to output the script tag
@@ -119,6 +121,25 @@ class Vite
             . '">';
     }
 
+    public function legacy(): string
+    {
+        // TODO LATER
+        // index-legacy is not at the manifest file yet!
+
+        if ($this->isDev()) {
+            return '';
+        }
+        return '';
+
+        $script = '<script nomdoule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>';
+
+        $script .= '<script nomodule src="' . $this->assetUrl('polyfills-legacy.js') . '"></script>';
+
+        $script .= '<script nomodule id="vite-legacy-entry" data-src="' . $this->assetUrl('index-legacy.js') . '">System.import(document.getElementById(\'vite-legacy-entry\').getAttribute(\'data-src\'))</script>';
+
+        return $script;
+    }
+
     protected function isDev(): bool
     {
         return app()->isDevelopment() && $this->hostExists();
@@ -133,7 +154,7 @@ class Vite
     protected function client(): string
     {
         if ($this->isDev()) {
-            return '<script type="module">import "' . $this->host() . '/vite/client"</script>';
+            return '<script type="module">import "' . $this->host() . '/@vite/client"</script>';
         }
         return '';
     }
@@ -142,7 +163,6 @@ class Vite
     {
         $content = File::get(app()->themePath()
             . '/' . $this->out_dir
-            . '/' . $this->assets_dir
             . '/manifest.json');
 
         return $content
@@ -161,7 +181,7 @@ class Vite
             return $exists;
         }
 
-        $handle = curl_init($this->host() . '/vite/client');
+        $handle = curl_init($this->host() . '/@vite/client');
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($handle, CURLOPT_NOBODY, true);
 
