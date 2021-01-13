@@ -35,18 +35,30 @@ class FluentList implements
         }
     }
 
-    public function add($item, $index = -1)
+    public function add($item, ?int $index = null): self
     {
-        array_splice($this->items, $index, 0, [Cast::fluent($item)]);
+        $item = Cast::fluent($item);
+
+        if ($index === null) {
+            array_push($this->items, $item);
+        } else {
+            array_splice($this->items, $index, 0, [$item]);
+        }
+        return $this;
     }
 
-    public function addMany($items, $index = -1)
+    public function addMany($items, ?int $index = null): self
     {
         $all = [];
         foreach ($items as $item) {
             $all[] = Cast::fluent($item);
         }
-        array_splice($this->items, $index, 0, $all);
+        if ($index === null) {
+            $this->items = array_merge($this->items, $all);
+        } else {
+            array_splice($this->items, $index, 0, $all);
+        }
+        return $this;
     }
 
     public function values($for = ''): array
