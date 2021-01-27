@@ -60,7 +60,6 @@ class Cast
             if (is_subclass_of($_class, Post::class)) {
                 $_post = new $_class();
                 if (isset($_post->post_type)) {
-                    static::$posts[$_post->post_type] = $_class;
 
                     // TODO only for pages?
                     if (
@@ -68,6 +67,8 @@ class Cast
                         && $_post->page_template
                     ) {
                         static::$posts[$_post->post_type . '_' . $_post->page_template] = $_class;
+                    } else {
+                        static::$posts[$_post->post_type] = $_class;
                     }
                 }
             }
