@@ -92,6 +92,10 @@ class Vite
         // locate hashed files in production
         $manifest = $this->manifest();
 
+        if (!isset($manifest[$filename])) {
+            return '';
+        }
+
         return ($relative ? '' : app()->themeDir())
             . '/' . $this->out_dir
             . '/' . ($manifest[$filename]['file']);
@@ -104,7 +108,11 @@ class Vite
             ? $this->host() . '/' . $this->entry
             : $this->jsUrl();
 
-        return '<script type="module" src="'
+        if (!$url) {
+            return '';
+        }
+
+        return '<script type="module" crossorigin src="'
             . $url
             . '"></script>';
     }
@@ -113,29 +121,41 @@ class Vite
     protected function cssTag(): string
     {
         // not needed on dev, it's inject by Vite
-        if ($this->isDev()) {
+        $url = $this->isDev()
+            ? ''
+            : $this->cssUrl();
+
+        if (!$url) {
             return '';
         }
+
         return '<link rel="stylesheet" href="'
-            . $this->cssUrl()
+            . $url
             . '">';
     }
 
     public function legacy(): string
     {
-        // TODO LATER
-        // index-legacy is not at the manifest file yet!
-
         if ($this->isDev()) {
             return '';
         }
-        return '';
 
-        $script = '<script nomdoule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>';
+        $url = str_replace(
+            '.js',
+            '-legacy.js',
+            $this->assetUrl($this->entry)
+        );
+        $polyfill_url = $this->assetUrl('polyfills-legacy.js');
 
-        $script .= '<script nomodule src="' . $this->assetUrl('polyfills-legacy.js') . '"></script>';
+        if (!$url || !$polyfill_url) {
+            return '';
+        }
 
-        $script .= '<script nomodule id="vite-legacy-entry" data-src="' . $this->assetUrl('index-legacy.js') . '">System.import(document.getElementById(\'vite-legacy-entry\').getAttribute(\'data-src\'))</script>';
+        $script = '<script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>';
+
+        $script .= '<script nomodule src="' . $polyfill_url . '"></script>';
+
+        $script .= '<script nomodule id="vite-legacy-entry" data-src="' . $url . '">System.import(document.getElementById(\'vite-legacy-entry\').getAttribute(\'data-src\'))</script>';
 
         return $script;
     }
@@ -153,9 +173,11 @@ class Vite
     // Vite client to be loaded during development
     protected function client(): string
     {
-        if ($this->isDev()) {
-            return '<script type="module">import "' . $this->host() . '/@vite/client"</script>';
-        }
+        // TODO testing this, looks like not needed anymore!
+
+        // if ($this->isDev()) {
+        //     return '<script type="module">import "' . $this->host() . '/@vite/client"</script>';
+        // }
         return '';
     }
 
