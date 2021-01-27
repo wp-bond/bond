@@ -68,6 +68,7 @@ class Vite
     {
         return $this->client()
             . $this->jsTag()
+            . $this->jsPreloadImports()
             . $this->cssTag();
     }
 
@@ -84,11 +85,8 @@ class Vite
         );
     }
 
-    public function assetUrl(string $filename, bool $relative = false)
+    public function assetUrl(string $filename, bool $relative = false): string
     {
-        //we only need the filename
-        $filename = pathinfo($filename, PATHINFO_BASENAME);
-
         // locate hashed files in production
         $manifest = $this->manifest();
 
@@ -99,6 +97,25 @@ class Vite
         return ($relative ? '' : app()->themeDir())
             . '/' . $this->out_dir
             . '/' . ($manifest[$filename]['file']);
+    }
+
+    public function importsUrls(string $filename, bool $relative = false): array
+    {
+        $imports = [];
+
+        // locate hashed files in production
+        $manifest = $this->manifest();
+
+        if (!empty($manifest[$filename]['imports'])) {
+            foreach ($manifest[$filename]['imports'] as $file) {
+
+                $imports[] = ($relative ? '' : app()->themeDir())
+                    . '/' . $this->out_dir
+                    . '/' . $file;
+            }
+        }
+
+        return $imports;
     }
 
     // Helper to output the script tag
@@ -115,6 +132,21 @@ class Vite
         return '<script type="module" crossorigin src="'
             . $url
             . '"></script>';
+    }
+
+    protected function jsPreloadImports(): string
+    {
+        if ($this->isDev()) {
+            return '';
+        }
+
+        $res = '';
+        foreach ($this->importsUrls($this->entry) as $url) {
+            $res .= '<link rel="modulepreload" href="'
+                . $url
+                . '">';
+        }
+        return $res;
     }
 
     // Helper to output style tag
