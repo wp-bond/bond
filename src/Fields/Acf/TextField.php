@@ -2,9 +2,6 @@
 
 namespace Bond\Fields\Acf;
 
-/**
- * @method self append(string $string)
- */
 class TextField extends Field
 {
     protected string $type = 'text';
