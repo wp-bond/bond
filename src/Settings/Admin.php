@@ -74,12 +74,14 @@ class Admin
             // global $current_screen;
             // echo $current_screen->id;exit;
 
-            \add_editor_style(
-                vite()
-                    ->entry('editor.js')
-                    ->outDir('dist-wp-editor')
-                    ->cssUrl(true)
-            );
+            $url = vite()
+                ->entry('wp/editor.js')
+                ->outDir('dist-wp-editor')
+                ->cssUrl();
+
+            $url = str_replace(app()->themeDir(), '', $url);
+
+            \add_editor_style($url);
         });
     }
 
@@ -88,7 +90,7 @@ class Admin
         \add_action('login_head', function () {
             echo vite()
                 ->port(3001)
-                ->entry('admin.js')
+                ->entry('wp/admin.js')
                 ->outDir('dist-wp-admin');
         });
 
@@ -107,7 +109,7 @@ class Admin
         \add_action('admin_head', function () {
             echo vite()
                 ->port(3001)
-                ->entry('admin.js')
+                ->entry('wp/admin.js')
                 ->outDir('dist-wp-admin');
         });
     }
