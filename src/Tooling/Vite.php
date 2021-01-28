@@ -19,7 +19,6 @@ class Vite
     protected string $hostname = 'http://localhost';
     protected int $port = 3000;
     protected string $entry = 'main.js';
-    protected string $assets_dir = 'assets';
     protected string $out_dir = 'dist';
 
     public function __construct()
@@ -52,12 +51,6 @@ class Vite
         return $this;
     }
 
-    public function assetsDir(string $dir): self
-    {
-        $this->assets_dir = $dir;
-        return $this;
-    }
-
     public function outDir(string $dir): self
     {
         $this->out_dir = $dir;
@@ -66,26 +59,30 @@ class Vite
 
     public function __toString(): string
     {
-        return $this->client()
-            . $this->jsTag()
+        return $this->jsTag()
             . $this->jsPreloadImports()
             . $this->cssTag();
     }
 
-    public function jsUrl(bool $relative = false): string
+    public function jsUrl(): string
     {
-        return $this->assetUrl($this->entry, $relative);
+        return $this->assetUrl($this->entry);
     }
 
-    public function cssUrl(bool $relative = false): string
+    public function cssUrl(): string
     {
-        return $this->assetUrl(
-            str_replace('.js', '.css', $this->entry),
-            $relative
-        );
+        $manifest = $this->manifest();
+
+        if (empty($manifest[$this->entry]['css'])) {
+            return '';
+        }
+
+        return app()->themeDir()
+            . '/' . $this->out_dir
+            . '/' . ($manifest[$this->entry]['css']);
     }
 
-    public function assetUrl(string $filename, bool $relative = false): string
+    public function assetUrl(string $filename): string
     {
         // locate hashed files in production
         $manifest = $this->manifest();
@@ -94,12 +91,12 @@ class Vite
             return '';
         }
 
-        return ($relative ? '' : app()->themeDir())
+        return app()->themeDir()
             . '/' . $this->out_dir
             . '/' . ($manifest[$filename]['file']);
     }
 
-    public function importsUrls(string $filename, bool $relative = false): array
+    public function importsUrls(string $filename): array
     {
         $imports = [];
 
@@ -107,11 +104,11 @@ class Vite
         $manifest = $this->manifest();
 
         if (!empty($manifest[$filename]['imports'])) {
-            foreach ($manifest[$filename]['imports'] as $file) {
+            foreach ($manifest[$filename]['imports'] as $entry) {
 
-                $imports[] = ($relative ? '' : app()->themeDir())
+                $imports[] = app()->themeDir()
                     . '/' . $this->out_dir
-                    . '/' . $file;
+                    . '/' . $manifest[$entry]['file'];
             }
         }
 
@@ -172,12 +169,16 @@ class Vite
             return '';
         }
 
-        $url = str_replace(
+        $url = $this->assetUrl(str_replace(
             '.js',
             '-legacy.js',
-            $this->assetUrl($this->entry)
-        );
-        $polyfill_url = $this->assetUrl('polyfills-legacy.js');
+            $this->entry
+        ));
+
+        $polyfill_url = $this->assetUrl('vite/legacy-polyfills');
+        if (!$polyfill_url) {
+            $polyfill_url = $this->assetUrl('../vite/legacy-polyfills');
+        }
 
         if (!$url || !$polyfill_url) {
             return '';
@@ -202,22 +203,13 @@ class Vite
         return $this->hostname . ':' . $this->port;
     }
 
-    // Vite client to be loaded during development
-    protected function client(): string
-    {
-        // TODO testing this, looks like not needed anymore!
-
-        // if ($this->isDev()) {
-        //     return '<script type="module">import "' . $this->host() . '/@vite/client"</script>';
-        // }
-        return '';
-    }
-
     protected function manifest(): array
     {
-        $content = File::get(app()->themePath()
-            . '/' . $this->out_dir
-            . '/manifest.json');
+        $content = File::get(
+            app()->themePath()
+                . '/' . $this->out_dir
+                . '/manifest.json'
+        );
 
         return $content
             ? json_decode($content, true)
@@ -234,8 +226,7 @@ class Vite
         if ($exists !== null) {
             return $exists;
         }
-
-        $handle = curl_init($this->host() . '/@vite/client');
+        $handle = curl_init($this->host() . '/' . $this->entry);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($handle, CURLOPT_NOBODY, true);
 
