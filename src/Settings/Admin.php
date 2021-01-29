@@ -74,14 +74,15 @@ class Admin
             // global $current_screen;
             // echo $current_screen->id;exit;
 
-            $url = vite()
+            $urls = vite()
                 ->entry('wp/editor.js')
                 ->outDir('dist-wp-editor')
-                ->cssUrl();
+                ->cssUrls();
 
-            $url = str_replace(app()->themeDir(), '', $url);
-
-            \add_editor_style($url);
+            if (count($urls)) {
+                $url = str_replace(app()->themeDir(), '', $urls[0]);
+                \add_editor_style($url);
+            }
         });
     }
 
