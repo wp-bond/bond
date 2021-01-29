@@ -69,17 +69,20 @@ class Vite
         return $this->assetUrl($this->entry);
     }
 
-    public function cssUrl(): string
+    public function cssUrls(): array
     {
         $manifest = $this->manifest();
 
         if (empty($manifest[$this->entry]['css'])) {
-            return '';
+            return [];
         }
-
-        return app()->themeDir()
-            . '/' . $this->out_dir
-            . '/' . ($manifest[$this->entry]['css']);
+        $urls = [];
+        foreach ($manifest[$this->entry]['css'] as $file) {
+            $urls[] = app()->themeDir()
+                . '/' . $this->out_dir
+                . '/' . $file;
+        }
+        return $urls;
     }
 
     public function assetUrl(string $filename): string
@@ -150,17 +153,17 @@ class Vite
     protected function cssTag(): string
     {
         // not needed on dev, it's inject by Vite
-        $url = $this->isDev()
-            ? ''
-            : $this->cssUrl();
-
-        if (!$url) {
+        if ($this->isDev()) {
             return '';
         }
 
-        return '<link rel="stylesheet" href="'
-            . $url
-            . '">';
+        $tags = '';
+        foreach ($this->cssUrls() as $url) {
+            $tags .= '<link rel="stylesheet" href="'
+                . $url
+                . '">';
+        }
+        return $tags;
     }
 
     public function legacy(): string
