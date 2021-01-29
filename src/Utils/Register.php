@@ -122,6 +122,49 @@ class Register
         ];
         $params = array_merge($base_args, $params);
 
+        // auto labels
+        if (!isset($params['labels']) && isset($params['name']) && isset($params['singular_name'])) {
+
+            $name = $params['name'];
+            $singular_name = $params['singular_name'];
+            $lower = Str::lower($name);
+            $lower_singular = Str::lower($singular_name);
+            $x = 'register';
+
+            $params['labels'] = [
+                'name' => tx($name, $x),
+                'singular_name' => tx($singular_name, $x),
+                'all_items' => tx('All', $x)
+                    . ' ' . tx($name, $x),
+                'add_new_item' => tx('Add new', $x)
+                    . ' ' . tx($lower_singular, $x),
+                'new_item_name' => tx('New', $x)
+                    . ' ' . tx($lower_singular, $x),
+                'edit_item' => tx('Edit', $x)
+                    . ' ' . tx($lower_singular, $x),
+                'new_item' => tx('New', $x)
+                    . ' ' . tx($lower_singular, $x),
+                'view_item' => tx('View', $x)
+                    . ' ' . tx($lower_singular, $x),
+                'update_item' => tx('Update', $x)
+                    . ' ' . tx($lower_singular, $x),
+                'search_items' => tx('Search', $x)
+                    . ' ' . tx($lower, $x),
+                'not_found' => tx('No ' . $lower_singular, $x)
+                    . ' ' . tx('found', $x),
+                'not_found_in_trash' => tx('No ' . $lower_singular, $x)
+                    . ' ' . t('found in trash', $x),
+                'parent_item' => tx('Parent', $x)
+                    . ' ' . tx($lower_singular, $x),
+                'parent_item_colon' => tx('Parent', $x)
+                    . ' ' . tx($lower_singular, $x) . ':',
+                'add_or_remove_items' => tx('Add or remove', $x)
+                    . ' ' . tx($lower, $x),
+                'choose_from_most_used' => tx('Choose from the most used', $x)
+                    . ' ' . tx($lower, $x),
+            ];
+        }
+
         \add_action('init', function () use ($taxonomy, $params) {
             \register_taxonomy($taxonomy, null, $params);
         });

@@ -3,6 +3,7 @@
 namespace Bond\App;
 
 use Bond\PostType;
+use Bond\Taxonomy;
 use Bond\Services\Meta;
 use Bond\Services\Translation;
 use Bond\Utils\Cache;
@@ -140,11 +141,16 @@ class App extends Container
                 continue;
             }
 
-            // add to View
+            // add to View and register
             if (is_subclass_of($classname, PostType::class)) {
                 if (method_exists($classname, 'addToView')) {
                     call_user_func($classname . '::addToView');
                 }
+                if (method_exists($classname, 'register')) {
+                    call_user_func($classname . '::register');
+                }
+            }
+            if (is_subclass_of($classname, Taxonomy::class)) {
                 if (method_exists($classname, 'register')) {
                     call_user_func($classname . '::register');
                 }
