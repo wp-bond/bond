@@ -255,7 +255,7 @@ class Admin
         \add_filter(
             $hook,
             function ($defaults) use ($columns) {
-                return self::ensureCheckboxColumn($columns);
+                return self::prepareColumns($columns);
             }
         );
     }
@@ -272,14 +272,15 @@ class Admin
 
     public static function handleColumn($name, $post_id)
     {
-        if (!isset(self::$archive_columns[$name])) {
-            return;
-        }
         $post = Cast::post($post_id);
         if (!$post) {
             return;
         }
-        echo self::$archive_columns[$name]($post);
+        if (!isset(self::$archive_columns[$name])) {
+            echo $post->{$name};
+        } else {
+            echo self::$archive_columns[$name]($post);
+        }
     }
 
 
@@ -293,7 +294,7 @@ class Admin
         \add_filter(
             'manage_edit-' . $taxonomy . '_columns',
             function ($defaults) use ($columns) {
-                return self::ensureCheckboxColumn($columns);
+                return self::prepareColumns($columns);
             }
         );
     }
@@ -331,7 +332,7 @@ class Admin
         \add_filter(
             'manage_users_columns',
             function ($defaults) use ($columns) {
-                return self::ensureCheckboxColumn($columns);
+                return self::prepareColumns($columns);
             }
         );
     }
@@ -466,9 +467,13 @@ class Admin
     }
 
 
-    private static function ensureCheckboxColumn(array
+    private static function prepareColumns(array
     $columns): array
     {
+        foreach ($columns as $k => &$title) {
+            $title = tx($title, 'admin-columns');
+        }
+
         if (!isset($columns['cb'])) {
             $columns = array_merge([
                 'cb' => '<input type="checkbox" />',
