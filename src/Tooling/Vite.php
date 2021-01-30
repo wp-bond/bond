@@ -6,11 +6,11 @@ use Bond\Utils\File;
 
 /**
  * Usage:
- * echo vite();
+ * echo vite(); // with defaults (main.js)
  *
  * echo vite()
- *     ->port(3001)
  *     ->entry('admin.js')
+ *     ->port(3001)
  *     ->outDir('dist-wp-admin');
  *
  */
@@ -33,6 +33,12 @@ class Vite
         // so each project has its own vite client, and the port never changes
     }
 
+    public function entry(string $entry): self
+    {
+        $this->entry = $entry;
+        return $this;
+    }
+
     public function hostname(string $hostname): self
     {
         $this->hostname = $hostname;
@@ -42,12 +48,6 @@ class Vite
     public function port(int $port): self
     {
         $this->port = $port;
-        return $this;
-    }
-
-    public function entry(string $entry): self
-    {
-        $this->entry = $entry;
         return $this;
     }
 
@@ -71,51 +71,47 @@ class Vite
 
     public function cssUrls(): array
     {
+        $urls = [];
         $manifest = $this->manifest();
 
-        if (empty($manifest[$this->entry]['css'])) {
-            return [];
-        }
-        $urls = [];
-        foreach ($manifest[$this->entry]['css'] as $file) {
-            $urls[] = app()->themeDir()
-                . '/' . $this->out_dir
-                . '/' . $file;
+        if (!empty($manifest[$this->entry]['css'])) {
+            foreach ($manifest[$this->entry]['css'] as $file) {
+                $urls[] = app()->themeDir()
+                    . '/' . $this->out_dir
+                    . '/' . $file;
+            }
         }
         return $urls;
     }
 
-    public function assetUrl(string $filename): string
+    public function assetUrl(string $entry): string
     {
-        // locate hashed files in production
         $manifest = $this->manifest();
 
-        if (!isset($manifest[$filename])) {
+        if (!isset($manifest[$entry])) {
             return '';
         }
 
         return app()->themeDir()
             . '/' . $this->out_dir
-            . '/' . ($manifest[$filename]['file']);
+            . '/' . ($manifest[$entry]['file']);
     }
 
-    public function importsUrls(string $filename): array
+    public function importsUrls(string $entry): array
     {
-        $imports = [];
-
-        // locate hashed files in production
+        $urls = [];
         $manifest = $this->manifest();
 
-        if (!empty($manifest[$filename]['imports'])) {
-            foreach ($manifest[$filename]['imports'] as $entry) {
+        if (!empty($manifest[$entry]['imports'])) {
+            foreach ($manifest[$entry]['imports'] as $imports) {
 
-                $imports[] = app()->themeDir()
+                $urls[] = app()->themeDir()
                     . '/' . $this->out_dir
-                    . '/' . $manifest[$entry]['file'];
+                    . '/' . $manifest[$imports]['file'];
             }
         }
 
-        return $imports;
+        return $urls;
     }
 
     // Helper to output the script tag
@@ -198,7 +194,7 @@ class Vite
 
     protected function isDev(): bool
     {
-        return app()->isDevelopment() && $this->hostExists();
+        return app()->isDevelopment() && $this->entryExists();
     }
 
     protected function host(): string
@@ -223,7 +219,7 @@ class Vite
     // if we try to access it, and by any means, didn't started Vite yet
     // it will fallback to load the production files from manifest
     // so you still navigate your site as you intended
-    protected function hostExists(): bool
+    protected function entryExists(): bool
     {
         static $exists = null;
         if ($exists !== null) {
