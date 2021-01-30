@@ -19,4 +19,48 @@ class RepeaterField extends Field
         $this->sub_fields[] = $field;
         return $this;
     }
+
+
+    public function buttonLabel(string $label): self
+    {
+        $this->button_label = $label;
+        return $this;
+    }
+
+    public function min(int $min): self
+    {
+        $this->min = $min;
+        return $this;
+    }
+
+    public function max(int $max): self
+    {
+        $this->max = $max;
+        return $this;
+    }
+
+    public function showWhenCollapsed(string $name): self
+    {
+        // TODO
+        // $this->collapsed =
+        return $this;
+    }
+
+    public function layoutTable(): self
+    {
+        $this->layout = 'table';
+        return $this;
+    }
+
+    public function layoutBlock(): self
+    {
+        $this->layout = 'block';
+        return $this;
+    }
+
+    public function layoutRow(): self
+    {
+        $this->layout = 'row';
+        return $this;
+    }
 }

@@ -2,8 +2,6 @@
 
 namespace Bond\Fields\Acf;
 
-// use Bond\Fields\Acf\Properties\HasReturnFormatChoices;
-
 /**
  *
  */
