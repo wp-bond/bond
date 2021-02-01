@@ -33,6 +33,14 @@ class Vite
         // so each project has its own vite client, and the port never changes
     }
 
+    public function __toString(): string
+    {
+        return $this->preloadAssets('woff2')
+            . $this->jsTag()
+            . $this->jsPreloadImports()
+            . $this->cssTag();
+    }
+
     public function entry(string $entry): self
     {
         $this->entry = $entry;
@@ -57,13 +65,6 @@ class Vite
         return $this;
     }
 
-    public function __toString(): string
-    {
-        return $this->jsTag()
-            . $this->jsPreloadImports()
-            . $this->cssTag();
-    }
-
     public function jsUrl(): string
     {
         return $this->assetUrl($this->entry);
@@ -71,17 +72,7 @@ class Vite
 
     public function cssUrls(): array
     {
-        $urls = [];
-        $manifest = $this->manifest();
-
-        if (!empty($manifest[$this->entry]['css'])) {
-            foreach ($manifest[$this->entry]['css'] as $file) {
-                $urls[] = app()->themeDir()
-                    . '/' . $this->out_dir
-                    . '/' . $file;
-            }
-        }
-        return $urls;
+        return $this->assetsUrls($this->entry, 'css');
     }
 
     public function assetUrl(string $entry): string
@@ -95,6 +86,23 @@ class Vite
         return app()->themeDir()
             . '/' . $this->out_dir
             . '/' . ($manifest[$entry]['file']);
+    }
+
+    public function assetsUrls(string $entry, string $path = 'assets'): array
+    {
+        $urls = [];
+        $manifest = $this->manifest();
+
+        if (!empty($manifest[$entry][$path])) {
+            foreach ($manifest[$entry][$path] as $file) {
+
+                $urls[] = app()->themeDir()
+                    . '/' . $this->out_dir
+                    . '/' . $file;
+            }
+        }
+
+        return $urls;
     }
 
     public function importsUrls(string $entry): array
@@ -113,6 +121,8 @@ class Vite
 
         return $urls;
     }
+
+
 
     // Helper to output the script tag
     protected function jsTag(): string
@@ -160,6 +170,25 @@ class Vite
                 . '">';
         }
         return $tags;
+    }
+
+    protected function preloadAssets(string $type): string
+    {
+        if ($this->isDev()) {
+            return '';
+        }
+
+        $res = '';
+        foreach ($this->assetsUrls($this->entry) as $url) {
+
+            if (!str_ends_with($url, '.' . $type)) {
+                continue;
+            }
+            if ($type === 'woff2') {
+                $res .= '<link rel="preload" href="' . $url . '" as="font" type="font/woff2" crossorigin="anonymous">';
+            }
+        }
+        return $res;
     }
 
     public function legacy(): string
