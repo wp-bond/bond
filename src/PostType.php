@@ -9,6 +9,9 @@ use Bond\Utils\Query;
 use Bond\Utils\Register;
 use Bond\Utils\Str;
 
+// TODO change to non static now we can rely on app container
+// it's better as we can use the constructor and it's more flexible
+
 abstract class PostType
 {
     public static string $post_type;
