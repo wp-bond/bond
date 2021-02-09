@@ -221,6 +221,12 @@ class Config extends Fluent
         if ($this->html->reset_body_classes) {
             Html::resetBodyClasses();
         }
+        if ($this->html->unwrap_paragraphs) {
+            Html::unwrapParagraphs();
+        }
+        if ($this->html->h6_captions) {
+            Html::h6Captions();
+        }
         if ($this->html->cleanup_head) {
             Html::cleanupHead();
         }

@@ -2,6 +2,8 @@
 
 namespace Bond\Settings;
 
+use Bond\Utils\Str;
+
 class Html
 {
 
@@ -24,6 +26,8 @@ class Html
                 $result[] = 'is-desktop';
             }
 
+            $result = array_map([Str::class, 'slug'], $result);
+
             return $result;
         });
     }
@@ -32,20 +36,22 @@ class Html
     // add_theme_support( 'html5', array( 'comment-list', 'comment-form', 'search-form', 'gallery', 'caption' ) );
 
 
-    public static function sanitizeParagraphs()
+    // removes the <p> tags from the images and iframes
+    public static function unwrapParagraphs()
     {
-        // filter the <p> tags from the images and iframes
-        function filter_ptags_on_images($content)
-        {
-            $content = preg_replace('/<p>\s*(<a .*>)?\s*(<img .* \/>)\s*(<\/a>)?\s*<\/p>/iU', '\1\2\3', $content);
-            return preg_replace('/<p>\s*(<iframe .*>*.<\/iframe>)\s*<\/p>/iU', '\1', $content);
-        }
-        \add_filter('the_content', 'filter_ptags_on_images', 12);
-        \add_filter('acf_the_content', 'filter_ptags_on_images', 12);
+        \add_filter('the_content', [static::class, '_unwrapParagraphs'], 12);
+        \add_filter('acf_the_content', [static::class, '_unwrapParagraphs'], 12);
+    }
+    public static function _unwrapParagraphs($content)
+    {
+        $content = preg_replace('/<p>\s*(<a .*>)?\s*(<img .* \/>)\s*(<\/a>)?\s*<\/p>/iU', '\1\2\3', $content);
+
+        return preg_replace('/<p>\s*(<iframe .*>*.<\/iframe>)\s*<\/p>/iU', '\1', $content);
     }
 
 
-    public static function sanitizeCaptionShortcode()
+    // use h6.image-caption on captions
+    public static function h6Captions()
     {
         \add_filter('img_caption_shortcode', function ($output, $attr, $content) {
             $output .= $content;
