@@ -9,12 +9,12 @@ namespace Bond\Utils;
  */
 class File
 {
-    public static function url($file_id): string
+    public static function url($file_id): ?string
     {
         $id = Cast::postId($file_id);
         return $id
             ? (string) \wp_get_attachment_url($id)
-            : (string) $file_id;
+            : null;
     }
 
     public static function size($file_id): int
@@ -34,6 +34,9 @@ class File
     ): string {
 
         $size = self::size($file_id);
+        if (!$size) {
+            return '';
+        }
         $unit = '';
 
         switch (strtolower($format)) {
