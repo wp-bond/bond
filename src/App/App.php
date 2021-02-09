@@ -143,6 +143,9 @@ class App extends Container
 
             // add to View and register
             if (is_subclass_of($classname, PostType::class)) {
+
+                $this->share('post_type.' . $classname::$post_type, $classname);
+
                 if (method_exists($classname, 'addToView')) {
                     call_user_func($classname . '::addToView');
                 }
@@ -151,6 +154,9 @@ class App extends Container
                 }
             }
             if (is_subclass_of($classname, Taxonomy::class)) {
+
+                $this->share('taxonomy.' . $classname::$taxonomy, $classname);
+
                 if (method_exists($classname, 'register')) {
                     call_user_func($classname . '::register');
                 }
