@@ -320,6 +320,7 @@ class Rewrite
             // vars
             $_path = $prefix . $_path;
             $params_string = static::params($params);
+            $params_string = trim($params_string, '&');
 
             // rewrite
             \add_rewrite_rule(
