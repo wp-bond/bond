@@ -126,6 +126,8 @@ class App extends Container
         );
         $iterator = new RecursiveIteratorIterator($dir);
 
+        $classes = [];
+
         foreach ($iterator as $file) {
 
             if ($file->getExtension() !== 'php') {
@@ -141,7 +143,26 @@ class App extends Container
                 continue;
             }
 
+            // taxonomies first
+            if (is_subclass_of($classname, Taxonomy::class)) {
+                array_unshift($classes, $classname);
+            } else {
+                $classes[] = $classname;
+            }
+        }
+
+        // let's boot them if needed
+        foreach ($classes as $classname) {
+
             // add to View and register
+            if (is_subclass_of($classname, Taxonomy::class)) {
+
+                $this->share('taxonomy.' . $classname::$taxonomy, $classname);
+
+                if (method_exists($classname, 'register')) {
+                    call_user_func($classname . '::register');
+                }
+            }
             if (is_subclass_of($classname, PostType::class)) {
 
                 $this->share('post_type.' . $classname::$post_type, $classname);
@@ -149,14 +170,6 @@ class App extends Container
                 if (method_exists($classname, 'addToView')) {
                     call_user_func($classname . '::addToView');
                 }
-                if (method_exists($classname, 'register')) {
-                    call_user_func($classname . '::register');
-                }
-            }
-            if (is_subclass_of($classname, Taxonomy::class)) {
-
-                $this->share('taxonomy.' . $classname::$taxonomy, $classname);
-
                 if (method_exists($classname, 'register')) {
                     call_user_func($classname . '::register');
                 }
