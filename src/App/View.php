@@ -2,6 +2,7 @@
 
 namespace Bond\App;
 
+use Bond\Settings\Languages;
 use Bond\Support\Fluent;
 use Bond\Utils\Query;
 use Bond\Utils\Str;
@@ -69,6 +70,16 @@ class View
     public function __construct()
     {
         $this->view_data = new Fluent();
+
+        // add default Aapp state
+        $this->view_data->state = [
+            'isProduction' => app()->isProduction(),
+            'isMobile' => app()->isMobile(),
+            'isTablet' => app()->isTablet(),
+            'isDesktop' => app()->isDesktop(),
+            'languageCode' => Languages::code(),
+            'lang' => Languages::shortCode(),
+        ];
 
         // do not initialize when it is on WP admin
         // nor when programatically loading WP

@@ -214,8 +214,6 @@ class Meta
         $this->printFacebookTags();
         $this->printTwitterTags();
 
-        $this->printJsVars();
-
         // Reference:
         // Facebook Validator: https://developers.facebook.com/tools/debug
         // Twitter Validator: https://dev.twitter.com/docs/cards/validation/validator
@@ -261,18 +259,6 @@ class Meta
                 echo '<link rel="alternate" hreflang="' . $code . '" href="' . $url . '">' . "\n";
             }
         }
-    }
-
-    public function printJsVars()
-    {
-        echo "\n" . '<script>';
-        echo 'IS_PRODUCTION=Boolean("' . app()->isProduction() . '");';
-        echo 'LANGUAGE_CODE="' . Languages::code() . '";';
-        echo 'LANG="' . Languages::shortCode() . '";';
-        echo 'IS_MOBILE=Boolean("' . app()->isMobile() . '");';
-        echo 'IS_TABLET=Boolean("' . app()->isTablet() . '");';
-        echo 'IS_DESKTOP=Boolean("' . app()->isDesktop() . '");';
-        echo '</script>' . "\n";
     }
 
     public function printTitleTags()
