@@ -104,6 +104,10 @@ class Config extends Fluent
     {
         $translation = $this->container->get('translation');
 
+        if ($this->translation->written_language) {
+            $translation->setWrittenLanguage($this->translation->written_language);
+        }
+
         if ($this->translation->service) {
             $translation->setService($this->translation->service);
         }

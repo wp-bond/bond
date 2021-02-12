@@ -21,6 +21,8 @@ class Translation
 
     protected string $storage_path;
 
+    protected string $written_language;
+
     public function __construct()
     {
         $this->addTranslatePostHook();
@@ -30,6 +32,18 @@ class Translation
         //     if ($post_id === 'options') {
         //     }
         // });
+
+        $this->setWrittenLanguage(Languages::getDefault());
+    }
+
+    public function getWrittenLanguage(): string
+    {
+        return $this->written_language;
+    }
+
+    public function setWrittenLanguage(string $code)
+    {
+        $this->written_language = $code;
     }
 
     public function setService(string $service)
@@ -66,7 +80,9 @@ class Translation
     public function get(
         $string,
         string $language_code = null,
-        string $context = null
+        string $written_language = null,
+        string $context = null,
+
     ): string {
         $string = (string) $string;
 
@@ -74,12 +90,6 @@ class Translation
         if (empty($string)) {
             return $string;
         }
-
-        // Skip if is not multilanguage
-        if (!Languages::isMultilanguage()) {
-            return $string;
-        }
-
         // Fallback to gettext
         if (!$this->hasService()) {
             if ($context) {
@@ -88,19 +98,29 @@ class Translation
             return __($string, app()->id());
         }
 
-        // fallback to current language
+        // fallbacks to current language
         $language_code = Languages::code($language_code);
+
+        // defaults
+        if (!$written_language) {
+            $written_language = $this->getWrittenLanguage();
+        }
 
         // if is dev translate all languages
         if (app()->isDevelopment()) {
             $res = $string;
 
             foreach (Languages::codes() as $code) {
-                if (Languages::isDefault($code)) {
+                if ($code === $written_language) {
                     continue;
                 }
 
-                $t = $this->find($string, $code, $context);
+                $t = $this->find(
+                    $string,
+                    $code,
+                    $written_language,
+                    $context
+                );
 
                 if ($code === $language_code) {
                     $res = $t;
@@ -109,12 +129,17 @@ class Translation
             return $res;
         }
 
-        // Skip if is the default language
-        if (Languages::isDefault($language_code)) {
+        // Skip if already in the written language
+        if ($language_code === $written_language) {
             return $string;
         }
 
-        return $this->find($string, $language_code, $context);
+        return $this->find(
+            $string,
+            $language_code,
+            $written_language,
+            $context
+        );
     }
 
     public function fromTo(
@@ -141,6 +166,7 @@ class Translation
     protected function find(
         string $string,
         string $language_code,
+        string $written_language,
         string $context = null
     ): string {
 
@@ -159,7 +185,7 @@ class Translation
                     = $updated
                     = $t
                     = $this->fromTo(
-                        Languages::getDefault(),
+                        $written_language,
                         $language_code,
                         $string
                     );
@@ -172,7 +198,7 @@ class Translation
                     = $updated
                     = $t
                     = $this->fromTo(
-                        Languages::getDefault(),
+                        $written_language,
                         $language_code,
                         $string
                     );

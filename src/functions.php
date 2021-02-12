@@ -51,19 +51,26 @@ if (!function_exists('c')) {
 
 if (!function_exists('t')) {
 
-    function t($string, string $language_code = null): string
-    {
+    function t(
+        $string,
+        string $language_code = null,
+        string $written_language = null
+    ): string {
         return app()->get('translation')
-            ->get($string, $language_code);
+            ->get($string, $language_code, $written_language);
     }
 }
 
 if (!function_exists('tx')) {
 
-    function tx($string, string $context, string $language_code = null): string
-    {
+    function tx(
+        $string,
+        string $context,
+        string $language_code = null,
+        string $written_language = null
+    ): string {
         return app()->get('translation')
-            ->get($string, $language_code, $context);
+            ->get($string, $language_code, $written_language, $context);
     }
 }
 

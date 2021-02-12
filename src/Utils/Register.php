@@ -7,25 +7,6 @@ namespace Bond\Utils;
 class Register
 {
 
-    // copy&paste
-    // Register::postType(self::$post_type, [
-    //     'labels' => [
-    //         'name' => t('Articles'),
-    //         'singular_name' => t('Article'),
-    //         'add_new' => t('Add article'),
-    //         'add_new_item' => t('Add new article'),
-    //         'edit_item' => t('Edit article'),
-    //         'new_item' => t('New article'),
-    //         'view_item' => t('View article'),
-    //         'search_items' => t('Search article'),
-    //         'not_found' => t('No article found'),
-    //         'not_found_in_trash' => t('No article found in trash'),
-    //     ],
-    //     'menu_icon' => 'dashicons-admin-page',
-    //     'menu_position' => 30,
-    //     'taxonomies' => static::$taxonomies,
-    // ]);
-
     public static function postType($post_type, array $params = [])
     {
         $base_args = [
@@ -54,30 +35,25 @@ class Register
         // auto labels
         if (!isset($params['labels']) && isset($params['name']) && isset($params['singular_name'])) {
 
-            $name = $params['name'];
-            $singular_name = $params['singular_name'];
-            $lower = Str::lower($singular_name);
             $x = 'register';
 
+            $name = tx($params['name'], $x);
+            $singular_name = tx($params['singular_name'], $x);
+
+            // translate to english to append to labels
+            $n = Str::lower(tx($params['singular_name'], $x, 'en'));
+
             $params['labels'] = [
-                'name' => tx($name, $x),
-                'singular_name' => tx($singular_name, $x),
-                'add_new' => tx('Add', $x)
-                    . ' ' . tx($lower, $x),
-                'add_new_item' => tx('Add new', $x)
-                    . ' ' . tx($lower, $x),
-                'edit_item' => tx('Edit', $x)
-                    . ' ' . tx($lower, $x),
-                'new_item' => tx('New', $x)
-                    . ' ' . tx($lower, $x),
-                'view_item' => tx('View', $x)
-                    . ' ' . tx($lower, $x),
-                'search_items' => tx('Search', $x)
-                    . ' ' . tx($lower, $x),
-                'not_found' => tx('No ' . $lower, $x)
-                    . ' ' . tx('found', $x),
-                'not_found_in_trash' => tx('No ' . $lower, $x)
-                    . ' ' . t('found in trash', $x),
+                'name' => $name,
+                'singular_name' => $singular_name,
+                'add_new' => tx('Add ' . $n, $x, null, 'en'),
+                'add_new_item' => tx('Add new ' . $n, $x, null, 'en'),
+                'edit_item' => tx('Edit ' . $n, $x, null, 'en'),
+                'new_item' => tx('New ' . $n, $x, null, 'en'),
+                'view_item' => tx('View ' . $n, $x, null, 'en'),
+                'search_items' => tx('Search ' . $n, $x, null, 'en'),
+                'not_found' => tx('No ' . $n . ' found', $x, null, 'en'),
+                'not_found_in_trash' => tx('No ' . $n . ' found in trash', $x, null, 'en'),
             ];
         }
 
@@ -87,24 +63,7 @@ class Register
     }
 
 
-    // labels copy/paste
-    // 'labels' => [
-    //     'name' => t('Taxes'),
-    //     'singular_name' => t('Tax'),
-    //     'all_items' => t('All taxes'),
-    //     'edit_item' => t('Edit tax'),
-    //     'view_item' => t('View tax'),
-    //     'update_item' => t('Update tax'),
-    //     'add_new_item' => t('Add new tax'),
-    //     'new_item_name' => t('New tax'),
-    //     'parent_item' => t('Parent tax'),
-    //     'parent_item_colon' => t('Parent tax:'),
-    //     'search_items' => t('Search tax'),
-    //     'add_or_remove_items' => t('Add or remove tax'),
-    //     'choose_from_most_used' => t('Choose from the most used taxes'),
-    //     'not_found' => t('No taxes found'),
-    // ]
-    //
+
     // Tip: post_tag and category can be overriden, just register again
     public static function taxonomy($taxonomy, array $params = [])
     {
@@ -125,43 +84,32 @@ class Register
         // auto labels
         if (!isset($params['labels']) && isset($params['name']) && isset($params['singular_name'])) {
 
-            $name = $params['name'];
-            $singular_name = $params['singular_name'];
-            $lower = Str::lower($name);
-            $lower_singular = Str::lower($singular_name);
             $x = 'register';
 
+            $name = tx($params['name'], $x);
+            $singular_name = tx($params['singular_name'], $x);
+
+            // translate to english to append to labels
+            $n = Str::lower(tx($params['name'], $x, 'en'));
+            $ns = Str::lower(tx($params['singular_name'], $x, 'en'));
+
             $params['labels'] = [
-                'name' => tx($name, $x),
-                'singular_name' => tx($singular_name, $x),
-                'all_items' => tx('All', $x)
-                    . ' ' . tx($name, $x),
-                'add_new_item' => tx('Add new', $x)
-                    . ' ' . tx($lower_singular, $x),
-                'new_item_name' => tx('New', $x)
-                    . ' ' . tx($lower_singular, $x),
-                'edit_item' => tx('Edit', $x)
-                    . ' ' . tx($lower_singular, $x),
-                'new_item' => tx('New', $x)
-                    . ' ' . tx($lower_singular, $x),
-                'view_item' => tx('View', $x)
-                    . ' ' . tx($lower_singular, $x),
-                'update_item' => tx('Update', $x)
-                    . ' ' . tx($lower_singular, $x),
-                'search_items' => tx('Search', $x)
-                    . ' ' . tx($lower, $x),
-                'not_found' => tx('No ' . $lower_singular, $x)
-                    . ' ' . tx('found', $x),
-                'not_found_in_trash' => tx('No ' . $lower_singular, $x)
-                    . ' ' . t('found in trash', $x),
-                'parent_item' => tx('Parent', $x)
-                    . ' ' . tx($lower_singular, $x),
-                'parent_item_colon' => tx('Parent', $x)
-                    . ' ' . tx($lower_singular, $x) . ':',
-                'add_or_remove_items' => tx('Add or remove', $x)
-                    . ' ' . tx($lower, $x),
-                'choose_from_most_used' => tx('Choose from the most used', $x)
-                    . ' ' . tx($lower, $x),
+                'name' => $name,
+                'singular_name' => $singular_name,
+                'all_items' => tx('All ' . $n, $x, null, 'en'),
+                'add_new_item' => tx('Add new ' . $ns, $x, null, 'en'),
+                'new_item_name' => tx('New ' . $ns, $x, null, 'en'),
+                'edit_item' => tx('Edit ' . $ns, $x, null, 'en'),
+                'new_item' => tx('New ' . $ns, $x, null, 'en'),
+                'view_item' => tx('View ' . $ns, $x, null, 'en'),
+                'update_item' => tx('Update ' . $ns, $x, null, 'en'),
+                'search_items' => tx('Search ' . $n, $x, null, 'en'),
+                'not_found' => tx('No ' . $ns . ' found', $x, null, 'en'),
+                'not_found_in_trash' => tx('No ' . $ns . ' found in trash', $x, null, 'en'),
+                'parent_item' => tx('Parent ' . $ns, $x, null, 'en'),
+                'parent_item_colon' => tx('Parent ' . $ns, $x) . ':',
+                'add_or_remove_items' => tx('Add or remove ' . $n, $x, null, 'en'),
+                'choose_from_most_used' => tx('Choose from the most used ' . $n, $x, null, 'en'),
             ];
         }
 
