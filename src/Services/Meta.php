@@ -242,16 +242,9 @@ class Meta
             if (!empty($this->alternate)) {
                 $url = $this->alternate[$code] ?? '';
             } else {
-                if (is_front_page()) {
-                    $url = app()->url();
-                    //
-                } elseif (is_archive()) {
-                    $url = app()->url()
-                        . Link::postType($post_type, $code);
-                    //
-                } elseif ($post && \is_singular()) {
-                    $url = app()->url()
-                        . $post->link($code);
+                $url = Link::current($code);
+                if ($url) {
+                    $url = app()->url() . $url;
                 }
             }
 
