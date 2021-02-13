@@ -127,17 +127,6 @@ class Str
 
 
 
-    public static function endsWith($haystack, $needles): bool
-    {
-        foreach ((array) $needles as $needle) {
-            if (substr($haystack, -strlen($needle)) === (string) $needle) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     // executes the same filters as WP the_content
     public static function filterContent($content): string
     {

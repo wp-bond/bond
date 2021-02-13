@@ -340,7 +340,7 @@ class FieldGroup
 
                 $suffix = Languages::fieldsSuffix($code);
 
-                if (Str::endsWith($field['name'], $suffix)) {
+                if (str_ends_with($field['name'], $suffix)) {
 
                     if (empty($tabs[$suffix])) {
                         $tabs[$suffix] = [];

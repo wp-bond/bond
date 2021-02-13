@@ -392,7 +392,7 @@ class Translation
 
                 $suffix = Languages::fieldsSuffix($code);
 
-                if (Str::endsWith($key, $suffix)) {
+                if (str_ends_with($key, $suffix)) {
 
                     $unlocalized_key = substr($key, 0, -strlen($suffix));
 
