@@ -126,6 +126,7 @@ class Cast
                 return new Fluent($value);
             }
 
+            // TODO reconsider, may be more consistent as FluentList
             // indexed arrays stay Array
             $_value = [];
             foreach ($value as $v) {

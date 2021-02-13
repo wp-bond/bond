@@ -18,6 +18,12 @@ use InvalidArgumentException;
 // would be lovable here methods like "only" to only retrieve the needed values
 // of course needs some thoughts so we create all needed methods in advance and don't change afterwards
 
+// TODO replaceAll method?
+// public function replaceAll(array $data)
+//     {
+//         $this->view_data = new Fluent($data);
+//     }
+
 
 class Fluent implements
     ArrayAccess,
@@ -75,6 +81,33 @@ class Fluent implements
     public function all(): array
     {
         return Obj::vars($this);
+    }
+
+    /**
+     * Return properties count. Does not skip null properties.
+     */
+    public function count(): int
+    {
+        return count(array_keys($this->all()));
+    }
+
+    public function isEmpty(): bool
+    {
+        return $this->count() === 0;
+    }
+
+    public function empty(): self
+    {
+        foreach (array_keys($this->all()) as $key) {
+            unset($this->{$key});
+        }
+        return $this;
+    }
+
+    public function run(string $path): self
+    {
+        require $path;
+        return $this;
     }
 
     public function toArray(): array
@@ -186,7 +219,7 @@ class Fluent implements
 
     public function offsetUnset($key)
     {
-        $this->__unset($key);
+        unset($this->{$key});
     }
 
     public function offsetExists($key): bool
@@ -201,53 +234,9 @@ class Fluent implements
         return false;
     }
 
-    /**
-     * Return properties count. Does not skip null properties.
-     *
-     * @return int
-     */
-    public function count(): int
-    {
-        return count(array_keys($this->all()));
-    }
-
     public function getIterator(): ArrayIterator
     {
         return new ArrayIterator($this->all());
-    }
-
-    public function localize(): self
-    {
-        if (!Languages::isMultilanguage()) {
-            return $this;
-        }
-        $this->localizeProperties($this, Languages::fieldsSuffix());
-        return $this;
-    }
-
-    private function localizeProperties($target, $suffix)
-    {
-        foreach ($target as $key => $value) {
-
-            // recurse
-            if (
-                is_array($value)
-                || $value instanceof Fluent
-            ) {
-                $target[$key] = $this->localizeProperties($value, $suffix);
-                continue;
-            }
-
-            // set value, if not set yet
-            if (Str::endsWith($key, $suffix)) {
-                $unlocalized_key = substr($key, 0, -strlen($suffix));
-
-                if (!isset($target->{$unlocalized_key})) {
-                    $target->{$unlocalized_key} = $value;
-                }
-            }
-        }
-        return $target;
     }
 
     /**

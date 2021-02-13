@@ -11,7 +11,7 @@ use Bond\Utils\Cast;
 use Bond\Utils\Obj;
 
 // TODO LATER give a new look into ArrayObject
-// at least here we miss many methods to work as a array like chunks, slive, etc
+// at least here we miss many methods to work as a array like chunks, slice, etc
 
 class FluentList implements
     ArrayAccess,
@@ -77,6 +77,29 @@ class FluentList implements
         return $this->items;
     }
 
+    public function count(): int
+    {
+        return count($this->all());
+    }
+
+    public function isEmpty(): bool
+    {
+        return $this->count() === 0;
+    }
+
+    public function empty(): self
+    {
+        $this->items = [];
+        return $this;
+    }
+
+    public function run(string $path): self
+    {
+        require $path;
+        return $this;
+    }
+
+
     public function toArray(): array
     {
         return Obj::toArray($this->all(), true);
@@ -85,14 +108,6 @@ class FluentList implements
     public function toJson($options = 0, $depth = 512): string
     {
         return json_encode($this, $options, $depth);
-    }
-
-    /**
-     * @return int
-     */
-    public function count(): int
-    {
-        return count($this->all());
     }
 
     /**

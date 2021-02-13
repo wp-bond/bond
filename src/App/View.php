@@ -4,28 +4,15 @@ namespace Bond\App;
 
 use Bond\Settings\Languages;
 use Bond\Support\Fluent;
+use Bond\Support\FluentList;
+use Bond\Utils\Arr;
 use Bond\Utils\Query;
 use Bond\Utils\Str;
-use InvalidArgumentException;
-
-
-// TODO GREAT IDEA! MAYBE to not have to use extract, the view sent would actually be the Fluent itself
-// We would use $this->myvalue on the views, and stil be able to use $this->partial()
-// View would just need to extend Fluent
-// Maybe its good as the template would not feel too loose
-//////////// BUT still the templating looks great as direct access to vars, we just still do too much validation isset emtpy
-
-
-
-
-// TODO maybe extend the whole view from Fluent, and do not turn this into static.
-// Would it be fine for View to be a Fluent object with the template loaders?
 
 
 // TODO test WP_USE_THEMES = false to see what happens
 // maybe we just do that as it is cleaner
 // could still leave the template_redirect action below anyway
-
 
 
 /**
@@ -36,43 +23,20 @@ use InvalidArgumentException;
  * This class does not override the default WordPress template loader, so you can safely mix and match both approaches any time.
  *
  */
-
-class View
+class View extends Fluent
 {
-    /**
-     * @var array
-     */
-    protected static $directories = [];
 
-    /**
-     * @var array
-     */
-    protected $lookup_order = [];
+    protected static array $directories = [];
+    protected array $lookup_order = [];
 
-    /**
-     * @var string
-     */
-    protected $templates_dir = 'templates';
+    protected string $templates_dir = 'templates';
+    protected string $partials_dir = 'partials';
 
-    /**
-     * @var string
-     */
-    protected $partials_dir = 'partials';
 
-    /**
-     * @var array
-     */
-    protected Fluent $view_data;
-
-    /**
-     * Create instance, setting the prefix which should be used when WP filter and action hooks are triggered.
-     */
     public function __construct()
     {
-        $this->view_data = new Fluent();
-
-        // add default Aapp state
-        $this->view_data->state = [
+        // add default app state
+        $this->state = [
             'isProduction' => app()->isProduction(),
             'isMobile' => app()->isMobile(),
             'isTablet' => app()->isTablet(),
@@ -93,24 +57,37 @@ class View
         // define lookup order
         $this->autoSetOrder();
 
+        // add wp footer output for JS
+        \add_action('wp_footer', [$this, 'outputStateTag']);
+
         // handle hooks
-        if (did_action('init')) {
+        if (\did_action('init')) {
             $this->triggerInitActions();
         } else {
-            add_action('init', [$this, 'triggerInitActions'], 20);
+            \add_action('init', [$this, 'triggerInitActions'], 20);
         }
 
-        if (did_action('wp')) {
+        if (\did_action('wp')) {
             $this->triggerReadyActions();
         } else {
-            add_action('wp', [$this, 'triggerReadyActions'], 20);
+            \add_action('wp', [$this, 'triggerReadyActions'], 20);
         }
 
-        if (did_action('template_redirect')) {
+        if (\did_action('template_redirect')) {
             $this->triggerRedirectActions();
         } else {
-            add_action('template_redirect', [$this, 'triggerRedirectActions'], 20);
+            \add_action('template_redirect', [$this, 'triggerRedirectActions'], 20);
         }
+    }
+
+    public function outputStateTag()
+    {
+        if (!$this->state) {
+            return;
+        }
+        echo '<script>'
+            . '__STATE__ = JSON.parse(' . json_encode(json_encode($this->state)) . ')'
+            . '</script>';
     }
 
     /**
@@ -129,58 +106,27 @@ class View
      */
     public function triggerInitActions()
     {
-        if (did_action('Bond/init')) {
-            return;
-        }
-
-        do_action('Bond/init');
-        do_action('Bond/init' . $this->deviceSuffix());
-
-        $order = $this->lookup_order;
-
-        foreach (array_reverse($this->lookup_order) as $name) {
-
-            // if the order changed at runtime, cancel it
-            if ($order !== $this->lookup_order) {
-                break;
-            }
-
-            do_action('Bond/init/' . $name);
-            do_action('Bond/init/' . $name . $this->deviceSuffix());
-        }
+        $this->doActions('init');
     }
 
     public function triggerReadyActions()
     {
-        if (did_action('Bond/ready')) {
-            return;
-        }
-
-        do_action('Bond/ready');
-        do_action('Bond/ready' . $this->deviceSuffix());
-
-        $order = $this->lookup_order;
-
-        foreach (array_reverse($this->lookup_order) as $name) {
-
-            // if the order changed at runtime, cancel it
-            if ($order !== $this->lookup_order) {
-                break;
-            }
-
-            do_action('Bond/ready/' . $name);
-            do_action('Bond/ready/' . $name . $this->deviceSuffix());
-        }
+        $this->doActions('ready');
     }
 
     public function triggerRedirectActions()
     {
-        if (did_action('Bond/template_redirect')) {
+        $this->doActions('template_redirect');
+    }
+
+    protected function doActions(string $action)
+    {
+        if (\did_action('Bond/' . $action)) {
             return;
         }
 
-        do_action('Bond/template_redirect');
-        do_action('Bond/template_redirect' . $this->deviceSuffix());
+        \do_action('Bond/' . $action);
+        \do_action('Bond/' . $action . $this->deviceSuffix());
 
         $order = $this->lookup_order;
 
@@ -191,17 +137,15 @@ class View
                 break;
             }
 
-            do_action('Bond/template_redirect/' . $name);
-            do_action('Bond/template_redirect/' . $name . $this->deviceSuffix());
+            \do_action('Bond/' . $action . '/' . $name);
+            \do_action('Bond/' . $action . '/' . $name . $this->deviceSuffix());
         }
     }
 
     /**
      * Gets order which the templates will be looked up.
-     *
-     * @return array
      */
-    public function getOrder()
+    public function getOrder(): array
     {
         return $this->lookup_order;
     }
@@ -222,6 +166,11 @@ class View
         );
     }
 
+    public function isTemplate($name)
+    {
+        return in_array($name, $this->lookup_order);
+    }
+
     /**
      * Sets the order which the templates will be looked up.
      *
@@ -234,31 +183,22 @@ class View
         }
 
         if (is_array($with)) {
-
             $this->lookup_order = $with;
         } elseif (is_a($with, 'WP_Query')) {
-
             $this->lookup_order = $this->defineLookupOrder($with);
         } elseif (!is_admin()) {
-
             $this->autoSetOrder();
         }
-    }
-
-    public function isTemplate($name)
-    {
-        return in_array($name, $this->lookup_order);
     }
 
     /**
      * Automatically sets the template lookup order based on the global $wp_query object.
      * If $wp_query is not set yet (before 'wp' action hook) it will hook into the 'wp' action with
      * priority 1, to set the order as soon as possible and not interfere with other actions.
-     *
      */
     public function autoSetOrder()
     {
-        if (did_action('wp')) {
+        if (\did_action('wp')) {
 
             // set order with global WP_Query
             global $wp_query;
@@ -271,163 +211,75 @@ class View
 
     /**
      * Get default templates sub-directory.
-     *
-     * @return string
      */
-    public function getTemplatesDir()
+    public function getTemplatesDir(): string
     {
         return $this->templates_dir;
     }
 
     /**
      * Set default templates sub-directory, relative to theme or parent theme.
-     * Paths can or cannot have slashes, don't worry.
-     *
-     * @param string $dir_name
      */
-    public function setTemplatesDir($dir_name)
+    public function setTemplatesDir(string $dir_name)
     {
         $this->templates_dir = trim($dir_name, '/');
     }
 
     /**
      * Get default partials sub-directory.
-     *
-     * @return string
      */
-    public function getPartialsDir()
+    public function getPartialsDir(): string
     {
         return $this->partials_dir;
     }
 
     /**
      * Set default partials sub-directory, relative to theme or parent theme.
-     * Paths can or cannot have slashes, don't worry.
-     *
-     * @param string $dir_name
      */
-    public function setPartialsDir($dir_name)
+    public function setPartialsDir(string $dir_name)
     {
         $this->partials_dir = trim($dir_name, '/');
     }
 
     /**
-     * Adds data to the internal storage, which will be used by all subsequent load calls.
-     *
-     * @param array|object $data
-     */
-    public function add($data)
-    {
-        $this->view_data->add($data);
-    }
-
-    /**
-     * Removes data from the internal storage.
-     *
-     * @param string $key
-     */
-    public function remove($key)
-    {
-        unset($this->view_data[$key]);
-    }
-
-    public function increment($key)
-    {
-        if (!isset($this->view_data[$key])) {
-            $this->view_data[$key] = 0;
-        }
-        return ++$this->view_data[$key];
-    }
-
-    public function append($key, $value)
-    {
-        if (!isset($this->view_data[$key])) {
-            $this->view_data[$key] = '';
-        }
-
-        $this->view_data[$key] .= (string) $value;
-
-        return $this->view_data[$key];
-    }
-
-    // public function appendArray($key, $value)
-    // {
-    //     if (!isset($this->view_data[$key])) {
-    //         $this->view_data[$key] = [];
-    //     }
-
-    //     $this->view_data[$key] = array_merge($this->view_data[$key], [$value]);
-
-    //     return $this->view_data[$key];
-    // }
-
-    /**
-     * Gets the currently stored key.
-     *
-     * @return array
-     */
-    public function get($key)
-    {
-        return $this->view_data[$key];
-    }
-
-    /**
-     * Gets the currently stored data.
-     *
-     * @return array
-     */
-    public function all()
-    {
-        return $this->view_data->all();
-    }
-
-    /**
-     * Overwrite the current stored data, which will be used by all subsequent load calls.
-     *
-     * @param array $data
-     */
-    public function replaceAll(array $data)
-    {
-        $this->view_data = new Fluent($data);
-    }
-
-
-
-
-    /**
      * Load a matching file inside the current templates dir.
-     *
-     * @param string $base_name
-     * @param array|Fluent $data
      */
-    public function template($base_name, $data = [], $include_global_data = true)
+    public function template(string $base_name)
     {
-        $this->load($this->templates_dir, $base_name, $data, $include_global_data);
+        $this->load(
+            $this->templates_dir,
+            $base_name,
+            $this
+        );
     }
 
     /**
      * Load a matching file inside the current partials dir.
-     *
-     * @param string $base_name
-     * @param array|Fluent $data
      */
-    public function partial(
-        $base_name,
-        $data = [],
-        $include_global_data = false
-    ) {
-        $this->load($this->partials_dir, $base_name, $data, $include_global_data);
+    public function partial(string $base_name, $data = null)
+    {
+        // cast as Fluent or FluentList
+        if (is_array($data) && !Arr::isAssoc($data)) {
+            $data = new FluentList($data);
+        } elseif (!($data instanceof Fluent)) {
+            $data = new Fluent($data);
+        }
+
+        $this->load(
+            $this->partials_dir,
+            $base_name,
+            $data
+        );
     }
 
     /**
      * Load a template file matching the current lookup order.
-     *
-     * @param string $dir_name
-     * @param string $base_name
-     * @param array|Fluent $data
      */
-    protected function load($dir_name, $base_name, $data = [], $include_global_data = true)
-    {
+    protected function load(
+        string $dir_name,
+        string $base_name,
+        $target
+    ) {
         // sanitize and scan dir, if not already scanned
         $dir_name = trim($dir_name, '/');
         $this->scanDir($dir_name);
@@ -435,48 +287,20 @@ class View
         // find the template file
         list($found, $template_path) = $this->find($base_name, $dir_name);
 
-        // return if not found
+        // skip if not found
         if (!$template_path) {
             return;
         }
 
-        //
-        if (is_array($data)) {
-            $data = new Fluent($data);
-        } elseif (!($data instanceof Fluent)) {
-            throw new InvalidArgumentException('Only Array or Fluent');
-        }
-
-
-
-        // merge input data with the global
-        if ($include_global_data) {
-            // optimize this?
-            foreach ($this->all() as $k => $v) {
-                if (!isset($data[$k])) {
-                    $data[$k] = $v;
-                }
-            }
-        }
-
-        // localize
-        $data->localize();
-
-        // trigger action before render, good to inject html before and after
+        // trigger action before render
+        // good to inject html before and after
         \do_action('Bond/load/' . $dir_name . '/' . $found);
 
-
-        // TODO maybe bind the closure, to not extract here..
-        // https://www.php.net/manual/en/class.closure.php
-
-        // extract data as php vars
-        extract($data->all());
-
-        // include
-        require $template_path;
+        // run
+        $target->run($template_path);
 
         // trigger action after render
-        do_action('Bond/loaded/' . $dir_name . '/' . $found);
+        \do_action('Bond/loaded/' . $dir_name . '/' . $found);
     }
 
     private function deviceSuffix()
@@ -498,7 +322,7 @@ class View
     /**
      * Finds a matching template file.
      */
-    protected function find($base_name, $dir_name): ?array
+    protected function find(string $base_name, string $dir_name): ?array
     {
         if (empty($base_name) || empty($dir_name)) {
             return null;
@@ -539,7 +363,7 @@ class View
      *
      * @param string $dir_name
      */
-    protected function scanDir($dir_name)
+    protected function scanDir(string $dir_name)
     {
         if (!$dir_name || isset(self::$directories[$dir_name])) {
             return;
@@ -548,7 +372,7 @@ class View
         self::$directories[$dir_name] = $this->scanDirHelper($dir_name);
     }
 
-    protected function scanDirHelper($dir_name): array
+    protected function scanDirHelper(string $dir_name): array
     {
         $result = [];
         $base_path = app()->viewsPath()
@@ -581,11 +405,8 @@ class View
      *
      * For the default WP hierarchy follow to:
      * http://codex.wordpress.org/Template_Hierarchy
-     *
-     * @param WP_Query $wp_query
-     * @return array
      */
-    protected function defineLookupOrder(\WP_Query $wp_query)
+    protected function defineLookupOrder(\WP_Query $wp_query): array
     {
         $result = [];
 
