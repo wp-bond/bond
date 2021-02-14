@@ -63,13 +63,13 @@ class Rewrite
         }
 
         // Multilanguage Pages
-        if (Languages::isMultilanguage()) {
+        if (Language::isMultilanguage()) {
 
             foreach (static::languagePrefixes() as $code => $prefix) {
 
                 // skip if there is not need for url prefix
                 // as the last rewrite below matches all
-                if (!Languages::shouldAddToUrl($code)) {
+                if (!Language::shouldAddToUrl($code)) {
                     continue;
                 }
 
@@ -367,7 +367,7 @@ class Rewrite
             // vars
             $_path = $prefix . $_path;
             $params_string = static::params($extra_params);
-            $param = Languages::isDefault($code) ? 'pagename' : 'page';
+            $param = Language::isDefault($code) ? 'pagename' : 'page';
 
             // rewrite
             \add_rewrite_rule(
@@ -395,15 +395,15 @@ class Rewrite
     protected static function languagePrefixes(): array
     {
         // reverse the order to rewrite correctly
-        $codes = array_reverse(Languages::codes());
+        $codes = array_reverse(Language::codes());
 
         $result = [];
         foreach ($codes as $code) {
 
             $prefix = '';
 
-            if (Languages::shouldAddToUrl($code)) {
-                $prefix = trim(Languages::urlPrefix($code), '/') . '/';
+            if (Language::shouldAddToUrl($code)) {
+                $prefix = trim(Language::urlPrefix($code), '/') . '/';
             }
 
             $result[$code] = $prefix;

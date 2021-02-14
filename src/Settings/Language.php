@@ -9,7 +9,7 @@ use Carbon\Carbon;
 // the default field will not have language suffixes
 // Also the opposite, working multilanguage, than temporally turning off
 
-class Languages
+class Language
 {
     private static array $languages = [
         'en' => [

@@ -2,7 +2,7 @@
 
 namespace Bond\Utils;
 
-use Bond\Settings\Languages;
+use Bond\Settings\Language;
 use Bond\Utils\Cast;
 use Bond\Utils\Query;
 
@@ -97,7 +97,7 @@ class Link
     public static function path($path = null, string $language_code = null): string
     {
         if (empty($path)) {
-            return Languages::urlPrefix($language_code) ?: '/';
+            return Language::urlPrefix($language_code) ?: '/';
         }
 
         $parts = [];
@@ -112,7 +112,7 @@ class Link
             }
         }
 
-        return Languages::urlPrefix($language_code)
+        return Language::urlPrefix($language_code)
             .  '/' . implode('/', $parts);
     }
 
@@ -163,25 +163,25 @@ class Link
         if (\is_post_type_hierarchical($post->post_type)) {
 
             // if is not multilanguage, let WP handle
-            if (!Languages::isMultilanguage()) {
+            if (!Language::isMultilanguage()) {
                 // TODO check a way to get the full URI here, without the need to return
                 return '';
             }
 
             // if slug is home, consider front page
             if ($post->post_name === 'home') {
-                return Languages::urlPrefix($language_code);
+                return Language::urlPrefix($language_code);
             }
 
             // ACF slugs are considered to be fully qualified
-            return Languages::urlPrefix($language_code)
+            return Language::urlPrefix($language_code)
                 . '/' . $post->slug($language_code);
         }
 
         // regular posts
-        if (Languages::isMultilanguage()) {
+        if (Language::isMultilanguage()) {
 
-            return Languages::urlPrefix($language_code)
+            return Language::urlPrefix($language_code)
                 . '/' . tx($post->post_type, 'url', $language_code)
                 . '/' . $post->slug($language_code);
         }
@@ -206,8 +206,8 @@ class Link
             return static::path(null, $language_code);
         }
 
-        if (Languages::isMultilanguage()) {
-            return Languages::urlPrefix($language_code)
+        if (Language::isMultilanguage()) {
+            return Language::urlPrefix($language_code)
                 . '/' . tx($post_type, 'url', $language_code);
         }
 

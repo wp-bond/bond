@@ -3,7 +3,7 @@
 namespace Bond\Support;
 
 
-use Bond\Settings\Languages;
+use Bond\Settings\Language;
 use IteratorAggregate;
 use ArrayAccess;
 use JsonSerializable;
@@ -12,7 +12,6 @@ use ArrayIterator;
 use Bond\Utils\Arr;
 use Bond\Utils\Cast;
 use Bond\Utils\Obj;
-use Bond\Utils\Str;
 use InvalidArgumentException;
 
 // would be lovable here methods like "only" to only retrieve the needed values
@@ -131,7 +130,7 @@ class Fluent implements
         }
 
         if (strpos($key, '.') === false) {
-            $key .= Languages::fieldsSuffix($language_code);
+            $key .= Language::fieldsSuffix($language_code);
             return isset($this->{$key}) ? $this->{$key} : null;
         }
 
@@ -149,8 +148,8 @@ class Fluent implements
         }
 
         if (strpos($key, '.') === false) {
-            if (Languages::isMultilanguage()) {
-                $key .= Languages::fieldsSuffix();
+            if (Language::isMultilanguage()) {
+                $key .= Language::fieldsSuffix();
                 if (isset($this->{$key})) {
                     return $this->{$key};
                 }
@@ -164,7 +163,7 @@ class Fluent implements
     public function getTranslations($key): array
     {
         $t = [];
-        foreach (Languages::codes() as $code) {
+        foreach (Language::codes() as $code) {
             $t[$code] = $this->get($key, $code);
         }
         return $t;
@@ -227,8 +226,8 @@ class Fluent implements
         if (isset($this->{$key})) {
             return true;
         }
-        if (Languages::isMultilanguage()) {
-            $key .= Languages::fieldsSuffix();
+        if (Language::isMultilanguage()) {
+            $key .= Language::fieldsSuffix();
             return isset($this->{$key});
         }
         return false;

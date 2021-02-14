@@ -2,7 +2,7 @@
 
 namespace Bond\Services;
 
-use Bond\Settings\Languages;
+use Bond\Settings\Language;
 use Bond\Utils\Cast;
 use Bond\Utils\Query;
 use Bond\Utils\Str;
@@ -33,7 +33,7 @@ class Translation
         //     }
         // });
 
-        $this->setWrittenLanguage(Languages::getDefault());
+        $this->setWrittenLanguage(Language::getDefault());
     }
 
     public function getWrittenLanguage(): string
@@ -99,7 +99,7 @@ class Translation
         }
 
         // fallbacks to current language
-        $language_code = Languages::code($language_code);
+        $language_code = Language::code($language_code);
 
         // defaults
         if (!$written_language) {
@@ -110,7 +110,7 @@ class Translation
         if (app()->isDevelopment()) {
             $res = $string;
 
-            foreach (Languages::codes() as $code) {
+            foreach (Language::codes() as $code) {
                 if ($code === $written_language) {
                     continue;
                 }
@@ -268,7 +268,7 @@ class Translation
     {
         $result = $this->awsClient()->translateText([
             'SourceLanguageCode' => $options['source'] ?? 'auto',
-            'TargetLanguageCode' => $options['target'] ?? Languages::code(),
+            'TargetLanguageCode' => $options['target'] ?? Language::code(),
             'Text' => $text,
         ]);
         return $result['TranslatedText'] ?? '';
@@ -311,7 +311,7 @@ class Translation
 
     public function translatePostHook(int $post_id)
     {
-        if (!Languages::isMultilanguage()) {
+        if (!Language::isMultilanguage()) {
             return;
         }
 
@@ -388,21 +388,21 @@ class Translation
             // for empty string that is suffixed with a lang
             // we will try to find a match in another language
             // and translate
-            foreach (Languages::codes() as $code) {
+            foreach (Language::codes() as $code) {
 
-                $suffix = Languages::fieldsSuffix($code);
+                $suffix = Language::fieldsSuffix($code);
 
                 if (str_ends_with($key, $suffix)) {
 
                     $unlocalized_key = substr($key, 0, -strlen($suffix));
 
-                    foreach (Languages::codes() as $c) {
+                    foreach (Language::codes() as $c) {
                         if ($c === $code) {
                             continue;
                         }
 
                         // key
-                        $lang_key = $unlocalized_key . Languages::fieldsSuffix($c);
+                        $lang_key = $unlocalized_key . Language::fieldsSuffix($c);
 
                         // value
                         $v = $target[$lang_key] ?? '';
@@ -457,11 +457,11 @@ class Translation
             return;
         }
 
-        $codes = Languages::codes();
+        $codes = Language::codes();
 
         // get default language's title
-        $default_code = Languages::getDefault();
-        $default_suffix = Languages::fieldsSuffix($default_code);
+        $default_code = Language::getDefault();
+        $default_suffix = Language::fieldsSuffix($default_code);
         $default_title = \get_field('title' . $default_suffix, $post->ID);
 
         // or get the next best match
@@ -471,7 +471,7 @@ class Translation
                     continue;
                 }
 
-                $suffix = Languages::fieldsSuffix($code);
+                $suffix = Language::fieldsSuffix($code);
                 $title = \get_field('title' . $suffix, $post->ID);
 
                 // if found, we will translate and set the default_title
@@ -512,7 +512,7 @@ class Translation
                 continue;
             }
 
-            $suffix = Languages::fieldsSuffix($code);
+            $suffix = Language::fieldsSuffix($code);
             $title = \get_field('title' . $suffix, $post->ID);
 
             if (empty($title)) {
@@ -536,7 +536,7 @@ class Translation
         $is_hierarchical = \is_post_type_hierarchical($post->post_type);
 
         foreach ($codes as $code) {
-            $suffix = Languages::fieldsSuffix($code);
+            $suffix = Language::fieldsSuffix($code);
 
             $slug = \get_field('slug' . $suffix, $post->ID);
 
@@ -555,7 +555,7 @@ class Translation
 
 
             // handle
-            if (Languages::isDefault($code)) {
+            if (Language::isDefault($code)) {
 
                 // define full path if is hierarchical
                 $parent_path = [];

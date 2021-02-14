@@ -3,7 +3,7 @@
 namespace Bond\Services;
 
 use Bond\Settings\Wp;
-use Bond\Settings\Languages;
+use Bond\Settings\Language;
 use Bond\Support\Fluent;
 use Bond\Utils\Cast;
 use Bond\Utils\Image;
@@ -111,7 +111,7 @@ class Meta
             // if (!empty($post))
             //     $this->description = !empty($post->post_excerpt) ? $post->post_excerpt : $post->post_content;
 
-            $this->url = app()->url() . Languages::urlPrefix() . '/';
+            $this->url = app()->url() . Language::urlPrefix() . '/';
             return;
         }
 
@@ -231,9 +231,9 @@ class Meta
             $post = Cast::post($post);
         }
 
-        foreach (Languages::codes() as $code) {
+        foreach (Language::codes() as $code) {
 
-            if ($code === Languages::code()) {
+            if ($code === Language::code()) {
                 continue;
             }
 
@@ -326,7 +326,7 @@ class Meta
     {
         echo '<meta property="og:type" content="' . $this->og_type . '">' . "\n";
         echo '<meta property="og:site_name" content="' . app()->name() . '">' . "\n";
-        echo '<meta property="og:locale" content="' . Languages::locale() . '">' . "\n";
+        echo '<meta property="og:locale" content="' . Language::locale() . '">' . "\n";
 
         //og images
         if (!empty($this->images)) {

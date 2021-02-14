@@ -2,7 +2,7 @@
 
 namespace Bond\App;
 
-use Bond\Settings\Languages;
+use Bond\Settings\Language;
 use Bond\Support\Fluent;
 use Bond\Support\FluentList;
 use Bond\Utils\Arr;
@@ -37,12 +37,16 @@ class View extends Fluent
     {
         // add default app state
         $this->state = [
-            'isProduction' => app()->isProduction(),
-            'isMobile' => app()->isMobile(),
-            'isTablet' => app()->isTablet(),
-            'isDesktop' => app()->isDesktop(),
-            'languageCode' => Languages::code(),
-            'lang' => Languages::shortCode(),
+            'app' => [
+                'isProduction' => app()->isProduction(),
+                'isMobile' => app()->isMobile(),
+                'isTablet' => app()->isTablet(),
+                'isDesktop' => app()->isDesktop(),
+            ],
+            'language' => [
+                'code' => Language::code(),
+                'shortCode' => Language::shortCode(),
+            ],
         ];
 
         // do not initialize when it is on WP admin

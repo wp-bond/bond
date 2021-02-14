@@ -5,7 +5,7 @@ namespace Bond\App;
 use Bond\Settings\Admin;
 use Bond\Settings\Api;
 use Bond\Settings\Html;
-use Bond\Settings\Languages;
+use Bond\Settings\Language;
 use Bond\Settings\Wp;
 use Bond\Support\Fluent;
 use Exception;
@@ -15,7 +15,7 @@ class Config extends Fluent
     protected App $container;
     public Fluent $app;
     public Fluent $cache;
-    public Fluent $languages;
+    public Fluent $language;
     public Fluent $translation;
     public Fluent $image;
     public Fluent $meta;
@@ -30,7 +30,7 @@ class Config extends Fluent
         $this->container = $container;
         $this->app = new Fluent();
         $this->cache = new Fluent();
-        $this->languages = new Fluent();
+        $this->language = new Fluent();
         $this->translation = new Fluent();
         $this->image = new Fluent([
             'sizes' => [
@@ -64,7 +64,7 @@ class Config extends Fluent
         // Load Locale and Translation first, so the following already have the ability to translate strings
 
         foreach ([
-            'languages',
+            'language',
             'translation',
             'app',
             'cache',
@@ -90,14 +90,14 @@ class Config extends Fluent
         }
     }
 
-    protected function languagesSettings()
+    protected function languageSettings()
     {
-        if ($this->languages->codes) {
-            foreach ($this->languages->codes as $code => $values) {
-                Languages::add($code, (array) $values);
+        if ($this->language->codes) {
+            foreach ($this->language->codes as $code => $values) {
+                Language::add($code, (array) $values);
             }
         }
-        Languages::setCurrentFromRequest();
+        Language::setCurrentFromRequest();
     }
 
     protected function translationSettings()
@@ -176,7 +176,7 @@ class Config extends Fluent
 
         // Protects WP redirect on front pages
         if (
-            Languages::isMultilanguage()
+            Language::isMultilanguage()
             || $this->wp->disable_front_page_redirect
         ) {
             Wp::disableFrontPageRedirect();

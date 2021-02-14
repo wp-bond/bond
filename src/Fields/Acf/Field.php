@@ -3,7 +3,7 @@
 namespace Bond\Fields\Acf;
 
 
-use Bond\Settings\Languages;
+use Bond\Settings\Language;
 use ArrayAccess;
 use Bond\Utils\Obj;
 use Bond\Utils\Str;
@@ -135,13 +135,13 @@ class Field implements ArrayAccess
 
         $fields = [];
 
-        foreach (Languages::codes() as $code) {
+        foreach (Language::codes() as $code) {
 
-            if ($skip_default && Languages::isDefault($code)) {
+            if ($skip_default && Language::isDefault($code)) {
                 continue;
             }
 
-            $suffix = Languages::fieldsSuffix($code);
+            $suffix = Language::fieldsSuffix($code);
 
             $f = $field;
             if (isset($f['key'])) {
@@ -157,7 +157,7 @@ class Field implements ArrayAccess
                 } else {
                     $f['label'] .= ' ';
                 }
-                $f['label'] .= Languages::fieldsLabel($code);
+                $f['label'] .= Language::fieldsLabel($code);
             }
 
             // go into conditional as well

@@ -2,7 +2,7 @@
 
 namespace Bond\Utils;
 
-use Bond\Settings\Languages;
+use Bond\Settings\Language;
 use Bond\Post;
 use Bond\Posts;
 use Bond\Terms;
@@ -43,7 +43,7 @@ class Query
         array $args = []
     ): ?WP_Post {
 
-        if (Languages::isMultilanguage()) {
+        if (Language::isMultilanguage()) {
             $query_args = [
                 'post_type' => $post_type,
                 'posts_per_page' => 1,
@@ -54,7 +54,7 @@ class Query
                 'update_post_term_cache' => false,
                 'meta_query' => [
                     [
-                        'key' => 'slug' . Languages::fieldsSuffix($language_code),
+                        'key' => 'slug' . Language::fieldsSuffix($language_code),
                         'value' => $slug,
                         'compare' => '==',
                     ],

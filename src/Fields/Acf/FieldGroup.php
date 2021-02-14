@@ -4,7 +4,7 @@ namespace Bond\Fields\Acf;
 
 use Bond\Fields\Acf\Properties\HasSubFields;
 use Bond\Utils\Str;
-use Bond\Settings\Languages;
+use Bond\Settings\Language;
 
 // TODO add multilanguageTabs to Group and Flex layout too
 // Maybe this FieldGroup class could extend the Field itself, just like GroupField?
@@ -332,13 +332,13 @@ class FieldGroup
 
         foreach ($fields as $field) {
 
-            foreach (Languages::all() as $code => $values) {
+            foreach (Language::all() as $code => $values) {
 
                 if (!empty($field['i18n_skip_tabs'])) {
                     continue;
                 }
 
-                $suffix = Languages::fieldsSuffix($code);
+                $suffix = Language::fieldsSuffix($code);
 
                 if (str_ends_with($field['name'], $suffix)) {
 

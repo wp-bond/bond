@@ -6,7 +6,7 @@ use Bond\Utils\Link;
 use Bond\Support\Fluent;
 use Bond\Utils\Cast;
 use Bond\Utils\Query;
-use Bond\Settings\Languages;
+use Bond\Settings\Language;
 use WP_Post;
 
 class Post extends Fluent
@@ -132,7 +132,7 @@ class Post extends Fluent
 
     public function slug(string $language_code = null): string
     {
-        if (Languages::isMultilanguage()) {
+        if (Language::isMultilanguage()) {
             return $this->get('slug', $language_code) ?: $this->post_name;
         }
         return $this->post_name;

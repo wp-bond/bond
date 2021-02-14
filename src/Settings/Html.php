@@ -13,7 +13,7 @@ class Html
             $result = \view()->getOrder();
 
             // add lang
-            $result[] = 'lang-' . Languages::shortCode();
+            $result[] = 'lang-' . Language::shortCode();
 
             // devices
             if (app()->isMobile()) {
