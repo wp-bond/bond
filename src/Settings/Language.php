@@ -216,6 +216,22 @@ class Language
         return self::get('short_name', $code);
     }
 
+    // https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/lang
+    public static function tag(string $code = null): string
+    {
+        return str_replace('_', '-', self::locale($code));
+    }
+
+    public static function urlPrefix($code = null): string
+    {
+        if (self::shouldAddToUrl($code)) {
+            if ($short_code = self::get('short_code', $code)) {
+                return '/' . $short_code;
+            }
+        }
+        return '';
+    }
+
     public static function fieldsSuffix(string $code = null): string
     {
         if (!$code) {
@@ -242,20 +258,6 @@ class Language
         return self::get('fields_label', $code);
     }
 
-    public static function htmlAttribute(string $code = null): string
-    {
-        return str_replace('_', '-', self::locale($code));
-    }
-
-    public static function urlPrefix($code = null): string
-    {
-        if (self::shouldAddToUrl($code)) {
-            if ($short_code = self::get('short_code', $code)) {
-                return '/' . $short_code;
-            }
-        }
-        return '';
-    }
 
     private static function get(string $param, string $code = null): string
     {
