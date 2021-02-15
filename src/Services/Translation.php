@@ -81,7 +81,7 @@ class Translation
         $string,
         string $language_code = null,
         string $written_language = null,
-        string $context = null,
+        string $context = null
 
     ): string {
         $string = (string) $string;

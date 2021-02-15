@@ -266,6 +266,8 @@ class View extends Fluent
         if (is_array($data) && !Arr::isAssoc($data)) {
             $data = new FluentList($data);
         } elseif (!($data instanceof Fluent)) {
+            // TODO if not array or object (i.e. pass string or number)
+            // maybe add as "$content" var?
             $data = new Fluent($data);
         }
 

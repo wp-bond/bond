@@ -85,8 +85,7 @@ abstract class PostType
     public static function archive()
     {
         global $posts;
-        $items = Cast::posts($posts)->values('archive');
-        view()->add(compact('items'));
+        view()->items = Cast::posts($posts)->values('archive');
     }
 
     public static function single()
