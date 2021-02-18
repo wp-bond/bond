@@ -183,4 +183,29 @@ class FluentList implements
     {
         return '';
     }
+
+    public function sort(int $flags = SORT_REGULAR): bool
+    {
+        return sort($this->items, $flags);
+    }
+
+    public function usort(callable $callback): bool
+    {
+        return usort($this->items, $callback);
+    }
+
+    public function sortBy(string $key): self
+    {
+        // TODO maybe add param to choose the compare function
+        $this->usort(function ($a, $b) use ($key) {
+            return strnatcasecmp($a->{$key}, $b->{$key});
+        });
+        return $this;
+    }
+
+    public function reverse(): self
+    {
+        $this->items = array_reverse($this->items);
+        return $this;
+    }
 }
