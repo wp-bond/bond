@@ -6,6 +6,402 @@ namespace Bond\Utils;
 
 class Image
 {
+    protected static array $sizes = [
+        'thumbnail' => [300, 0],
+        'medium' => [300, 0],
+        'medium_large' => [0, 0],
+        'large' => [0, 0],
+    ];
+
+    public static function setSizes(array $sizes)
+    {
+        static::$sizes = $sizes;
+    }
+
+    // TODO later allow customization
+    protected static array $media_sizes = [
+        [
+            'name' => 'xxl',
+            'minWidth' => 1480,
+        ],
+        [
+            'name' => 'xl',
+            'minWidth' => 1200,
+        ],
+        [
+            'name' => 'lg',
+            'minWidth' => 992,
+        ],
+        [
+            'name' => 'md',
+            'minWidth' => 768,
+        ],
+        [
+            'name' => 'sm',
+            'minWidth' => 576,
+        ],
+        [
+            'name' => 'w428', // iphone pro max
+            'minWidth' => 428,
+        ],
+        [
+            'name' => 'w414', // iphone plus / 8
+            'minWidth' => 414,
+        ],
+        [
+            'name' => 'w390', // iphone pro
+            'minWidth' => 390,
+        ],
+        [
+            'name' => 'w375', // iphone mini
+            'minWidth' => 375,
+        ],
+    ];
+
+
+    /*
+    $tag = Image::pictureTag(
+        $image,
+        'medium'
+    );
+    $tag = Image::pictureTag(
+        [
+            'default' => $image_mobile,
+            'md' => $image_desktop,
+        ],
+        [
+            'default' => 'medium_mobile_crop',
+            'md' => 'medium,
+        ],
+    );
+    */
+    public static function pictureTag(
+        $image,
+        $size = 'thumbnail',
+        bool $with_caption = false
+    ): string {
+
+        // just basic protection
+        // still will error out if the default image is not set
+        if (empty($image)) {
+            return '';
+        }
+
+        // allows to set a different image per media breakpoint
+        if (is_numeric($image) || is_string($image)) {
+            $image = [
+                'default' => (int) $image,
+            ];
+        }
+
+        // auto set the sizes array
+        if (is_string($size)) {
+            $size = [
+                'default' => $size,
+            ];
+            foreach (static::$media_sizes as $media) {
+
+                $s = $size['default'] . '_' . $media['name'];
+
+                if (isset(static::$sizes[$s])) {
+                    $size[$media['name']] = $s;
+                }
+            }
+        }
+
+        // responsive
+        $responsive_sizes = [];
+
+        foreach (static::$media_sizes as $media) {
+            $name = $media['name'];
+            if (empty($size[$name])) {
+                continue;
+            }
+
+            $retina_sizes = (array) $size[$name];
+
+            // auto retina
+            if (count($retina_sizes) === 1) {
+                if (isset(static::$sizes[$retina_sizes[0] . '_2x'])) {
+                    $retina_sizes[] = $retina_sizes[0] . '_2x';
+                }
+            }
+
+            $rule = isset($media['minWidth'])
+                ? 'min-width: ' . $media['minWidth'] . 'px'
+                : '';
+
+            $responsive_sizes[] = [
+                'rule' => $rule,
+                'size' => $retina_sizes,
+                'image' => $image[$name] ?? $image['default'],
+            ];
+        }
+
+        // default size
+        $retina_sizes = (array) $size['default'];
+
+        // auto retina it
+        if (count($retina_sizes) === 1) {
+            if (isset(static::$sizes[$retina_sizes[0] . '_2x'])) {
+                $retina_sizes[] = $retina_sizes[0] . '_2x';
+            }
+        }
+
+        // get the tag
+        $tag = self::pictureTagHelper(
+            $image['default'],
+            $retina_sizes,
+            $responsive_sizes
+        );
+
+        // caption
+        if ($tag && $with_caption) {
+            $caption = static::caption($image['default']);
+            if (!empty($caption)) {
+                $tag .= '<h6>' . Str::br($caption) . '</h6>';
+            }
+        }
+
+        return $tag;
+    }
+
+    // TODO improve this, look into t/g JS version
+    private static function pictureTagHelper(
+        $image_id,
+        $default_size,
+        array $responsive_sizes = null,
+        array $options = []
+    ): string {
+        // short-cirtcuit for animated gifs
+        if (\get_post_mime_type($image_id) === 'image/gif') {
+            $default_size = 'full';
+            $responsive_sizes = null;
+        }
+
+        $default_size = (array) $default_size;
+        $with_site_url = $options['site_url'] ?? true;
+
+        // get image url
+        $default_url = self::url(
+            $image_id,
+            $default_size[0],
+            $with_site_url
+        );
+
+        // exit early
+        if (!$default_url) {
+            return '';
+        }
+
+        // data string
+        $data_string = '';
+        $data = [];
+
+        if (!empty($options['data_size'])) {
+
+            $img_src = self::source(
+                $image_id,
+                $default_size[0],
+                $with_site_url
+            );
+
+            if (!empty($img_src[0]) && !empty($img_src[1]) && !empty($img_src[2])) {
+                $data['width'] = $img_src[1];
+                $data['height'] = $img_src[2];
+            }
+        }
+
+        $data_string = self::attributesToString($data, 'data-');
+
+
+        // form the picture tag
+        $result = '<picture';
+        $result .= $data_string;
+        $result .= '>';
+
+        if (!empty($responsive_sizes)) {
+
+            foreach ($responsive_sizes as $r) {
+
+                if (empty($r['image'])) {
+                    $r['image'] = $image_id;
+                }
+                $size = (array) $r['size'];
+
+                $result .= '<source srcset="' . self::url(
+                    $r['image'],
+                    $size[0],
+                    $with_site_url
+                );
+
+                if (count($size) > 1) {
+                    $result .= ' 1x, ' . self::url(
+                        $r['image'],
+                        $size[1],
+                        $with_site_url
+                    ) . ' 2x';
+                }
+                $result .= '"';
+
+                $result .= ' media="(' . trim(trim($r['rule'], ')'), '(') . ')">';
+            }
+        }
+
+        // default image
+        if (count($default_size) > 1) {
+            $result .= '<img srcset="' . $default_url . ' 1x, ' . self::url(
+                $image_id,
+                $default_size[1],
+                $with_site_url
+            ) . ' 2x"';
+        } else {
+            $result .= '<img srcset="' . $default_url . '"';
+        }
+
+        //the alt
+        if (empty($options['no_alt'])) {
+            $result .= ' alt="' . Str::clean(self::alt($image_id, true)) . '"';
+        }
+        $result .= '>';
+
+        // close picture tag
+        $result .= '</picture>';
+
+        return $result;
+    }
+
+
+    public static function imageTags(
+        array $image_ids,
+        $size = 'thumbnail',
+        array $options = []
+    ): string {
+
+        $res = '';
+        foreach ($image_ids as $id) {
+            $res .= static::imageTag($id, $size, $options);
+        }
+        return $res;
+    }
+
+    /**
+     *
+     *
+     * @param int $image_id
+     * @param string|array $size
+     * @param array $options
+     * @return string
+     */
+    public static function imageTag(
+        $image_id,
+        $size = 'thumbnail',
+        array $options = []
+    ): string {
+
+        // short-cirtcuit for animated gifs
+        if (!empty($options['animated-gifs'])) {
+            if (\get_post_mime_type($image_id) === 'image/gif') {
+                $size = 'full';
+            }
+        }
+
+        $size = (array) $size;
+        $with_site_url = $options['site_url'] ?? true;
+
+        // get image source
+        $src = self::source(
+            $image_id,
+            $size[0],
+            $with_site_url
+        );
+
+        // exit early
+        if (!$src) {
+            return '';
+        }
+
+        // form the image tag
+        $result = '<img';
+
+        // the src
+        if (count($size) > 1) {
+            $result .= ' srcset="' . $src[0] . ' 1x, ' . self::url(
+                $image_id,
+                $size[1],
+                $with_site_url
+            ) . ' 2x"';
+        } elseif (!empty($options['no_src'])) {
+            $result .= ' data-src="' . $src[0] . '"';
+        } else {
+            $result .= ' src="' . $src[0] . '"';
+        }
+
+        // the dimensions
+        if (empty($options['no_size'])) {
+            $result .= ' width=' . $src[1] . ' height=' . $src[2];
+        }
+
+        // classes
+        $classes = !empty($options['class']) ? (array) $options['class'] : [];
+
+        if (!empty($classes)) {
+            $result .= ' class="' . implode(' ', $classes) . '"';
+        }
+
+        //the alt
+        if (empty($options['no_alt'])) {
+            $result .= ' alt="' . Str::clean(self::alt($image_id, true)) . '"';
+        }
+
+        // attributes
+        $result .= self::attributesToString($options['attributes'] ?? []);
+
+        //close tag
+        $result .= '>';
+
+        return $result;
+    }
+
+
+
+    public static function isVertical($image_id): bool
+    {
+        $r = self::sizeRatio($image_id);
+        return $r && $r < 1;
+    }
+
+    public static function isHorizontal($image_id): bool
+    {
+        $r = self::sizeRatio($image_id);
+        return $r && $r > 1;
+    }
+
+    public static function isWide($image_id, float $wide_index = 1.7): bool
+    {
+        $r = self::sizeRatio($image_id);
+        return $r && $r >= $wide_index;
+    }
+
+    public static function isSquare($image_id): bool
+    {
+        $r = self::sizeRatio($image_id);
+        return $r && $r === 1;
+    }
+
+    public static function sizeRatio($image_id): float
+    {
+        $path = \get_attached_file($image_id);
+        if (!file_exists($path)) {
+            return 0;
+        }
+        $image_size = getimagesize($path);
+
+        return empty($image_size)
+            ? 0
+            : $image_size[0] / $image_size[1];
+    }
+
 
     public static function url(
         $image_id,
@@ -82,14 +478,11 @@ class Image
 
 
 
-    /**
-     *
-     * @param int $image_id
-     * @param boolean $with_fallback
-     * @return string
-     */
-    public static function caption($image_id, $with_fallback = false): string
-    {
+    public static function caption(
+        $image_id,
+        bool $with_fallback = false
+    ): string {
+
         $attachment = Cast::wpPost($image_id);
         if (empty($attachment)) {
             return '';
@@ -117,12 +510,7 @@ class Image
     }
 
 
-    /**
-     *
-     * @param int $image_id
-     * @param boolean $with_fallback
-     * @return string
-     */
+
     public static function alt($image_id, $with_fallback = false): string
     {
         $result = \get_post_meta($image_id, '_wp_attachment_image_alt', true);
@@ -149,245 +537,11 @@ class Image
 
 
 
-
-    public static function isVertical($image_id)
-    {
-        $r = self::sizeRatio($image_id);
-        return $r && $r < 1;
-    }
-
-    public static function isHorizontal($image_id)
-    {
-        $r = self::sizeRatio($image_id);
-        return $r && $r > 1;
-    }
-
-    public static function isWide($image_id, $wide_index = 1.7)
-    {
-        $r = self::sizeRatio($image_id);
-        return $r && $r >= $wide_index;
-    }
-
-    public static function isSquare($image_id)
-    {
-        $r = self::sizeRatio($image_id);
-        return $r && $r === 1;
-    }
-
-    public static function sizeRatio($image_id)
-    {
-        $path = \get_attached_file($image_id);
-        if (!file_exists($path)) {
-            return 0;
-        }
-        $image_size = getimagesize($path);
-
-        return empty($image_size) ? 0 : $image_size[0] / $image_size[1];
-    }
-
-
-    /**
-     *
-     *
-     * @param int $image_id
-     * @param string|array $size
-     * @param array $options
-     * @return string
-     */
-    public static function imageTag($image_id, $size, array $options = []): string
-    {
-        // short-cirtcuit for animated gifs
-        if (!empty($options['animated-gifs'])) {
-            if (\get_post_mime_type($image_id) === 'image/gif') {
-                $size = 'full';
-            }
-        }
-
-        $size = (array) $size;
-        $with_site_url = $options['site_url'] ?? true;
-
-        // get image source
-        $src = self::source(
-            $image_id,
-            $size[0],
-            $with_site_url
-        );
-
-        // exit early
-        if (!$src) {
-            return '';
-        }
-
-        // form the image tag
-        $result = '<img';
-
-        // the src
-        if (count($size) > 1) {
-            $result .= ' srcset="' . $src[0] . ' 1x, ' . self::url(
-                $image_id,
-                $size[1],
-                $with_site_url
-            ) . ' 2x"';
-        } elseif (!empty($options['no_src'])) {
-            $result .= ' data-src="' . $src[0] . '"';
-        } else {
-            $result .= ' src="' . $src[0] . '"';
-        }
-
-        // the dimensions
-        if (empty($options['no_size'])) {
-            $result .= ' width=' . $src[1] . ' height=' . $src[2];
-        }
-
-        // classes
-        $classes = !empty($options['class']) ? (array) $options['class'] : [];
-
-        if (!empty($classes)) {
-            $result .= ' class="' . implode(' ', $classes) . '"';
-        }
-
-        //the alt
-        if (empty($options['no_alt'])) {
-            $result .= ' alt="' . Str::clean(self::alt($image_id, true)) . '"';
-        }
-
-        // attributes
-        $result .= self::attributesToString($options['attributes'] ?? []);
-
-        //close tag
-        $result .= '>';
-
-        return $result;
-    }
-
-
-    /*
-$tag = Image::pictureTag(
-    $mobile_image_id,
-    [FULL_PAGE_MOBILE, FULL_PAGE_MOBILE.'_retina'],
-    [
-        [
-            'rule' => 'min-width: 960px',
-            'size' => [FULL_PAGE, FULL_PAGE.'_retina'],
-            'image' => $image_id,
-        ],
-    ],
-    ['class' => 'front-page-bg']
-);
- */
-    public static function pictureTag(
-        $image_id,
-        $default_size,
-        array $responsive_sizes = null,
-        array $options = []
-    ) {
-        // short-cirtcuit for animated gifs
-        if (\get_post_mime_type($image_id) === 'image/gif') {
-            $default_size = 'full';
-            $responsive_sizes = null;
-        }
-
-        $default_size = (array) $default_size;
-        $with_site_url = $options['site_url'] ?? true;
-
-        // get image url
-        $default_url = self::url(
-            $image_id,
-            $default_size[0],
-            $with_site_url
-        );
-
-        // exit early
-        if (!$default_url) {
-            return '';
-        }
-
-        // data string
-        $data_string = '';
-        $data = [];
-
-        if (!empty($options['data_size'])) {
-
-            $img_src = self::source(
-                $image_id,
-                $default_size[0],
-                $with_site_url
-            );
-
-            if (!empty($img_src[0]) && !empty($img_src[1]) && !empty($img_src[2])) {
-                $data['width'] = $img_src[1];
-                $data['height'] = $img_src[2];
-            }
-        }
-
-        $data_string = self::attributesToString($data, 'data-');
-
-
-        // form the picture tag
-        $result = '<picture';
-        if (!empty($options['class'])) {
-            $result .= ' class="' . implode(' ', (array) $options['class']) . '"';
-        }
-        $result .= $data_string;
-        $result .= '>';
-
-        if (!empty($responsive_sizes)) {
-
-            foreach ($responsive_sizes as $r) {
-
-                if (empty($r['image'])) {
-                    $r['image'] = $image_id;
-                }
-                $size = (array) $r['size'];
-
-                $result .= '<source srcset="' . self::url(
-                    $r['image'],
-                    $size[0],
-                    $with_site_url
-                );
-
-                if (count($size) > 1) {
-                    $result .= ' 1x, ' . self::url(
-                        $r['image'],
-                        $size[1],
-                        $with_site_url
-                    ) . ' 2x';
-                }
-                $result .= '"';
-
-                $result .= ' media="(' . trim(trim($r['rule'], ')'), '(') . ')">';
-            }
-        }
-
-        // default image
-        if (count($default_size) > 1) {
-            $result .= '<img srcset="' . $default_url . ' 1x, ' . self::url(
-                $image_id,
-                $default_size[1],
-                $with_site_url
-            ) . ' 2x"';
-        } else {
-            $result .= '<img srcset="' . $default_url . '"';
-        }
-
-        //the alt
-        if (empty($options['no_alt'])) {
-            $result .= ' alt="' . Str::clean(self::alt($image_id, true)) . '"';
-        }
-        $result .= '>';
-
-        // close picture tag
-        $result .= '</picture>';
-
-        return $result;
-    }
-
-
     /**
      *
      * @param int $image_id
      * @param string $size
-     * @return array
+     * @return array|false
      */
     private static function imageDownsizeHelper($image_id, $size)
     {
@@ -445,7 +599,6 @@ $tag = Image::pictureTag(
         }
         return $result;
     }
-
 
 
 

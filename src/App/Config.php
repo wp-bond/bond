@@ -8,6 +8,7 @@ use Bond\Settings\Html;
 use Bond\Settings\Language;
 use Bond\Settings\Wp;
 use Bond\Support\Fluent;
+use Bond\Utils\Image;
 use Exception;
 
 class Config extends Fluent
@@ -150,6 +151,7 @@ class Config extends Fluent
 
         if ($this->image->sizes) {
             Wp::addImageSizes((array) $this->image->sizes);
+            Image::setSizes((array) $this->image->sizes);
         }
 
         if ($this->image->editor_sizes) {
