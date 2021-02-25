@@ -3,6 +3,7 @@
 namespace Bond\Fields\Acf\Properties;
 
 use Bond\Fields\Acf\BooleanField;
+use Bond\Fields\Acf\ColorPickerField;
 use Bond\Fields\Acf\DateTimeField;
 use Bond\Fields\Acf\EmailField;
 use Bond\Fields\Acf\Field;
@@ -200,6 +201,11 @@ trait HasSubFields
     public function dateTimeField($name): DateTimeField
     {
         return $this->_addField(new DateTimeField($name));
+    }
+
+    public function colorPickerField($name): ColorPickerField
+    {
+        return $this->_addField(new ColorPickerField($name));
     }
 
     public function googleMapField($name): GoogleMapField

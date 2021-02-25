@@ -23,7 +23,7 @@ class RepeaterField extends Field
 
     public function buttonLabel(string $label): self
     {
-        $this->button_label = $label;
+        $this->button_label = tx($label, 'fields');
         return $this;
     }
 

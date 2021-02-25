@@ -11,7 +11,7 @@ class MessageField extends Field
 
     public function message(string $message): self
     {
-        $this->message = $message;
+        $this->message = tx($message, 'fields');
         return $this;
     }
 

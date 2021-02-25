@@ -41,7 +41,7 @@ class Field implements ArrayAccess
 
     public function instructions(string $instructions): self
     {
-        $this->instructions = $instructions;
+        $this->instructions = tx($instructions, 'fields');
         return $this;
     }
 
