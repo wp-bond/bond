@@ -391,12 +391,18 @@ class App extends Container
     {
         \add_action('save_post', [$this, 'savePostHook'], 10, 2);
         \add_action('edit_attachment', [$this, 'savePostHook']);
+
+        // for ACF options, the ACF hook
+        \add_action('acf/save_post', [$this, 'optionsSavePostHook']);
     }
 
     public function removeSavePostHook()
     {
         \remove_action('save_post', [$this, 'savePostHook'], 10, 2);
         \remove_action('edit_attachment', [$this, 'savePostHook']);
+
+        // ACF options
+        \remove_action('acf/save_post', [$this, 'optionsSavePostHook']);
     }
 
     public function savePostHook($post_id, $post = null)
@@ -447,6 +453,32 @@ class App extends Container
 
         // re-add action
         $this->addSavePostHook();
+    }
+
+    public function optionsSavePostHook($post_id)
+    {
+        if ($post_id !== 'options') {
+            return;
+        }
+
+        // turn off cache
+        $original_state = config()->cache->enabled ?? false;
+        config()->cache->enabled = false;
+
+        // clear cache
+        Cache::forget('options');
+        Cache::forget('global');
+
+        // Translate before
+        \do_action('Bond/translate_options');
+
+        // Now emit actions
+        if (\has_action('Bond/save_options')) {
+            \do_action('Bond/save_options');
+        }
+
+        // turn on posts cache
+        config()->cache->enabled = $original_state;
     }
 
 

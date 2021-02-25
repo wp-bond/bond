@@ -26,13 +26,6 @@ class Translation
     public function __construct()
     {
         $this->addTranslatePostHook();
-        // TODO add options pages too
-
-        // add_action('acf/save_post', function ($post_id) {
-        //     if ($post_id === 'options') {
-        //     }
-        // });
-
         $this->setWrittenLanguage(Language::getDefault());
     }
 
@@ -301,12 +294,24 @@ class Translation
 
     public function addTranslatePostHook()
     {
+        // for posts we translate in sync with Bond save post hook
         \add_action('Bond/translate_post', [$this, 'translatePostHook'], 1);
+
+        // for ACF options
+        \add_action('Bond/translate_options', [$this, 'translateOptionsHook']);
     }
 
     public function removeTranslatePostHook()
     {
         \remove_action('Bond/translate_post', [$this, 'translatePostHook'], 1);
+
+        \remove_action('Bond/translate_options', [$this, 'translateOptionsHook']);
+    }
+
+
+    public function translateOptionsHook()
+    {
+        $this->translateAllFields('options');
     }
 
     public function translatePostHook(int $post_id)
@@ -324,7 +329,7 @@ class Translation
     }
 
 
-    public function translateAllFields(int $post_id)
+    public function translateAllFields($post_id)
     {
         if (!$this->hasService() || !app()->hasAcf()) {
             return;
