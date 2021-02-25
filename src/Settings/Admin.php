@@ -277,7 +277,11 @@ class Admin
             return;
         }
         if (!isset(self::$archive_columns[$name])) {
-            echo $post->{$name};
+            if (is_array($post->{$name})) {
+                echo implode(',', $post->{$name});
+            } else {
+                echo $post->{$name};
+            }
         } else {
             echo self::$archive_columns[$name]($post);
         }

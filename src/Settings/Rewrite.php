@@ -169,7 +169,7 @@ class Rewrite
 
     public static function postType(
         string $post_type,
-        array $path = [],
+        ?array $path = null,
         bool $paged = false,
         bool $year = false,
         array $extra_params = []
@@ -191,7 +191,7 @@ class Rewrite
 
     public static function archive(
         string $post_type,
-        array $path = [],
+        ?array $path = null,
         bool $paged = false,
         bool $year = false,
         array $extra_params = []
@@ -201,7 +201,7 @@ class Rewrite
             return;
         }
 
-        if (empty($path)) {
+        if (is_null($path)) {
             $path = [$post_type];
         }
 

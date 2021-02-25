@@ -196,11 +196,7 @@ class FluentList implements
 
     public function sortBy(string $key): self
     {
-        // TODO maybe allow $key to be callable too, so we can:
-        // strnatcasecmp(callable($a), callable($b));
-
         // TODO maybe add param to choose the compare function
-
         $this->usort(function ($a, $b) use ($key) {
             return strnatcasecmp($a->{$key}, $b->{$key});
         });
