@@ -3,6 +3,8 @@
 namespace Bond\Utils;
 
 use ArrayAccess;
+use Bond\Support\Fluent;
+use Bond\Support\FluentList;
 
 /**
  * Provides basic helpers for Arrays.
@@ -25,7 +27,15 @@ class Arr
     {
         $result = [];
         foreach ($array as $key => $value) {
-            $result[$f($key)] = is_array($value) ? static::mapKeys($f, $value) : $value;
+            $k = $f($key);
+
+            if (is_array($value)) {
+                $result[$k] = static::mapKeys($f, $value);
+            } elseif ($value instanceof Fluent || $value instanceof FluentList) {
+                $result[$k] = $value->mapKeys($f);
+            } else {
+                $result[$k] = $value;
+            }
         }
         return $result;
     }

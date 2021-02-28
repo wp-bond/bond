@@ -12,6 +12,7 @@ use ArrayIterator;
 use Bond\Utils\Arr;
 use Bond\Utils\Cast;
 use Bond\Utils\Obj;
+use Bond\Utils\Str;
 use InvalidArgumentException;
 
 // would be lovable here methods like "only" to only retrieve the needed values
@@ -279,4 +280,34 @@ class Fluent implements
     //         $this[$key] = Obj::clone($value);
     //     }
     // }
+
+    public function mapKeys(callable $f): self
+    {
+        foreach ($this as $key => $value) {
+            $k = $f($key);
+
+            if (is_array($value)) {
+                $this[$k] = Arr::mapKeys($f, $value);
+            } elseif ($value instanceof Fluent) {
+                $this[$k] = $value->mapKeys($f);
+            } else {
+                $this[$k] = $value;
+            }
+
+            if ($k !== $key) {
+                unset($this[$key]);
+            }
+        }
+        return $this;
+    }
+
+    public function camelKeys(): self
+    {
+        return $this->mapKeys([Str::class, 'camel']);
+    }
+
+    public function snakeKeys(): self
+    {
+        return $this->mapKeys([Str::class, 'snake']);
+    }
 }

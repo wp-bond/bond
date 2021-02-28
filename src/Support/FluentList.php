@@ -7,6 +7,7 @@ use ArrayAccess;
 use JsonSerializable;
 use Countable;
 use ArrayIterator;
+use Bond\Utils\Arr;
 use Bond\Utils\Cast;
 use Bond\Utils\Obj;
 
@@ -26,13 +27,15 @@ class FluentList implements
         $this->set($items);
     }
 
-    public function set(array $items)
+    public function set(array $items): self
     {
         $this->items = [];
 
         foreach ($items as $item) {
             $this->items[] = Cast::fluent($item);
         }
+
+        return $this;
     }
 
     public function add($item, ?int $index = null): self
@@ -207,5 +210,28 @@ class FluentList implements
     {
         $this->items = array_reverse($this->items);
         return $this;
+    }
+
+    public function mapKeys(callable $f): self
+    {
+        $this->items = Arr::mapKeys($f, $this->items);
+        return $this;
+    }
+
+    public function camelKeys(): self
+    {
+        $this->items = Arr::camelKeys($this->items);
+        return $this;
+    }
+
+    public function snakeKeys(): self
+    {
+        $this->items = Arr::snakeKeys($this->items);
+        return $this;
+    }
+
+    public function column($column_key, $index_key = null): array
+    {
+        return array_column($this->items, $column_key, $index_key);
     }
 }
