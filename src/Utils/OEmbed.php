@@ -5,6 +5,12 @@ namespace Bond\Utils;
 class OEmbed
 {
 
+    public static function html($url, array $args = null): string
+    {
+        $data = static::data($url, $args);
+        return $data ? $data['html'] : '';
+    }
+
     /**
      * Get the provider response data
      */
@@ -19,6 +25,44 @@ class OEmbed
 
         return $res ? get_object_vars($res) : null;
     }
+
+
+    public static function downloadImage(string $url, int $post_id = 0): int
+    {
+        if (!$url) {
+            return 0;
+        }
+
+        // get oembed data
+        $oembed = self::data($url, ['width' => 99999]);
+
+        // check
+        if (empty($oembed['thumbnail_url'])) {
+            return 0;
+        }
+
+        // get largest image
+        if (
+            !empty($oembed['provider_name'])
+            && $oembed['provider_name'] === 'YouTube'
+        ) {
+            // TODO should use largestThumb only? and upgrade that
+            $thumb_url = self::largestYoutubeThumb($oembed['thumbnail_url']);
+        } else {
+            $thumb_url = $oembed['thumbnail_url'];
+        }
+
+        // download image
+        $thumb_id = \media_sideload_image(
+            $thumb_url,
+            $post_id,
+            (!empty($oembed['title']) ? $oembed['title'] : null),
+            'id'
+        );
+
+        return (int) $thumb_id;
+    }
+
 
 
 
