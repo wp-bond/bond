@@ -315,13 +315,18 @@ class Admin
 
     public static function handleTaxonomyColumn($content, $name, $term_id)
     {
-        if (!isset(self::$tax_archive_columns[$name])) {
-            return $content;
-        }
         $term = Cast::term($term_id);
         if (!$term) {
             return $content;
         }
+        if (!isset(self::$tax_archive_columns[$name])) {
+            if (is_array($term->{$name})) {
+                return implode(',', $term->{$name});
+            } else {
+                return $term->{$name};
+            }
+        }
+
         return self::$tax_archive_columns[$name]($term);
     }
 

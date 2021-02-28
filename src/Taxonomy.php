@@ -2,6 +2,8 @@
 
 namespace Bond;
 
+use Bond\Utils\Cache;
+use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use Bond\Utils\Query;
 use Bond\Utils\Register;
@@ -56,5 +58,28 @@ abstract class Taxonomy
                 'singular_name' => static::$singular_name,
             ], static::$register_options)
         );
+    }
+
+
+
+
+    public static function all(array $params = []): Terms
+    {
+        $fn = function () use ($params) {
+            return Cast::terms(Query::wpTerms(
+                static::$taxonomy,
+                $params
+            ));
+        };
+
+        if (config('cache.enabled')) {
+            $cache_key = static::$taxonomy
+                . '/all'
+                . (!empty($params) ? '-' . Str::slug($params) : '');
+
+            return Cache::php($cache_key, -1, $fn);
+        }
+
+        return $fn();
     }
 }
