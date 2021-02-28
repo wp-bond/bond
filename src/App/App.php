@@ -363,6 +363,7 @@ class App extends Container
         };
         \add_filter('post_type_link', $fn, 10, 2);
         \add_filter('page_link', $fn, 10, 2);
+        \add_filter('attachment_link', $fn, 10, 2);
 
         // posts archives
         \add_filter('post_type_archive_link', function ($wp_link, $post_type) {
