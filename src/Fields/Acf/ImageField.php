@@ -3,7 +3,7 @@
 namespace Bond\Fields\Acf;
 
 /**
- * @method self previewSize(string $size)
+ *
  */
 class ImageField extends Field
 {
@@ -26,6 +26,12 @@ class ImageField extends Field
     public function returnArray(): self
     {
         $this->return_format = 'array';
+        return $this;
+    }
+
+    public function previewSize(string $size): self
+    {
+        $this->preview_size = $size;
         return $this;
     }
 }

@@ -2,11 +2,6 @@
 
 namespace Bond\Fields\Acf;
 
-/**
- *
- * @method self placeholder(string $value) Appears within the input.
- * @method self rows(int $value)
- */
 class TextAreaField extends Field
 {
     protected string $type = 'textarea';

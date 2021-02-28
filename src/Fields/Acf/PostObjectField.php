@@ -24,15 +24,17 @@ class PostObjectField extends Field
         return $this;
     }
 
-    public function postType(array $post_types): self
+    // array | string
+    public function postType($post_types): self
     {
-        $this->post_type = $post_types;
+        $this->post_type = (array) $post_types;
         return $this;
     }
 
-    public function taxonomy(array $taxonomies): self
+    // array | string
+    public function taxonomy($taxonomies): self
     {
-        $this->taxonomy = $taxonomies;
+        $this->taxonomy = (array) $taxonomies;
         return $this;
     }
 

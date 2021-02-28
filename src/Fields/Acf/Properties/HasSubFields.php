@@ -4,6 +4,7 @@ namespace Bond\Fields\Acf\Properties;
 
 use Bond\Fields\Acf\BooleanField;
 use Bond\Fields\Acf\ColorPickerField;
+use Bond\Fields\Acf\DateField;
 use Bond\Fields\Acf\DateTimeField;
 use Bond\Fields\Acf\EmailField;
 use Bond\Fields\Acf\Field;
@@ -197,6 +198,11 @@ trait HasSubFields
 
 
     // Dynamic
+
+    public function dateField($name): DateField
+    {
+        return $this->_addField(new DateField($name));
+    }
 
     public function dateTimeField($name): DateTimeField
     {
