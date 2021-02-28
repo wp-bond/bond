@@ -506,7 +506,7 @@ class Image
             }
         }
 
-        return $result;
+        return (string) $result;
     }
 
 
@@ -532,7 +532,7 @@ class Image
             }
         }
 
-        return $result;
+        return (string) $result;
     }
 
 

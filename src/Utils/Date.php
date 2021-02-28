@@ -17,6 +17,11 @@ class Date
         return $date ? $date->timestamp : 0;
     }
 
+    public static function year($date = true): int
+    {
+        return (int) static::iso($date, 'Y');
+    }
+
 
     public static function wp(
         $date = true,

@@ -2,7 +2,6 @@
 
 namespace Bond\Utils;
 
-use Closure;
 use DateInterval;
 use DateTimeInterface;
 use DirectoryIterator;
@@ -27,7 +26,7 @@ class Cache
     public static function php(
         string $key,
         $ttl,
-        Closure $callback
+        callable $callback
     ) {
         $path = self::getPath($key, 'php');
 
@@ -64,7 +63,7 @@ class Cache
     public static function json(
         string $key,
         $ttl,
-        Closure $callback
+        callable $callback
     ) {
         $path = self::getPath($key, 'json');
 
