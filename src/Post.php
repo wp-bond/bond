@@ -165,4 +165,11 @@ class Post extends Fluent
     {
         return Query::postTerms($this->ID, $taxonomy, $args);
     }
+
+    public function isEmpty(): bool
+    {
+        return empty($this->ID)
+            || empty($this->post_type)
+            || parent::isEmpty();
+    }
 }

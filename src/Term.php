@@ -116,4 +116,11 @@ class Term extends Fluent
     {
         return Link::forTerms($this, $language_code);
     }
+
+    public function isEmpty(): bool
+    {
+        return empty($this->term_id)
+            || empty($this->taxonomy)
+            || parent::isEmpty();
+    }
 }
