@@ -252,7 +252,9 @@ class Translation
     {
         static $client = null;
         if (!$client) {
-            $client = new \Google\Cloud\Translate\V2\TranslateClient();
+            $client = new \Google\Cloud\Translate\V2\TranslateClient([
+                'key' => config('translation.credentials.google.key'),
+            ]);
         }
         return $client;
     }
