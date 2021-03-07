@@ -210,6 +210,8 @@ class Cast
 
     // TODO maybe remove the convertion of post types
     // if needed users do it directly
+
+    // TODO maybe don't return null anymore, it's better for chaining
     public static function post($post, string $post_type = null): ?Post
     {
         if (empty($post)) {

@@ -89,9 +89,6 @@ class Meta
     {
         global $post, $paged;
 
-        // store reference
-        $post = $post ? Cast::post($post) : null;
-
         // prepare
         $paged = (int) $paged;
         $post_type = false;
@@ -141,7 +138,10 @@ class Meta
 
             $this->title[] = __('Author');
         } elseif (is_singular()) {
-            $this->title[] = $post->title ?: $post->post_title;
+
+            $p = Cast::post($post);
+
+            $this->title[] = $p->title ?: $p->post_title;
 
             if ($post_type === 'page') {
                 $post_parent_id = (int) $post->post_parent;
@@ -221,14 +221,10 @@ class Meta
 
     public function printMultilanguageTags()
     {
-        global $post, $post_type;
+        global $post_type;
 
         if (is_array($post_type)) {
             $post_type = $post_type[0];
-        }
-
-        if ($post) {
-            $post = Cast::post($post);
         }
 
         foreach (Language::codes() as $code) {
