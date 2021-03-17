@@ -436,7 +436,7 @@ class Query
             'update_term_meta_cache' => false,
         ], $args));
 
-        return $query->terms;
+        return $query->terms ?: [];
     }
 
 

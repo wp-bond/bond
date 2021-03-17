@@ -11,15 +11,6 @@ class FileField extends Field
     public string $mime_types = 'pdf,zip';
     public string $return_format = 'id';
 
-    public function mimeTypes($extensions): self
-    {
-        if (is_array($extensions)) {
-            $extensions = implode(',', $extensions);
-        }
-        $this->mime_types = (string) $extensions;
-        return $this;
-    }
-
     public function returnId(): self
     {
         $this->return_format = 'id';
@@ -35,6 +26,15 @@ class FileField extends Field
     public function returnArray(): self
     {
         $this->return_format = 'array';
+        return $this;
+    }
+
+    public function mimeTypes($extensions): self
+    {
+        if (is_array($extensions)) {
+            $extensions = implode(',', $extensions);
+        }
+        $this->mime_types = (string) $extensions;
         return $this;
     }
 }

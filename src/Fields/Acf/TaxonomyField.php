@@ -5,6 +5,8 @@ namespace Bond\Fields\Acf;
 class TaxonomyField extends Field
 {
     protected string $type = 'taxonomy';
+    public string $return_format = 'id';
+    public bool $load_save_terms = true;
 
     public function taxonomy(string $taxonomy): self
     {
