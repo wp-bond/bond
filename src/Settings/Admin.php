@@ -2,7 +2,10 @@
 
 namespace Bond\Settings;
 
+use Bond\Post;
+use Bond\Support\Fluent;
 use Bond\Utils\Cast;
+use Bond\Utils\Str;
 
 class Admin
 {
@@ -277,14 +280,26 @@ class Admin
             return;
         }
         if (!isset(self::$archive_columns[$name])) {
-            if (is_array($post->{$name})) {
-                echo implode(',', $post->{$name});
-            } else {
-                echo $post->{$name};
-            }
+            echo static::defaultColumnOutput($post, $name);
         } else {
             echo self::$archive_columns[$name]($post);
         }
+    }
+
+    protected static function defaultColumnOutput(Fluent $item, string $column): string
+    {
+        $values = [];
+        $val = (array)$item->{$column};
+
+        foreach ($val as $v) {
+            if (Str::isUrl($v)) {
+                $values[] = '<a href="' . $v . '" target="_blank" rel="noopener">' . $v . '</a>';
+            } else {
+                $values[] = $v;
+            }
+        }
+
+        return implode(', ', $values);
     }
 
 
@@ -320,13 +335,8 @@ class Admin
             return $content;
         }
         if (!isset(self::$tax_archive_columns[$name])) {
-            if (is_array($term->{$name})) {
-                return implode(',', $term->{$name});
-            } else {
-                return $term->{$name};
-            }
+            return static::defaultColumnOutput($term, $name);
         }
-
         return self::$tax_archive_columns[$name]($term);
     }
 

@@ -384,10 +384,7 @@ class Str
         if (empty($string)) {
             return false;
         }
-        $string = (string) $string;
-
-        return filter_var($string, FILTER_VALIDATE_URL)
-            && checkdnsrr($string, 'A');
+        return filter_var((string) $string, FILTER_VALIDATE_URL);
     }
 
     public static function isEmail($string): bool
