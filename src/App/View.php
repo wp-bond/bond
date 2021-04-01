@@ -33,7 +33,14 @@ class View extends Fluent
     protected string $partials_dir = 'partials';
 
 
-    public function __construct()
+    public function register()
+    {
+        $this->autoSetOrder();
+        $this->setState();
+        $this->setHooks();
+    }
+
+    public function setState()
     {
         // add default app state
         $this->state = [
@@ -49,21 +56,12 @@ class View extends Fluent
             ],
         ];
 
-        // do not initialize when it is on WP admin
-        // nor when programatically loading WP
-        if (!is_admin() && (!defined('WP_USE_THEMES') || WP_USE_THEMES)) {
-            $this->init();
-        }
-    }
-
-    protected function init()
-    {
-        // define lookup order
-        $this->autoSetOrder();
-
         // add wp footer output for JS
         \add_action('wp_footer', [$this, 'outputStateTag']);
+    }
 
+    public function setHooks()
+    {
         // handle hooks
         if (\did_action('init')) {
             $this->triggerInitActions();

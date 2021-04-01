@@ -92,10 +92,10 @@ class App extends Container
         $this->get('config')->load($this->configPath());
 
 
-        if (\wp_using_themes()) {
+        if (\wp_using_themes() && !\is_admin()) {
 
             // auto initialize View, registers WP hooks
-            $this->get('view');
+            $this->get('view')->register();
         }
 
         // Save post/terms hook

@@ -126,8 +126,8 @@ class Cast
                 return new Fluent($value);
             }
 
-            // TODO reconsider, may be more consistent as FluentList
             // indexed arrays stay Array
+            // TODO reconsider, may be more consistent as FluentList
             $_value = [];
             foreach ($value as $v) {
                 $_value[] = self::fluent($v);
