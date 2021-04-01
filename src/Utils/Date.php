@@ -44,6 +44,8 @@ class Date
     }
 
 
+
+
     public static function iso(
         $date = true,
         $format = 'Y-MM-DD HH:mm:ss'
@@ -81,6 +83,16 @@ class Date
             $timezone ?: config()->app->timezone
         );
     }
+
+
+    public static function header(
+        $date = true,
+        string $timezone = null
+    ): string {
+        $date = static::carbon($date, $timezone);
+        return $date ? $date->toRfc7231String() : '';
+    }
+
 
     public static function mongoDb(
         $date = true,
