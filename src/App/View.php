@@ -170,6 +170,11 @@ class View extends Fluent
         );
     }
 
+    public function hasOrder($order): bool
+    {
+        return in_array($order, $this->lookup_order);
+    }
+
     public function isTemplate($name)
     {
         return in_array($name, $this->lookup_order);
@@ -186,8 +191,8 @@ class View extends Fluent
             return;
         }
 
-        if (is_array($with)) {
-            $this->lookup_order = $with;
+        if (is_array($with) || is_string($with)) {
+            $this->lookup_order = (array) $with;
         } elseif (is_a($with, 'WP_Query')) {
             $this->lookup_order = $this->defineLookupOrder($with);
         } elseif (!is_admin()) {
