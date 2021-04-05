@@ -143,6 +143,11 @@ class Str
         return str_replace(' ', '&nbsp;', (string) $string);
     }
 
+    public static function nonBreakingHyphen($string): string
+    {
+        return str_replace('-', '‑', (string) $string);
+    }
+
 
     public static function removeNbsp($string): string
     {
