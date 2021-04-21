@@ -13,6 +13,8 @@ class Post extends Fluent
 {
     public int $ID;
     public string $post_type;
+    public string $post_name;
+    public string $page_template;
 
     // public FieldManager $fields;
 

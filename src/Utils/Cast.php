@@ -60,9 +60,14 @@ class Cast
             if (is_subclass_of($_class, Post::class)) {
                 $_post = new $_class();
 
-                if (isset($_post->post_type)) {
-                    if ($_post->page_template) {
+                if ($_post->post_type ?? false) {
+
+                    if ($_post->post_name ?? false) {
+                        static::$posts[$_post->post_type . '/' . $_post->post_name] = $_class;
+                        //
+                    } elseif ($_post->page_template ?? false) {
                         static::$posts[$_post->post_type . ':' . $_post->page_template] = $_class;
+                        //
                     } else {
                         static::$posts[$_post->post_type] = $_class;
                     }
@@ -372,12 +377,17 @@ class Cast
 
     protected static function matchPostClass(\WP_Post $post): string
     {
+        $type = $post->post_type;
+
+        if (isset(static::$posts[$type . '/' . $post->post_name])) {
+            return static::$posts[$type . '/' . $post->post_name];
+        }
         if ($template = Query::pageTemplate($post->ID)) {
-            return static::$posts[$post->post_type . ':' . $template]
-                ?? static::$posts[$post->post_type]
+            return static::$posts[$type . ':' . $template]
+                ?? static::$posts[$type]
                 ?? Post::class;
         }
-        return static::$posts[$post->post_type] ?? Post::class;
+        return static::$posts[$type] ?? Post::class;
     }
 
     protected static function maybeConvert(?Post $post, ?string $post_type): ?Post
