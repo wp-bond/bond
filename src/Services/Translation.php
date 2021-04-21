@@ -484,14 +484,26 @@ class Translation
                 // if found, we will translate and set the default_title
                 if (!empty($title)) {
                     $default_title = $this->fromTo($code, $default_code, $title);
-
-                    \update_field(
-                        'title' . $default_suffix,
-                        $default_title,
-                        $post->ID
-                    );
                     break;
                 }
+            }
+
+            // if still empty, try WP title
+            // but only if it is not auto-draft
+            if (
+                empty($default_title)
+                && $post->post_status !== 'auto-draft'
+            ) {
+                $default_title = $post->post_title;
+            }
+
+            // store default title
+            if (!empty($default_title)) {
+                \update_field(
+                    'title' . $default_suffix,
+                    $default_title,
+                    $post->ID
+                );
             }
         }
 
