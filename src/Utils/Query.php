@@ -305,11 +305,10 @@ class Query
     }
 
 
-    public static function pageTemplateName($post_id): string
+    public static function pageTemplate($post_id): string
     {
         $post_id = Cast::postId($post_id);
         $name = \get_post_meta($post_id, '_wp_page_template', true);
-        $name = preg_replace('/\.php$/', '', $name);
 
         return $name !== 'default' ? $name : '';
     }

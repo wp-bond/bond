@@ -59,14 +59,10 @@ class Cast
             // posts
             if (is_subclass_of($_class, Post::class)) {
                 $_post = new $_class();
-                if (isset($_post->post_type)) {
 
-                    // TODO only for pages?
-                    if (
-                        $_post->post_type === 'page'
-                        && $_post->page_template
-                    ) {
-                        static::$posts[$_post->post_type . '_' . $_post->page_template] = $_class;
+                if (isset($_post->post_type)) {
+                    if ($_post->page_template) {
+                        static::$posts[$_post->post_type . ':' . $_post->page_template] = $_class;
                     } else {
                         static::$posts[$_post->post_type] = $_class;
                     }
@@ -376,11 +372,8 @@ class Cast
 
     protected static function matchPostClass(\WP_Post $post): string
     {
-        if (
-            $post->post_type === 'page'
-            && $template = Query::pageTemplateName($post->ID)
-        ) {
-            return static::$posts[$post->post_type . '_' . $template]
+        if ($template = Query::pageTemplate($post->ID)) {
+            return static::$posts[$post->post_type . ':' . $template]
                 ?? static::$posts[$post->post_type]
                 ?? Post::class;
         }

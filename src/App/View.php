@@ -489,7 +489,7 @@ class View extends Fluent
                     $result[] = 'archive';
                 } else {
 
-                    if ($template = Query::pageTemplateName($post->ID)) {
+                    if ($template = Query::pageTemplate($post->ID)) {
                         $result[] = $template;
                     }
                     $result[] = 'page';
@@ -611,7 +611,7 @@ class View extends Fluent
             $result[] = 'page-' . $post_slug;
 
             // page templates can have their unique names, let's add them before the fallback
-            if ($template = Query::pageTemplateName($post->ID)) {
+            if ($template = Query::pageTemplate($post->ID)) {
                 $result[] = $template;
             }
 
@@ -619,6 +619,8 @@ class View extends Fluent
             $result[] = 'singular';
         } elseif ($wp_query->is_attachment()) {
 
+            // [page-template-name]-attachment
+            // [page-template-name]
             // single-attachment-[slugfied-long-mime-type]
             // single-attachment-[slugfied-short-mime-type]
             // single-attachment
@@ -629,8 +631,11 @@ class View extends Fluent
             // slugfied-long-mime-type = image-jpeg
             // slugfied-short-mime-type = jpeg
 
+            if ($template = Query::pageTemplate($post->ID)) {
+                $result[] = $template . '-attachment';
+                $result[] = $template;
+            }
             if (!empty($post->post_mime_type)) {
-
                 $result[] = 'single-attachment-' . Str::slug($post->post_mime_type);
 
                 $mime = explode('/', $post->post_mime_type);
@@ -646,12 +651,18 @@ class View extends Fluent
             $result[] = 'singular';
         } elseif ($wp_query->is_single()) {
 
+            // [page-template-name]-[post-type]
+            // [page-template-name]
             // single-[post-type]-[post-slug]
             // single-[post-type]
             // [post-type]
             // single
             // singular
 
+            if ($template = Query::pageTemplate($post->ID)) {
+                $result[] = $template . '-' . $post_type;
+                $result[] = $template;
+            }
             $result[] = 'single-' . $post_type . '-' . $post_slug;
             $result[] = 'single-' . $post_type;
             $result[] = $post_type;
