@@ -187,14 +187,16 @@ class FluentList implements
         return '';
     }
 
-    public function sort(int $flags = SORT_REGULAR): bool
+    public function sort(int $flags = SORT_REGULAR): self
     {
-        return sort($this->items, $flags);
+        sort($this->items, $flags);
+        return $this;
     }
 
-    public function usort(callable $callback): bool
+    public function usort(callable $callback): self
     {
-        return usort($this->items, $callback);
+        usort($this->items, $callback);
+        return $this;
     }
 
     public function sortBy(string $key): self
@@ -233,5 +235,16 @@ class FluentList implements
     public function column($column_key, $index_key = null): array
     {
         return array_column($this->items, $column_key, $index_key);
+    }
+
+    public function shuffle(): self
+    {
+        shuffle($this->items);
+        return $this;
+    }
+
+    public function unshift($item): self
+    {
+        return $this->add($item, 0);
     }
 }
