@@ -183,42 +183,20 @@ class Image
         $with_site_url = $options['site_url'] ?? true;
 
         // get image url
-        $default_url = self::url(
+        $default_source = self::source(
             $image_id,
             $default_size[0],
             $with_site_url
         );
 
         // exit early
-        if (!$default_url) {
+        if (empty($default_source[0])) {
             return '';
         }
 
-        // data string
-        $data_string = '';
-        $data = [];
-
-        if (!empty($options['data_size'])) {
-
-            $img_src = self::source(
-                $image_id,
-                $default_size[0],
-                $with_site_url
-            );
-
-            if (!empty($img_src[0]) && !empty($img_src[1]) && !empty($img_src[2])) {
-                $data['width'] = $img_src[1];
-                $data['height'] = $img_src[2];
-            }
-        }
-
-        $data_string = self::attributesToString($data, 'data-');
-
 
         // form the picture tag
-        $result = '<picture';
-        $result .= $data_string;
-        $result .= '>';
+        $result = '<picture>';
 
         if (!empty($responsive_sizes)) {
 
@@ -229,11 +207,17 @@ class Image
                 }
                 $size = (array) $r['size'];
 
-                $result .= '<source srcset="' . self::url(
+                $source = self::source(
                     $r['image'],
                     $size[0],
                     $with_site_url
                 );
+                if (empty($source[0])) {
+                    continue;
+                }
+
+                // url
+                $result .= '<source srcset="' . $source[0];
 
                 if (count($size) > 1) {
                     $result .= ' 1x, ' . self::url(
@@ -244,20 +228,28 @@ class Image
                 }
                 $result .= '"';
 
+                // size
+                $result .= ' width="' . $source[1] . '" height="' . $source[2] . '"';
+
+                // media
                 $result .= ' media="(' . trim(trim($r['rule'], ')'), '(') . ')">';
             }
         }
 
         // default image
         if (count($default_size) > 1) {
-            $result .= '<img srcset="' . $default_url . ' 1x, ' . self::url(
+            $result .= '<img srcset="' . $default_source[0] . ' 1x, ' . self::url(
                 $image_id,
                 $default_size[1],
                 $with_site_url
             ) . ' 2x"';
         } else {
-            $result .= '<img srcset="' . $default_url . '"';
+            $result .= '<img srcset="' . $default_source[0] . '"';
         }
+
+        // size
+        $result .= ' width="' . $default_source[1] . '" height="' . $default_source[2] . '"';
+
 
         //the alt
         if (empty($options['no_alt'])) {
