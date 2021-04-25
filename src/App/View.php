@@ -135,9 +135,9 @@ class View extends Fluent
         foreach (array_reverse($this->lookup_order) as $name) {
 
             // if the order changed at runtime, cancel it
-            if ($order !== $this->lookup_order) {
-                break;
-            }
+            // if ($order !== $this->lookup_order) {
+            //     break;
+            // }
 
             \do_action('Bond/' . $action . '/' . $name);
             \do_action('Bond/' . $action . '/' . $name . $this->deviceSuffix());
@@ -209,6 +209,7 @@ class View extends Fluent
 
             // set order with global WP_Query
             global $wp_query;
+            // dd($wp_query);
             $this->lookup_order = $this->defineLookupOrder($wp_query);
         } else {
             // set later, when WP is ready
