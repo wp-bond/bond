@@ -24,6 +24,7 @@ use Bond\Fields\Acf\RangeField;
 use Bond\Fields\Acf\RelationshipField;
 use Bond\Fields\Acf\RepeaterField;
 use Bond\Fields\Acf\SelectField;
+use Bond\Fields\Acf\TabField;
 use Bond\Fields\Acf\TaxonomyField;
 use Bond\Fields\Acf\TextAreaField;
 use Bond\Fields\Acf\TextField;
@@ -125,6 +126,11 @@ trait HasSubFields
     public function messageField($name): MessageField
     {
         return $this->_addField(new MessageField($name));
+    }
+
+    public function tabField($name): TabField
+    {
+        return $this->_addField(new TabField($name));
     }
 
     public function rangeField($name): RangeField

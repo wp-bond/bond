@@ -17,7 +17,7 @@ class FieldGroup
 
     private $settings;
     private $apply_multilanguage_tabs = false;
-    private static $used_keys = [];
+    private static array $used_keys = [];
 
 
     public function __construct($key)
@@ -41,6 +41,7 @@ class FieldGroup
         $group_key = 'group_' . $key;
         while (isset(static::$used_keys[$group_key])) {
             $group_key = 'group_' . $key . uniqid();
+            // dd($group_key);
         }
         static::$used_keys[$group_key] = true;
 
@@ -344,7 +345,7 @@ class FieldGroup
 
                     if (empty($tabs[$suffix])) {
                         $tabs[$suffix] = [];
-                        $tabs[$suffix][] = self::tabField($values['name']);
+                        $tabs[$suffix][] = self::createTabField($values['name']);
                     }
 
                     $tabs[$suffix][] = $field;
@@ -362,7 +363,7 @@ class FieldGroup
         return $result;
     }
 
-    private static function tabField($label, array $options = [])
+    private static function createTabField($label, array $options = [])
     {
         $key_suffix = Str::slug($label) . '_' . uniqid();
 
