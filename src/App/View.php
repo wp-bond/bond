@@ -490,7 +490,7 @@ class View extends Fluent
                     $result[] = 'archive';
                 } else {
 
-                    if ($template = Query::pageTemplate($post->ID)) {
+                    if ($template = Query::pageTemplate($post->ID, true)) {
                         $result[] = $template;
                     }
                     $result[] = 'page';
@@ -612,7 +612,7 @@ class View extends Fluent
             $result[] = 'page-' . $post_slug;
 
             // page templates can have their unique names, let's add them before the fallback
-            if ($template = Query::pageTemplate($post->ID)) {
+            if ($template = Query::pageTemplate($post->ID, true)) {
                 $result[] = $template;
             }
 
@@ -632,7 +632,7 @@ class View extends Fluent
             // slugfied-long-mime-type = image-jpeg
             // slugfied-short-mime-type = jpeg
 
-            if ($template = Query::pageTemplate($post->ID)) {
+            if ($template = Query::pageTemplate($post->ID, true)) {
                 $result[] = $template . '-attachment';
                 $result[] = $template;
             }
@@ -660,7 +660,7 @@ class View extends Fluent
             // single
             // singular
 
-            if ($template = Query::pageTemplate($post->ID)) {
+            if ($template = Query::pageTemplate($post->ID, true)) {
                 $result[] = $template . '-' . $post_type;
                 $result[] = $template;
             }

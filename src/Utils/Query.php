@@ -305,12 +305,23 @@ class Query
     }
 
 
-    public static function pageTemplate($post_id): string
+    public static function pageTemplate($post_id, bool $remove_extension = false): string
     {
         $post_id = Cast::postId($post_id);
         $name = \get_post_meta($post_id, '_wp_page_template', true);
 
-        return $name !== 'default' ? $name : '';
+        if ($name === 'default') {
+            return '';
+        }
+
+        if ($remove_extension) {
+            $i = strrpos($name, '.');
+            if ($i !== false) {
+                return substr($name, 0, $i);
+            }
+        }
+
+        return $name;
     }
 
 
