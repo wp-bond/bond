@@ -91,7 +91,10 @@ abstract class PostType
     public static function single()
     {
         global $post;
-        view()->add(Cast::post($post)->values('single'));
+
+        if ($p = Cast::post($post)) {
+            view()->add($p->values('single'));
+        }
     }
 
     // helpers

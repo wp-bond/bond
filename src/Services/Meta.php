@@ -137,7 +137,7 @@ class Meta
             }
 
             $this->title[] = __('Author');
-        } elseif (is_singular()) {
+        } elseif (is_singular() && $post) {
 
             $p = Cast::post($post);
 
@@ -181,7 +181,7 @@ class Meta
         } elseif (is_date()) {
             global $monthnum, $year;
 
-            if (!empty($monthnum)) {
+            if (!empty($monthnum) && $post) {
                 $this->title[] = date('F Y', strtotime($post->post_date));
             } else {
                 $this->title[] = $year;

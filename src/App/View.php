@@ -416,19 +416,43 @@ class View extends Fluent
      * For the default WP hierarchy follow to:
      * http://codex.wordpress.org/Template_Hierarchy
      */
-    protected function defineLookupOrder(\WP_Query $wp_query): array
+    protected function defineLookupOrder(\WP_Query $query): array
     {
         $result = [];
 
-        if (!$wp_query) {
+        if (!$query) {
             return $result;
         }
 
         // prepare vars
-        $post = !empty($wp_query->posts) ? $wp_query->posts[0] : false;
-        $post_type = $post ? $post->post_type : false;
-        $post_slug = $post ? $post->post_name : false;
-        $query_post_type = $wp_query->query_vars['post_type'];
+        $_post = !empty($query->posts) ? $query->posts[0] : null;
+
+        // if post is missing, but is acknoleged as singular
+        // let look into GET parameter
+        if (
+            !$_post
+            && !empty($_GET['p'])
+            && $query->is_singular()
+        ) {
+            $_post = get_post($_GET['p']);
+
+            // Let's take to opportunity and fix a WordPress issue
+            // of draft posts being missing on wp_query
+            if ($query->is_main_query()) {
+                global $post;
+                if (empty($post)) {
+                    $post = $_post;
+                }
+                global $wp_query;
+                if (empty($wp_query->queried_object)) {
+                    $wp_query->queried_object = $_post;
+                }
+            }
+        }
+
+        $post_type = $_post ? $_post->post_type : null;
+        $post_slug = $_post ? $_post->post_name : null;
+        $query_post_type = $query->query_vars['post_type'];
 
         if (is_array($query_post_type)) {
             // it's not usual to have multiple post types on a rewrite rule
@@ -441,7 +465,7 @@ class View extends Fluent
         }
 
         // Password Protected
-        if ($post && \post_password_required($post)) {
+        if ($_post && \post_password_required($_post)) {
             $result[] = 'password-protected';
             // maybe add to more levels, leave this for last
             // just duplicate the final array with this suffix
@@ -449,7 +473,7 @@ class View extends Fluent
 
         // start the template hierarchy build up
 
-        if ($wp_query->is_404()) {
+        if ($query->is_404()) {
 
             // 404-[post-type]
             // 404
@@ -459,14 +483,14 @@ class View extends Fluent
             }
 
             $result[] = '404';
-        } elseif ($wp_query->is_search()) {
+        } elseif ($query->is_search()) {
 
             // search
             // archive
 
             $result[] = 'search';
             $result[] = 'archive';
-        } elseif ($wp_query->is_front_page()) {
+        } elseif ($query->is_front_page()) {
 
             // if is page on front:
             // front-page
@@ -490,14 +514,14 @@ class View extends Fluent
                     $result[] = 'archive';
                 } else {
 
-                    if ($template = Query::pageTemplate($post->ID, true)) {
+                    if ($template = Query::pageTemplate($_post->ID, true)) {
                         $result[] = $template;
                     }
                     $result[] = 'page';
                     $result[] = 'singular';
                 }
             }
-        } elseif ($wp_query->is_home()) {
+        } elseif ($query->is_home()) {
 
             // home
             // archive-[post-type]
@@ -512,19 +536,19 @@ class View extends Fluent
                 $result[] = 'archive';
             }
             // for now this is not needed, test more
-            // } elseif ($wp_query->is_post_type_archive()) {
+            // } elseif ($query->is_post_type_archive()) {
 
             //     $result[] = 'archive-'.$query_post_type;
             //     $result[] = $query_post_type;
             //     $result[] = 'archive';
-        } elseif ($wp_query->is_author()) {
+        } elseif ($query->is_author()) {
 
             // author-[user-login]
             // author-[user-nicename]
             // author
             // archive
 
-            if ($author = get_userdata($post->post_author)) {
+            if ($author = get_userdata($_post->post_author)) {
                 $result[] = 'author-' . $author->data->user_login;
 
                 if ($author->data->user_login !== $author->data->user_nicename) {
@@ -534,7 +558,7 @@ class View extends Fluent
 
             $result[] = 'author';
             $result[] = 'archive';
-        } elseif ($wp_query->is_tax() || $wp_query->is_tag() || $wp_query->is_category()) {
+        } elseif ($query->is_tax() || $query->is_tag() || $query->is_category()) {
 
             // taxonomy-[taxonomy]-[term-slug]
             // taxonomy-[taxonomy]
@@ -563,7 +587,7 @@ class View extends Fluent
             }
 
             $result[] = 'archive';
-        } elseif ($wp_query->is_date()) {
+        } elseif ($query->is_date()) {
 
             // date-[post-type]
             // date
@@ -583,7 +607,7 @@ class View extends Fluent
             }
 
             $result[] = 'archive';
-        } elseif ($wp_query->is_archive()) {
+        } elseif ($query->is_archive()) {
 
             // archive-[post-type]
             // [post-type]
@@ -595,7 +619,7 @@ class View extends Fluent
             }
 
             $result[] = 'archive';
-        } elseif ($wp_query->is_page()) {
+        } elseif ($query->is_page()) {
 
             // page-[parent-slug]-[post-slug]
             // page-[post-slug]
@@ -603,8 +627,8 @@ class View extends Fluent
             // page
             // singular
 
-            if ($post->post_parent) {
-                if ($parent_slug = Query::slug($post->post_parent)) {
+            if ($_post->post_parent) {
+                if ($parent_slug = Query::slug($_post->post_parent)) {
                     $result[] = 'page-' . $parent_slug . '-' . $post_slug;
                 }
             }
@@ -612,13 +636,13 @@ class View extends Fluent
             $result[] = 'page-' . $post_slug;
 
             // page templates can have their unique names, let's add them before the fallback
-            if ($template = Query::pageTemplate($post->ID, true)) {
+            if ($template = Query::pageTemplate($_post->ID, true)) {
                 $result[] = $template;
             }
 
             $result[] = 'page';
             $result[] = 'singular';
-        } elseif ($wp_query->is_attachment()) {
+        } elseif ($query->is_attachment()) {
 
             // [page-template-name]-attachment
             // [page-template-name]
@@ -632,14 +656,14 @@ class View extends Fluent
             // slugfied-long-mime-type = image-jpeg
             // slugfied-short-mime-type = jpeg
 
-            if ($template = Query::pageTemplate($post->ID, true)) {
+            if ($template = Query::pageTemplate($_post->ID, true)) {
                 $result[] = $template . '-attachment';
                 $result[] = $template;
             }
-            if (!empty($post->post_mime_type)) {
-                $result[] = 'single-attachment-' . Str::slug($post->post_mime_type);
+            if (!empty($_post->post_mime_type)) {
+                $result[] = 'single-attachment-' . Str::slug($_post->post_mime_type);
 
-                $mime = explode('/', $post->post_mime_type);
+                $mime = explode('/', $_post->post_mime_type);
                 if (count($mime) > 1) {
                     $result[] = 'single-attachment-' . Str::slug($mime[1]);
                 }
@@ -650,7 +674,7 @@ class View extends Fluent
             $result[] = 'attachment';
             $result[] = 'single';
             $result[] = 'singular';
-        } elseif ($wp_query->is_single()) {
+        } elseif ($query->is_single()) {
 
             // [page-template-name]-[post-type]
             // [page-template-name]
@@ -660,7 +684,7 @@ class View extends Fluent
             // single
             // singular
 
-            if ($template = Query::pageTemplate($post->ID, true)) {
+            if ($template = Query::pageTemplate($_post->ID, true)) {
                 $result[] = $template . '-' . $post_type;
                 $result[] = $template;
             }
