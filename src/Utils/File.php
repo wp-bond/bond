@@ -30,7 +30,8 @@ class File
     public static function sizeFormat(
         $file_id,
         string $format = 'mb',
-        bool $with_unit = true
+        bool $with_unit = true,
+        int $decimals = 2
     ): string {
 
         $size = self::size($file_id);
@@ -43,7 +44,7 @@ class File
             case 'mb':
             case 'mega':
             case 'megabytes':
-                $size = number_format($size / 1048576, 2);
+                $size = number_format($size / 1048576, $decimals);
                 $unit = 'MB';
                 break;
 
