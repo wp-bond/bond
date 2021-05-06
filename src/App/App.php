@@ -100,6 +100,7 @@ class App extends Container
 
         // Save post/terms hook
         $this->addSavePostHook();
+        $this->addDeletePostHook();
         $this->addSaveTermHook();
         $this->addSaveUserHook();
 
@@ -441,9 +442,6 @@ class App extends Container
             \do_action('Bond/save_post/' . $post->post_type, Cast::post($post));
         }
 
-        // TODO maybe consider the delete_post hook
-        // OR a more specific usage Bond/post_publish Bond/post_draft ?
-
         // TODO review these hooks naming, "save" it not exactly right
         // could be updated, for when it's updated
         // inserted or created, when created the first time
@@ -456,6 +454,57 @@ class App extends Container
         $this->addSavePostHook();
     }
 
+    public function addDeletePostHook()
+    {
+        \add_action('delete_post', [$this, 'deletePostHook'], 10, 2);
+        // \add_action('edit_attachment', [$this, 'deletePostHook']);
+    }
+
+    public function removeDeletePostHook()
+    {
+        \remove_action('delete_post', [$this, 'deletePostHook'], 10, 2);
+        // \remove_action('edit_attachment', [$this, 'deletePostHook']);
+    }
+
+    public function deletePostHook($post_id, $post = null)
+    {
+        if (\wp_is_post_revision($post_id)) {
+            return;
+        }
+
+        // remove action to prevent infinite loop
+        $this->removeDeletePostHook();
+
+        // turn off cache
+        $original_state = config()->cache->enabled ?? false;
+        config()->cache->enabled = false;
+
+        // in case it's attachment, it misses the post object
+        if (!$post) {
+            $post = Cast::wpPost($post_id);
+        }
+
+        // clear cache
+        Cache::forget($post->post_type);
+        Cache::forget('bond/posts');
+        Cache::forget('global');
+
+        // emit actions
+        if (\has_action('Bond/delete_post')) {
+            \do_action('Bond/delete_post', Cast::post($post));
+        }
+        if (\has_action('Bond/delete_post/' . $post->post_type)) {
+            \do_action('Bond/delete_post/' . $post->post_type, Cast::post($post));
+        }
+        // turn on posts cache
+        config()->cache->enabled = $original_state;
+
+        // re-add action
+        $this->addDeletePostHook();
+    }
+
+
+    // Options
     public function optionsSavePostHook($post_id)
     {
         if ($post_id !== 'options') {
