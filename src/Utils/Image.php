@@ -159,7 +159,12 @@ class Image
         if ($tag && $with_caption) {
             $caption = static::caption($image['default']);
             if (!empty($caption)) {
-                $tag .= '<h6 class="bond-image-caption">' . Str::br($caption) . '</h6>';
+                $tag = '<figure>'
+                    . $tag
+                    . '<figcaption>'
+                    . Str::br($caption)
+                    . '</figcaption>'
+                    . '</figure>';
             }
         }
 
