@@ -542,6 +542,13 @@ class Query
             $post_type = $post_type[0];
         }
 
+        // try app container
+        $class = app()->get('post_type.' . $post_type);
+        if ($class) {
+            return $singular ? $class::$singular_name : $class::$name;
+        }
+
+        // try WP
         $post_type_object = \get_post_type_object($post_type);
 
         if ($singular && !empty($post_type_object->labels->singular_name)) {
@@ -552,6 +559,7 @@ class Query
             return $post_type_object->labels->name;
         }
 
+        // else title case the given post type
         return Str::title($post_type);
     }
 
@@ -563,9 +571,18 @@ class Query
         if (empty($taxonomy)) {
             return '';
         }
+        if (is_array($taxonomy)) {
+            $taxonomy = $taxonomy[0];
+        }
 
+        // try app container
+        $class = app()->get('taxonomy.' . $taxonomy);
+        if ($class) {
+            return $singular ? $class::$singular_name : $class::$name;
+        }
+
+        // try WP
         $tax = \get_taxonomy($taxonomy);
-
         if ($tax) {
 
             if ($singular && !empty($tax->labels->singular_name)) {
@@ -577,8 +594,8 @@ class Query
             }
         }
 
-        // fallback
-        return ucfirst($taxonomy);
+        // else title case the given tax
+        return Str::title($taxonomy);
     }
 
 
