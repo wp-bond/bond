@@ -208,11 +208,35 @@ class Config extends Fluent
 
     protected function adminSettings()
     {
-        if ($this->admin->theming) {
-            Admin::enableTheming();
+        if ($this->admin->add_login_css) {
+            Admin::addLoginCss();
+        }
+        if ($this->admin->add_admin_css) {
+            Admin::addAdminCss();
+        }
+        if ($this->admin->add_editor_css) {
+            Admin::addEditorCss();
+        }
+        if ($this->admin->disable_admin_color_picker) {
+            Admin::disableAdminColorPicker();
+        }
+        if ($this->admin->remove_update_nag) {
+            Admin::removeUpdateNag();
+        }
+        if (isset($this->admin->footer_credits)) {
+            Admin::addFooterCredits();
+        }
+        if ($this->admin->remove_wp_version) {
+            Admin::removeWpVersion();
         }
         if ($this->admin->hide_posts) {
             Admin::hidePosts();
+        }
+        if ($this->admin->replace_dashboard) {
+            Admin::replaceDashboard();
+        }
+        if ($this->admin->remove_administration_menus) {
+            Admin::removeAdministrationMenus();
         }
     }
 

@@ -14,22 +14,6 @@ class Admin
     private static $users_archive_columns = [];
 
 
-    public static function enableTheming()
-    {
-        static::addLoginCss();
-        static::addAdminCss();
-        static::addEditorCss();
-        static::disableAdminColorPicker();
-        static::removeUpdateNag();
-        static::addFooterCredits();
-        static::manageArchiveColumns();
-        static::replaceDashboard();
-        if (app()->isProduction() || !\current_user_can('manage_options')) {
-            static::removeAdministrationMenus();
-        }
-    }
-
-
     public static function setEditorImageSizes(array $sizes)
     {
         // only needed on admin
@@ -182,21 +166,29 @@ class Admin
         }
 
         \add_filter('admin_footer_text', function () {
-            echo config('admin.footer_text');
+            echo config('admin.footer_credits');
         });
-
-        // remove WP version
-        \add_filter('update_footer', function () {
-            return ' ';
-        }, 11);
     }
 
-    public static function manageArchiveColumns()
+    public static function removeWpVersion()
     {
         // only needed on admin
         if (!\is_admin()) {
             return;
         }
+
+        \add_filter('update_footer', function () {
+            return ' ';
+        }, 11);
+    }
+
+    protected static function manageArchiveColumns()
+    {
+        static $already = null;
+        if ($already) {
+            return;
+        }
+        $already = true;
 
         // Posts
         \add_action(
@@ -270,6 +262,7 @@ class Admin
             return;
         }
 
+        self::manageArchiveColumns();
         self::$archive_columns[$name] = $handler;
     }
 
@@ -325,6 +318,7 @@ class Admin
             return;
         }
 
+        self::manageArchiveColumns();
         self::$tax_archive_columns[$name] = $handler;
     }
 
@@ -363,6 +357,7 @@ class Admin
             return;
         }
 
+        self::manageArchiveColumns();
         self::$users_archive_columns[$name] = $handler;
     }
 
