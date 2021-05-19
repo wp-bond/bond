@@ -136,9 +136,21 @@ class Query
      */
     public static function id(string $slug, string $post_type): int
     {
-        global $wpdb;
+        $query = "SELECT ID FROM wp_posts WHERE post_name = '$slug' AND post_type = '$post_type'";
 
-        return (int) $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '$slug' AND post_type = '$post_type'");
+        if (config('cache.enabled')) {
+            return Cache::php(
+                $post_type . '/id-' . $slug,
+                -1,
+                function () use ($query) {
+                    global $wpdb;
+                    return (int) $wpdb->get_var($query);
+                }
+            );
+        }
+
+        global $wpdb;
+        return (int) $wpdb->get_var($query);
     }
 
     /**
