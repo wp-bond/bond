@@ -18,6 +18,7 @@ class Config extends Fluent
     public Fluent $cache;
     public Fluent $language;
     public Fluent $translation;
+    public Fluent $multilanguage;
     public Fluent $image;
     public Fluent $meta;
     public Fluent $wp;
@@ -33,6 +34,7 @@ class Config extends Fluent
         $this->cache = new Fluent();
         $this->language = new Fluent();
         $this->translation = new Fluent();
+        $this->multilanguage = new Fluent();
         $this->image = new Fluent([
             'sizes' => [
                 'thumbnail' => [150, 150, true],
@@ -67,6 +69,7 @@ class Config extends Fluent
         foreach ([
             'language',
             'translation',
+            'multilanguage',
             'app',
             'cache',
             'image',
@@ -112,11 +115,18 @@ class Config extends Fluent
         if ($this->translation->service) {
             $translation->setService($this->translation->service);
         }
+    }
 
-        if ($wp_titles = $this->translation->update_wp_titles) {
-            foreach ((array)$wp_titles as $post_type) {
-                $translation->updateWpTitles($post_type);
-            }
+    protected function multilanguageSettings()
+    {
+        $multilanguage = $this->container->get('multilanguage');
+
+        if ($this->multilanguage->post_types) {
+            $multilanguage->postTypes($this->multilanguage->post_types);
+        }
+
+        if ($this->multilanguage->taxonomies) {
+            $multilanguage->taxonomies($this->multilanguage->taxonomies);
         }
     }
 

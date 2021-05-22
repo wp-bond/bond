@@ -65,6 +65,7 @@ class App extends Container
         $this->share('view', View::class);
         $this->share('meta', Meta::class);
         $this->share('translation', Translation::class);
+        $this->share('multilanguage', Multilanguage::class);
 
         // register aliases
         foreach ([
@@ -73,6 +74,7 @@ class App extends Container
             View::class => 'view',
             Meta::class => 'meta',
             Translation::class => 'translation',
+            Multilanguage::class => 'multilanguage',
         ] as $alias => $definition) {
             $this->share($alias, function () use ($definition) {
                 return $this->get($definition);
@@ -556,6 +558,9 @@ class App extends Container
         Cache::forget($taxonomy);
         Cache::forget('bond/terms');
         Cache::forget('global');
+
+        // Translate before
+        \do_action('Bond/translate_term', $taxonomy, $term_id);
 
         // do action
         if (\has_action('Bond/save_term')) {
