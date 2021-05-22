@@ -42,8 +42,13 @@ class Language
         self::$languages[$code] = $values;
 
         if (!isset(self::$default)) {
-            self::setDefault($code);
+            self::setDefaultCode($code);
         }
+    }
+
+    public static function setDefaultCode(string $code)
+    {
+        self::$default = $code;
     }
 
     public static function isMultilanguage(): bool
@@ -61,19 +66,45 @@ class Language
         return array_keys(self::$languages);
     }
 
-    public static function getDefault(): string
+    public static function defaultCode(): string
     {
         return self::$default;
     }
 
-    public static function setDefault(string $code)
+    public static function defaultShortCode(): string
     {
-        self::$default = $code;
+        return self::shortCode(self::defaultCode());
     }
+
+    public static function defaultLocale(): string
+    {
+        return self::locale(self::defaultCode());
+    }
+
+    public static function defaultName(): string
+    {
+        return self::name(self::defaultCode());
+    }
+
+    public static function defaultShortName(): string
+    {
+        return self::shortName(self::defaultCode());
+    }
+
+    public static function defaultFieldsSuffix(): string
+    {
+        return self::fieldsSuffix(self::defaultCode());
+    }
+
+    public static function defaultFieldsLabel(): string
+    {
+        return self::fieldsLabel(self::defaultCode());
+    }
+
 
     public static function isDefault(string $code = null): bool
     {
-        return self::getDefault() === ($code ?: self::code());
+        return self::defaultCode() === ($code ?: self::code());
     }
 
     public static function getCurrent(): string
@@ -83,7 +114,7 @@ class Language
 
     public static function setCurrent(?string $code)
     {
-        $code = self::code($code) ?: self::getDefault();
+        $code = self::code($code) ?: self::defaultCode();
 
         self::$current = $code;
 
