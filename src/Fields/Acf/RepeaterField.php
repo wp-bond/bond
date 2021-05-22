@@ -21,9 +21,11 @@ class RepeaterField extends Field
     }
 
 
-    public function buttonLabel(string $label): self
-    {
-        $this->button_label = tx($label, 'fields');
+    public function buttonLabel(
+        string $label,
+        string $written_language = null
+    ): self {
+        $this->button_label = tx($label, 'fields', null, $written_language);
         return $this;
     }
 

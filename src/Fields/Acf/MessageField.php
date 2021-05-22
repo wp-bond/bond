@@ -9,9 +9,11 @@ class MessageField extends Field
 {
     protected string $type = 'message';
 
-    public function message(string $message): self
-    {
-        $this->message = tx($message, 'fields');
+    public function message(
+        string $message,
+        string $written_language = null
+    ): self {
+        $this->message = tx($message, 'fields', null, $written_language);
         return $this;
     }
 

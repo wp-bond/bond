@@ -95,9 +95,11 @@ class FieldGroup
         return $this;
     }
 
-    public function title(string $title): self
-    {
-        $this->settings['title'] = tx($title, 'fields');
+    public function title(
+        string $title,
+        string $written_language = null
+    ): self {
+        $this->settings['title'] = tx($title, 'fields', null, $written_language);
         if (!$this->settings['title']) {
             $this->settings['title'] = '&nbsp;';
         }
@@ -222,13 +224,15 @@ class FieldGroup
 
                 case 'tax':
                 case 'taxonomy':
-                    $result[] = [
-                        [
-                            'param' => 'taxonomy',
-                            'operator' => '==',
-                            'value' => $options,
-                        ],
-                    ];
+                    foreach ((array)$options as $taxonomy) {
+                        $result[] = [
+                            [
+                                'param' => 'taxonomy',
+                                'operator' => '==',
+                                'value' => $taxonomy,
+                            ],
+                        ];
+                    }
                     break;
 
                 default:

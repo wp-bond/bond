@@ -33,15 +33,19 @@ class Field implements ArrayAccess
         }
     }
 
-    public function label(string $name): self
-    {
-        $this->label = tx($name, 'fields');
+    public function label(
+        string $name,
+        string $written_language = null
+    ): self {
+        $this->label = tx($name, 'fields', null, $written_language);
         return $this;
     }
 
-    public function instructions(string $instructions): self
-    {
-        $this->instructions = tx($instructions, 'fields');
+    public function instructions(
+        string $instructions,
+        string $written_language = null
+    ): self {
+        $this->instructions = tx($instructions, 'fields', null, $written_language);
         return $this;
     }
 
