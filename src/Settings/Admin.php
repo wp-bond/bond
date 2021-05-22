@@ -12,7 +12,7 @@ class Admin
     private static $archive_columns = [];
     private static $tax_archive_columns = [];
     private static $users_archive_columns = [];
-
+    private static $tax_hide_fields = [];
 
     public static function setEditorImageSizes(array $sizes)
     {
@@ -181,6 +181,23 @@ class Admin
             return ' ';
         }, 11);
     }
+
+
+
+
+    public static function setSideMenuParams(string $post_type, array $params)
+    {
+        \add_action('admin_menu', function () use ($post_type, $params) {
+            global $submenu;
+            $link = 'edit.php?post_type=' . $post_type;
+
+            if (isset($submenu[$link][5])) {
+                $submenu[$link][5][2] = $link . '&' . http_build_query($params);
+            }
+        });
+    }
+
+
 
     protected static function manageArchiveColumns()
     {
@@ -444,7 +461,7 @@ class Admin
 
     public static function hideTitle($post_types)
     {
-        if (!Wp::isAdminWithTheme() || empty($post_types)) {
+        if (empty($post_types) || !Wp::isAdminWithTheme()) {
             return;
         }
 
@@ -494,5 +511,85 @@ class Admin
             ], $columns);
         }
         return $columns;
+    }
+
+
+
+    public static function setTaxonomyFields(string $taxonomy, array $fields)
+    {
+        static $already = null;
+        if (!$already) {
+            $already = [];
+            \add_action(
+                'admin_footer-edit-tags.php',
+                [static::class, 'handleTaxonomyFields']
+            );
+        }
+
+        if (!in_array($taxonomy, $already)) {
+            \add_action(
+                $taxonomy . '_edit_form',
+                [static::class, 'handleTaxonomyFields']
+            );
+            $already[] = $taxonomy;
+        }
+
+        self::$tax_hide_fields[$taxonomy] = array_merge(
+            self::$tax_hide_fields[$taxonomy] ?? [],
+            $fields
+        );
+    }
+
+    public static function handleTaxonomyFields()
+    {
+        global $current_screen, $taxonomy;
+
+        // dd($taxonomy, $current_screen->id);
+
+        $fields = self::$tax_hide_fields[$taxonomy] ?? null;
+        if (empty($fields)) {
+            return;
+        }
+
+        // TODO later we can support changing the labels too
+
+        echo '<style>';
+
+        if (!empty($fields['name_label_after'])) {
+            echo 'label[for="tag-name"]:after { content: "' . $fields['name_label_after'] . '" }';
+        }
+        if (!empty($fields['slug_label_after'])) {
+            echo 'label[for="tag-slug"]:after { content: "' . $fields['slug_label_after'] . '" }';
+        }
+
+        if (
+            isset($fields['name_instructions'])
+            && $fields['name_instructions'] === false
+        ) {
+            echo '.term-name-wrap p { display: none; }';
+        }
+
+        if (
+            isset($fields['slug_instructions'])
+            && $fields['slug_instructions'] === false
+        ) {
+            echo '.term-slug-wrap p { display: none; }';
+        }
+
+        if (
+            isset($fields['description'])
+            && $fields['description'] === false
+        ) {
+            echo '.term-description-wrap { display: none; }';
+        }
+
+        if (
+            isset($fields['parent'])
+            && $fields['parent'] === false
+        ) {
+            echo '.term-parent-wrap { display: none; }';
+        }
+
+        echo '</style>';
     }
 }
