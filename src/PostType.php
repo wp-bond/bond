@@ -141,7 +141,7 @@ abstract class PostType
         if (config('cache.enabled')) {
             $cache_key = static::$post_type
                 . '/all'
-                . (!empty($params) ? '-' . Str::slug($params) : '');
+                . (!empty($params) ? '-' . md5(Str::slug($params)) : '');
 
             return Cache::php($cache_key, -1, $fn);
         }

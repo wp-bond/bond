@@ -34,7 +34,9 @@ class Posts extends FluentList
                 $all[] = $post;
             }
         }
-        array_splice($this->items, $index, 0, $all);
+        if (count($all)) {
+            array_splice($this->items, $index, 0, $all);
+        }
         return $this;
     }
 
