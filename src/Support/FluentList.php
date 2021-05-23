@@ -7,6 +7,7 @@ use ArrayAccess;
 use JsonSerializable;
 use Countable;
 use ArrayIterator;
+use Bond\Settings\Language;
 use Bond\Utils\Arr;
 use Bond\Utils\Cast;
 use Bond\Utils\Obj;
@@ -246,5 +247,10 @@ class FluentList implements
     public function unshift($item): self
     {
         return $this->add($item, 0);
+    }
+
+    public function localized(): self
+    {
+        return Obj::localize($this, Language::getCurrent());
     }
 }

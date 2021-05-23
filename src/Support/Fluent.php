@@ -161,15 +161,6 @@ class Fluent implements
         return $this->getByDot($key);
     }
 
-    public function getTranslations($key): array
-    {
-        $t = [];
-        foreach (Language::codes() as $code) {
-            $t[$code] = $this->get($key, $code);
-        }
-        return $t;
-    }
-
     private function getByDot($key, string $language_code = null)
     {
         $target = $this;
@@ -196,6 +187,19 @@ class Fluent implements
         return $target;
     }
 
+    public function getTranslations($key): array
+    {
+        $t = [];
+        foreach (Language::codes() as $code) {
+            $t[$code] = $this->get($key, $code);
+        }
+        return $t;
+    }
+
+    public function localized(): self
+    {
+        return Obj::localize($this, Language::getCurrent());
+    }
 
     public function __set($key, $value)
     {
