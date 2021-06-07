@@ -28,6 +28,10 @@ class Posts extends FluentList
 
     public function addMany($posts, $index = -1): self
     {
+        if (empty($posts)) {
+            return $this;
+        }
+
         $all = [];
         foreach ($posts as $post) {
             if ($post = Cast::post($post)) {

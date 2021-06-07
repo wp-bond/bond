@@ -221,12 +221,6 @@ class Meta
 
     public function printMultilanguageTags()
     {
-        global $post_type;
-
-        if (is_array($post_type)) {
-            $post_type = $post_type[0];
-        }
-
         foreach (Language::codes() as $code) {
 
             if ($code === Language::code()) {

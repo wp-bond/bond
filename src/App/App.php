@@ -158,16 +158,20 @@ class App extends Container
         foreach ($classes as $classname) {
 
             // add to View and register
-            if (is_subclass_of($classname, Taxonomy::class)) {
-
+            if (
+                is_subclass_of($classname, Taxonomy::class)
+                && isset($classname::$taxonomy)
+            ) {
                 $this->share('taxonomy.' . $classname::$taxonomy, $classname);
 
                 if (method_exists($classname, 'register')) {
                     call_user_func($classname . '::register');
                 }
             }
-            if (is_subclass_of($classname, PostType::class)) {
-
+            if (
+                is_subclass_of($classname, PostType::class)
+                && isset($classname::$post_type)
+            ) {
                 $this->share('post_type.' . $classname::$post_type, $classname);
 
                 if (method_exists($classname, 'addToView')) {
@@ -432,9 +436,8 @@ class App extends Container
         Cache::forget('bond/posts');
         Cache::forget('global');
 
-
         // Translate before
-        \do_action('Bond/translate_post', $post_id);
+        \do_action('Bond/translate_post', $post->post_type, $post_id);
 
         // Now emit actions
         if (\has_action('Bond/save_post')) {

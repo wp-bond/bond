@@ -33,6 +33,8 @@ abstract class PostType
         if (!isset(static::$post_type)) {
             return;
         }
+
+        // these are already registered by WP
         if (in_array(static::$post_type, [
             'post',
             'page',

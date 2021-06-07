@@ -452,7 +452,7 @@ class View extends Fluent
 
         $post_type = $_post ? $_post->post_type : null;
         $post_slug = $_post ? $_post->post_name : null;
-        $query_post_type = $query->query_vars['post_type'];
+        $query_post_type = $query->query_vars['post_type'] ?? '';
 
         if (is_array($query_post_type)) {
             // it's not usual to have multiple post types on a rewrite rule
