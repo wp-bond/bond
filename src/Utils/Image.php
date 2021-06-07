@@ -18,8 +18,13 @@ class Image
         static::$sizes = $sizes;
     }
 
+
     // TODO later allow customization
     protected static array $media_sizes = [
+        [
+            'name' => 'xxxl',
+            'minWidth' => 1720,
+        ],
         [
             'name' => 'xxl',
             'minWidth' => 1480,
@@ -480,17 +485,17 @@ class Image
         bool $with_fallback = false
     ): string {
 
-        $attachment = Cast::wpPost($image_id);
+        $attachment = Cast::post($image_id);
         if (empty($attachment)) {
             return '';
         }
 
-        $result = $attachment->post_excerpt;
+        $result = $attachment->caption ?: $attachment->post_excerpt;
 
         if ($with_fallback && empty($result)) {
 
             // try the image description
-            $result = $attachment->post_content;
+            $result = $attachment->content ?: $attachment->post_content;
 
             // try the image alt field
             if (empty($result)) {
@@ -499,7 +504,7 @@ class Image
 
             // finally, use the image title
             if (empty($result)) {
-                $result = $attachment->post_title;
+                $result = $attachment->title ?: $attachment->post_title;
             }
         }
 

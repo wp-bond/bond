@@ -52,25 +52,25 @@ if (!function_exists('c')) {
 if (!function_exists('t')) {
 
     function t(
-        $string,
+        $input,
         string $language_code = null,
         string $written_language = null
-    ): string {
+    ) {
         return app()->get('translation')
-            ->get($string, $language_code, $written_language);
+            ->get($input, $language_code, $written_language);
     }
 }
 
 if (!function_exists('tx')) {
 
     function tx(
-        $string,
+        $input,
         string $context,
         string $language_code = null,
         string $written_language = null
-    ): string {
+    ) {
         return app()->get('translation')
-            ->get($string, $language_code, $written_language, $context);
+            ->get($input, $language_code, $written_language, $context);
     }
 }
 

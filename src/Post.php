@@ -6,7 +6,6 @@ use Bond\Utils\Link;
 use Bond\Support\Fluent;
 use Bond\Utils\Cast;
 use Bond\Utils\Query;
-use Bond\Settings\Language;
 use WP_Post;
 
 class Post extends Fluent
@@ -132,12 +131,24 @@ class Post extends Fluent
         return null;
     }
 
+    public function isMultilanguage(): bool
+    {
+        return app()->get('multilanguage')->is($this);
+    }
+
     public function slug(string $language_code = null): string
     {
-        if (Language::isMultilanguage()) {
+        if ($this->isMultilanguage()) {
             return $this->get('slug', $language_code) ?: $this->post_name;
         }
         return $this->post_name;
+    }
+
+    public function postTypeName(
+        bool $singular = false,
+        string $language = null
+    ): string {
+        return Query::postTypeName($this->post_type, $singular, $language);
     }
 
     public function link(string $language_code = null): string

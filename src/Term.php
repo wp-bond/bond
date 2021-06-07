@@ -6,7 +6,6 @@ use Bond\Support\Fluent;
 use Bond\Utils\Cache;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
-use Bond\Settings\Language;
 use Bond\Utils\Query;
 use WP_Term;
 
@@ -104,9 +103,14 @@ class Term extends Fluent
         return null;
     }
 
+    public function isMultilanguage(): bool
+    {
+        return app()->get('multilanguage')->is($this);
+    }
+
     public function slug(string $language_code = null): string
     {
-        if (Language::isMultilanguage()) {
+        if ($this->isMultilanguage()) {
             return $this->get('slug', $language_code) ?: $this->slug;
         }
         return $this->slug;

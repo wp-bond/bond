@@ -134,13 +134,13 @@ class Query
     /**
      * Gets a post id directly from database.
      */
-    public static function id(string $slug, string $post_type): int
+    public static function id(string $slug, string $post_type, string $post_status = 'publish'): int
     {
-        $query = "SELECT ID FROM wp_posts WHERE post_name = '$slug' AND post_type = '$post_type'";
+        $query = "SELECT ID FROM wp_posts WHERE post_name = '$slug' AND post_type = '$post_type' AND post_status = '$post_status'";
 
         if (config('cache.enabled')) {
             return Cache::php(
-                $post_type . '/id-' . $slug,
+                $post_type . '/id-' . $slug . '-' . $post_status,
                 -1,
                 function () use ($query) {
                     global $wpdb;
@@ -451,6 +451,16 @@ class Query
     //     return !empty($query->terms) ? $query->terms[0] : null;
     // }
 
+
+
+    public static function terms($taxonomy, array $args = []): Terms
+    {
+        return Cast::terms(static::wpTerms(
+            $taxonomy,
+            $args
+        ));
+    }
+
     public static function wpTerms($taxonomy, array $args = []): array
     {
         $query = new WP_Term_Query(array_merge([
@@ -545,8 +555,11 @@ class Query
     /**
      * Note: Beware when trying to read the post type name before it is registered, usually at the init action.
      */
-    public static function postTypeName($post_type, bool $singular = false): string
-    {
+    public static function postTypeName(
+        $post_type,
+        bool $singular = false,
+        string $language = null
+    ): string {
         if (empty($post_type)) {
             return '';
         }
@@ -556,8 +569,14 @@ class Query
 
         // try app container
         $class = app()->get('post_type.' . $post_type);
+
         if ($class) {
-            return $singular ? $class::$singular_name : $class::$name;
+            if ($singular && isset($class::$singular_name)) {
+                return tx($class::$singular_name, 'register', $language);
+            }
+            if (!$singular && isset($class::$name)) {
+                return tx($class::$name, 'register', $language);
+            }
         }
 
         // try WP
@@ -572,14 +591,17 @@ class Query
         }
 
         // else title case the given post type
-        return Str::title($post_type);
+        return tx(Str::title($post_type), 'register', $language);
     }
 
     /**
      * Note: Beware when trying to read the name before it is registered, usually at the init action.
      */
-    public static function taxonomyName($taxonomy, bool $singular = false): string
-    {
+    public static function taxonomyName(
+        $taxonomy,
+        bool $singular = false,
+        string $language = null
+    ): string {
         if (empty($taxonomy)) {
             return '';
         }
@@ -590,7 +612,12 @@ class Query
         // try app container
         $class = app()->get('taxonomy.' . $taxonomy);
         if ($class) {
-            return $singular ? $class::$singular_name : $class::$name;
+            if ($singular && isset($class::$singular_name)) {
+                return tx($class::$singular_name, 'register', $language);
+            }
+            if (!$singular && isset($class::$name)) {
+                return tx($class::$name, 'register', $language);
+            }
         }
 
         // try WP
@@ -607,7 +634,7 @@ class Query
         }
 
         // else title case the given tax
-        return Str::title($taxonomy);
+        return tx(Str::title($taxonomy), 'register', $language);
     }
 
 
