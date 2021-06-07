@@ -9,12 +9,21 @@ namespace Bond\Utils;
  */
 class File
 {
-    public static function url($file_id): ?string
+    public static function url($file_id): string
     {
         $id = Cast::postId($file_id);
         return $id
             ? (string) \wp_get_attachment_url($id)
-            : null;
+            : '';
+    }
+
+    public static function extension($file_id): string
+    {
+        $local_file = \get_attached_file($file_id, true);
+
+        return $local_file
+            ? strtolower(pathinfo($local_file, PATHINFO_EXTENSION))
+            : '';
     }
 
     public static function size($file_id): int
