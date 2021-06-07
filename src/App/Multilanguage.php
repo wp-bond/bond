@@ -3,11 +3,15 @@
 namespace Bond\App;
 
 use Bond\Fields\Acf\FieldGroup;
+use Bond\Post;
 use Bond\Settings\Admin;
 use Bond\Settings\Language;
+use Bond\Term;
 use Bond\Utils\Cast;
 use Bond\Utils\Query;
 use Bond\Utils\Str;
+use WP_Post;
+use WP_Term;
 
 class Multilanguage
 {
@@ -18,17 +22,41 @@ class Multilanguage
     protected bool $added_post_hook = false;
     protected bool $added_term_hook = false;
 
+    public function is($obj): bool
+    {
+        if ($obj instanceof Post || $obj instanceof WP_Post) {
+            return in_array($obj->post_type, $this->post_types);
+        }
 
-    public function postTypes(array $post_types)
+        if ($obj instanceof Term || $obj instanceof WP_Term) {
+            return in_array($obj->taxonomy, $this->taxonomies);
+        }
+
+        return false;
+    }
+
+    // TODO MAYBE LEAVE ON AFTER ALL
+    // but maybe consider an option "enabled" on config
+    // and an method enable() disable() here
+    public function __construct()
+    {
+        $this->addTranslatePostHook();
+        $this->addTranslateTermHook();
+    }
+
+    public function postTypes(array $post_types = null): array
     {
         if (empty($post_types)) {
-            return;
+            return $this->post_types;
         }
 
         $this->post_types = array_merge($this->post_types, $post_types);
 
         // Translate
         $this->addTranslatePostHook();
+
+        // TODO allow more configuration....
+        // some attachments we need titles, others don't
 
         // Filter the post title
         $this->filterPostTitle();
@@ -39,12 +67,14 @@ class Multilanguage
         // As we are handling our own multilanguage titles
         // let's hide the WP defaults
         Admin::hideTitle($post_types);
+
+        return $this->post_types;
     }
 
-    public function taxonomies(array $taxonomies)
+    public function taxonomies(array $taxonomies = null): array
     {
         if (empty($taxonomies)) {
-            return;
+            return $this->taxonomies;
         }
 
         $this->taxonomies = array_merge($this->taxonomies, $taxonomies);
@@ -57,6 +87,8 @@ class Multilanguage
 
         // Fields
         $this->addFieldsForTaxonomies($taxonomies);
+
+        return $this->taxonomies;
     }
 
 
@@ -89,18 +121,32 @@ class Multilanguage
         }
         $this->added_post_hook = true;
 
+        // TODO VERY IMPORTANT this is not being triggered on WP AJAX
+        // WILL RUN twice.. maybe just add a global to protect
+        \add_action('acf/save_post', [$this, 'translateAcfFields']);
+
         // for posts we translate in sync with Bond save post hook
-        \add_action('Bond/translate_post', [$this, 'translatePostHook'], 1);
+        \add_action('Bond/translate_post', [$this, 'translatePostHook'], 1, 2);
 
         // for ACF options
         \add_action('Bond/translate_options', [$this, 'translateOptionsHook']);
+    }
+
+    public function translateAcfFields($id)
+    {
+        $post = Cast::wpPost($id);
+        if ($post) {
+            $this->translatePostHook($post->post_type, $post->ID);
+        }
     }
 
     public function removeTranslatePostHook()
     {
         $this->added_post_hook = false;
 
-        \remove_action('Bond/translate_post', [$this, 'translatePostHook'], 1);
+        \remove_action('acf/save_post', [$this, 'translateAcfFields']);
+
+        \remove_action('Bond/translate_post', [$this, 'translatePostHook'], 1, 2);
 
         \remove_action('Bond/translate_options', [$this, 'translateOptionsHook']);
     }
@@ -111,11 +157,16 @@ class Multilanguage
         $this->translateAllFields('options');
     }
 
-    public function translatePostHook(int $post_id)
+    public function translatePostHook(string $post_type, int $post_id)
     {
         // Translate all fields
-        // auto activated, later can allow config
         $this->translateAllFields($post_id);
+
+        // only allowed
+        // TODO MAYBE FORGET THIS AT ALL, JUST TRY TO TRANLATE
+        if (!in_array($post_type, $this->post_types)) {
+            return;
+        }
 
         // Mulilanguage titles and slugs
         $this->ensurePostTitleAndSlug($post_id);
@@ -220,6 +271,15 @@ class Multilanguage
                         // translated
                         $t = $translation->fromTo($c, $code, $v);
                         if ($t) {
+
+                            // TEMP fix to remove <br /> from textareas
+                            if (
+                                strpos($v, '<br /> ') === false
+                                && strpos($t, '<br /> ') !== false
+                            ) {
+                                $t = str_replace('<br /> ', "\n", $t);
+                            }
+
                             $translated[$key] = $t;
                             $changed++;
                             break 2;
@@ -449,6 +509,11 @@ class Multilanguage
     {
         $location = $post_types;
 
+        // TEMP remove attachments
+        if ($i = array_search('attachment', $location)) {
+            array_splice($location, $i, 1);
+        }
+
         // don't translate the Home page
         if ($i = array_search('page', $location)) {
 
@@ -624,6 +689,11 @@ class Multilanguage
 
     public function translateTermHook(string $taxonomy, int $term_id)
     {
+        // only allowed
+        if (!in_array($taxonomy, $this->taxonomies)) {
+            return;
+        }
+
         // Translate all fields
         // auto activated, later can allow config
         $this->translateAllFields($taxonomy . '_' . $term_id);
