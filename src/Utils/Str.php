@@ -399,4 +399,10 @@ class Str
         }
         return filter_var((string) $string, FILTER_VALIDATE_EMAIL);
     }
+
+
+    public static function padInt($number, $length = 2): string
+    {
+        return str_pad((int)$number, $length, '0', STR_PAD_LEFT);
+    }
 }
