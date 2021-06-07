@@ -2,12 +2,9 @@
 
 namespace Bond\Services;
 
-use Bond\Fields\Acf\FieldGroup;
-use Bond\Settings\Admin;
 use Bond\Settings\Language;
-use Bond\Utils\Cast;
-use Bond\Utils\Query;
-use Bond\Utils\Str;
+use Bond\Support\Fluent;
+use Bond\Support\FluentList;
 
 // AWS Translate
 // https://docs.aws.amazon.com/translate/latest/dg/what-is.html#language-pairs
@@ -72,13 +69,52 @@ class Translation
     // API
 
     public function get(
-        $string,
+        $input,
+        string $language_code = null,
+        string $written_language = null,
+        string $context = null
+    ) {
+
+        if (
+            is_array($input)
+            || $input instanceof Fluent
+        ) {
+            if (is_array($input)) {
+                $out = [];
+            } elseif (
+                $input instanceof Fluent
+                || $input instanceof FluentList
+            ) {
+                $class = get_class($input);
+                $out = new $class;
+            }
+            foreach ($input as $k => $in) {
+                // recursive
+                $out[$k] = $this->get(
+                    $in,
+                    $language_code,
+                    $written_language,
+                    $context
+                );
+            }
+            return $out;
+        }
+
+        return $this->_get(
+            (string) $input,
+            $language_code,
+            $written_language,
+            $context
+        );
+    }
+
+    private function _get(
+        string $string,
         string $language_code = null,
         string $written_language = null,
         string $context = null
 
     ): string {
-        $string = (string) $string;
 
         // we won't translate empty strings
         if (empty($string)) {
@@ -92,7 +128,8 @@ class Translation
             return __($string, app()->id());
         }
 
-        // fallbacks to current language
+        // ensures it's a language code
+        // fallbacks to current language if invalid
         $language_code = Language::code($language_code);
 
         // defaults
