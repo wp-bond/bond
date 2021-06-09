@@ -373,6 +373,12 @@ class Image
         return $r && $r < 1;
     }
 
+    public static function isVerticalOrSquare($image_id): bool
+    {
+        $r = self::sizeRatio($image_id);
+        return $r && $r <= 1;
+    }
+
     public static function isHorizontal($image_id): bool
     {
         $r = self::sizeRatio($image_id);
