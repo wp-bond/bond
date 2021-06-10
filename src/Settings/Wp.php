@@ -36,6 +36,14 @@ class Wp
         });
     }
 
+
+    public static function disableImageLimit()
+    {
+        \add_filter('big_image_size_threshold', '__return_false');
+    }
+
+
+
     public static function addImageSizes(array $sizes)
     {
         // TODO add option to allow upscale

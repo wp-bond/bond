@@ -159,6 +159,10 @@ class Config extends Fluent
             Wp::setImageQuality($this->image->quality);
         }
 
+        if ($this->image->disable_limit) {
+            Wp::disableImageLimit();
+        }
+
         if ($this->image->sizes) {
             Wp::addImageSizes((array) $this->image->sizes);
             Image::setSizes((array) $this->image->sizes);
