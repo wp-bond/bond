@@ -103,9 +103,7 @@ abstract class PostType
 
     public static function name(bool $singular = false): string
     {
-        return $singular
-            ? static::$singular_name ?? Query::postTypeName(static::$post_type, true)
-            : static::$name ?? Query::postTypeName(static::$post_type);
+        return Query::postTypeName(static::$post_type, $singular);
     }
 
     public static function count()
