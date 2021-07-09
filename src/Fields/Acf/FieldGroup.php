@@ -17,43 +17,37 @@ class FieldGroup
 
     private $settings;
     private $apply_multilanguage_tabs = false;
-    private static array $used_keys = [];
+    private static array $used_locations = [];
 
 
-    public function __construct($key)
+    public function __construct(string $key)
     {
-        // init defaults
-        $this->settings = [
-            'title' => '&nbsp;',
-            'fields' => [],
-        ];
-
         // stop if ACF is not loaded
         // useful if the theme is activated before the ACF plugin is
         if (!function_exists('\acf_add_local_field_group')) {
             return;
         }
 
-        // always snake case
-        $key = Str::az($key);
+        // sanitize
+        $key = Str::azLower($key);
 
-        // can't have same key
-        $group_key = 'group_' . $key;
-        while (isset(static::$used_keys[$group_key])) {
-            $group_key = 'group_' . $key . uniqid();
-            // dd($group_key);
-        }
-        static::$used_keys[$group_key] = true;
+        // group key must be unique across the entire app
+        static $i = 0;
+        $group_key = 'group_' . $key . ++$i;
+
+        // set
+        $this->settings = [
+            'key' => $group_key,
+            'title' => '&nbsp;', // required, just change later
+            'fields' => [],
+        ];
 
         // auto register
         // right after the post and terms registrations
-        \add_action('init', function () use ($group_key, $key) {
+        \add_action('init', function () use ($key) {
 
             // copy settings
             $settings = $this->settings;
-
-            // set group key
-            $settings['key'] = $group_key;
 
             // get fields array
             $fields = [];
@@ -106,6 +100,34 @@ class FieldGroup
         return $this;
     }
 
+    public function location($location): self
+    {
+        // auto increment order
+        // very handy so field groups appear in the same order as they are created in PHP
+        if (!isset($this->settings['menu_order'])) {
+            $hash = md5(json_encode($location));
+
+            if (isset(static::$used_locations[$hash])) {
+                $order = ++static::$used_locations[$hash];
+            } else {
+                static::$used_locations[$hash] = 1;
+                $order = 1;
+            }
+            $this->order($order);
+        }
+
+        // set location
+        $this->settings['location'] = self::formatLocation($location);
+
+        return $this;
+    }
+
+    public function order(int $index): self
+    {
+        $this->settings['menu_order'] = (int) $index;
+        return $this;
+    }
+
     public function positionSide(): self
     {
         $this->settings['position'] = 'side';
@@ -136,12 +158,6 @@ class FieldGroup
         return $this;
     }
 
-    public function menuOrder($index): self
-    {
-        $this->settings['menu_order'] = (int) $index;
-        return $this;
-    }
-
     public function screenHideAll(array $except = []): self
     {
         $all = [
@@ -162,13 +178,13 @@ class FieldGroup
         ];
         $all = array_diff($all, $except);
 
-        $this->settings['hide_on_screen'] = $all;
+        $this->screenHide($all);
         return $this;
     }
 
-    public function location($location): self
+    public function screenHide(array $elements): self
     {
-        $this->settings['location'] = self::formatLocation($location);
+        $this->settings['hide_on_screen'] = $elements;
         return $this;
     }
 
@@ -369,7 +385,7 @@ class FieldGroup
 
     private static function createTabField($label, array $options = [])
     {
-        $key_suffix = Str::slug($label) . '_' . uniqid();
+        $key_suffix = Str::snake($label) . '_' . uniqid();
 
         $field = [
             'key' => 'field_tab_' . $key_suffix,
