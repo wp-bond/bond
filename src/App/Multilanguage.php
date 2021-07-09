@@ -176,31 +176,135 @@ class Multilanguage
     public function translateAllFields($post_id)
     {
         if (
-            !app()->get('translation')->hasService()
+            !app()->translation()->hasService()
             || !app()->hasAcf()
         ) {
             return;
         }
 
-        // TODO it's not working well for file fields with url inside Flex fields
-        // could use get_field_objects($post_id, false) to reconstruct the keys, with the values not formated
-        $fields = \get_fields($post_id);
-        if (empty($fields)) {
+        // get all post fields
+        $acf = \get_field_objects($post_id, false);
+        if (empty($acf)) {
             return;
         }
 
+        // assemble a control field list
+        $fields = [];
+        foreach ($acf as $name => $values) {
+            $fields[$name] = [
+                'type' => $values['type'],
+                'value' => $this->acfFieldValue($values),
+            ];
+        }
+
+        // dd(get_field_objects($post_id, false), $fields);
+
+        // translate
         $updated = 0;
         $translated = $this->translateMissingFields(
-            (array) $fields,
+            $fields,
             true,
             $updated
         );
         // dd($translated, $updated);
 
+        // save
         foreach ($translated as $name => $value) {
             \update_field($name, $value, $post_id);
         }
     }
+
+
+    private function acfFieldValue($values)
+    {
+        if (in_array($values['type'], [
+            'flexible_content',
+            'repeater',
+        ])) {
+
+            // put together all sub fields
+            if ($values['type'] === 'repeater') {
+                $values['layouts'] = [
+                    ['sub_fields' => $values['sub_fields']]
+                ];
+            }
+            $lookup = [];
+            foreach ($values['layouts'] as $layout) {
+                foreach ($layout['sub_fields'] as $sub) {
+                    $lookup[$sub['key']] = [
+                        'name' => $sub['name'],
+                        'type' => $sub['type'],
+                        'layouts' => $sub['layouts'] ?? null,
+                        'sub_fields' => $sub['sub_fields'] ?? null,
+                    ];
+                }
+            }
+
+            // format all sub values
+            $value = [];
+            if (!empty($values['value'])) {
+                foreach ($values['value'] as $layout) {
+                    $layout_value = [];
+
+                    foreach ($layout as $k => $v) {
+
+                        if ($k === 'acf_fc_layout') {
+                            $layout_value[$k] = [
+                                'type' => '',
+                                'value' => $v,
+                            ];
+                        } else {
+                            $field = $lookup[$k];
+                            $field['value'] = $v;
+
+                            $layout_value[$field['name']] = [
+                                'type' => $field['type'],
+                                'value' => $this->acfFieldValue($field),
+                            ];
+                        }
+                    }
+
+                    $value[] = $layout_value;
+                }
+            }
+            return $value;
+        }
+
+        if ($values['type'] === 'group') {
+
+            // put together all sub fields
+            $lookup = [];
+            foreach ($values['sub_fields'] as $sub) {
+                $lookup[$sub['key']] = [
+                    'name' => $sub['name'],
+                    'type' => $sub['type'],
+                    'layouts' => $sub['layouts'] ?? null,
+                    'sub_fields' => $sub['sub_fields'] ?? null,
+                ];
+            }
+
+            // format all sub values
+            $value = [];
+            if (!empty($values['value'])) {
+                foreach ($values['value'] as  $k => $v) {
+
+                    $field = $lookup[$k];
+                    $field['value'] = $v;
+
+                    $value[$field['name']] = [
+                        'type' => $field['type'],
+                        'value' => $this->acfFieldValue($field),
+                    ];
+                }
+            }
+
+            return $value;
+        }
+
+        // for all other field types, just return the value
+        return $values['value'];
+    }
+
 
     protected function translateMissingFields(
         array $target,
@@ -209,15 +313,28 @@ class Multilanguage
     ): array {
 
         $translated = [];
-        // dd($target);
 
-        foreach ($target as $key => $value) {
+        foreach ($target as $key => $values) {
 
-            // recurse
-            if (is_array($value)) {
+            $type = $values['type'];
+            $value = $values['value'];
 
+            // recurse if is flex / group / repeater
+            if (in_array($type, [
+                'flexible_content',
+                'repeater',
+                'group',
+            ])) {
                 $before = $changed;
-                $result = $this->translateMissingFields($value, false, $changed);
+                $result = [];
+
+                if ($type === 'group') {
+                    $result = $this->translateMissingFields($value, false, $changed);
+                } else {
+                    foreach ($value as $v) {
+                        $result[] = $this->translateMissingFields($v, false, $changed);
+                    }
+                }
 
                 // include entire array if not narrow
                 // or if something was translated
@@ -227,21 +344,24 @@ class Multilanguage
                 continue;
             }
 
-            // only empty strings will pass
-            if ($value !== '') {
-                if ($narrow) {
-                    continue;
-                } else {
+            // only translate these field types
+            // also only translate empty strings
+            if (!in_array($type, [
+                'text',
+                'textarea',
+                'wysiwyg',
+            ]) || $value !== '') {
+
+                // store values if recursing, otherwise just skip
+                if (!$narrow) {
                     $translated[$key] = $value;
-                    continue;
                 }
+                continue;
             }
 
             // for empty string that is suffixed with a lang
             // we will try to find a match in another language
             // and translate
-
-            $translation = app()->get('translation');
 
             foreach (Language::codes() as $code) {
 
@@ -260,7 +380,9 @@ class Multilanguage
                         $lang_key = $unlocalized_key . Language::fieldsSuffix($c);
 
                         // value
-                        $v = $target[$lang_key] ?? '';
+                        $fv = $target[$lang_key] ?? [];
+                        $v = $fv['value'] ?? null;
+
                         if (empty($v) || !is_string($v)) {
                             continue;
                         }
@@ -269,16 +391,16 @@ class Multilanguage
                         }
 
                         // translated
-                        $t = $translation->fromTo($c, $code, $v);
+                        $t = app()->translation()->fromTo($c, $code, $v);
                         if ($t) {
 
                             // TEMP fix to remove <br /> from textareas
-                            if (
-                                strpos($v, '<br /> ') === false
-                                && strpos($t, '<br /> ') !== false
-                            ) {
-                                $t = str_replace('<br /> ', "\n", $t);
-                            }
+                            // if (
+                            //     strpos($v, '<br /> ') === false
+                            //     && strpos($t, '<br /> ') !== false
+                            // ) {
+                            //     $t = str_replace('<br /> ', "\n", $t);
+                            // }
 
                             $translated[$key] = $t;
                             $changed++;
@@ -309,7 +431,6 @@ class Multilanguage
         }
 
         $codes = Language::codes();
-        $translation = app()->get('translation');
 
         // get default language's title
         $default_code = Language::defaultCode();
@@ -328,7 +449,7 @@ class Multilanguage
 
                 // if found, we will translate and set the default_title
                 if (!empty($title)) {
-                    $default_title = $translation->fromTo($code, $default_code, $title);
+                    $default_title = app()->translation()->fromTo($code, $default_code, $title);
                     break;
                 }
             }
@@ -383,7 +504,7 @@ class Multilanguage
             if (empty($title)) {
                 \update_field(
                     'title' . $suffix,
-                    $translation->fromTo($default_code, $code, $default_title) ?: $default_title,
+                    app()->translation()->fromTo($default_code, $code, $default_title) ?: $default_title,
                     $post->ID
                 );
             }
@@ -416,7 +537,7 @@ class Multilanguage
             }
 
             // sanitize user input
-            $slug = Str::slug($slug);
+            $slug = Str::kebab($slug);
 
 
             // handle
@@ -537,7 +658,7 @@ class Multilanguage
         $group = (new FieldGroup('bond_multilanguage_post'))
             ->title('Title / Link', 'en')
             // ->screenHideAll()
-            ->menuOrder(99) // ACF issue, if we use screen hide options they must come first, so we need this high menuOrder to avoid that
+            ->order(99) // ACF issue, if we use screen hide options they must come first, so we need this high menuOrder to avoid that
             ->positionAfterTitle()
             ->location($location);
 
@@ -546,15 +667,15 @@ class Multilanguage
             $label = Language::fieldsLabel($code);
 
             $group->textField('title' . $suffix)
-                ->label('Title' . $label, 'en')
+                ->label('Title ' . $label, 'en')
                 ->wrapWidth(60);
 
             $group->textField('slug' . $suffix)
-                ->label('Slug' . $label, 'en')
+                ->label('Slug ' . $label, 'en')
                 ->wrapWidth(30);
 
             $group->messageField('bond_link_message_icon' . $suffix)
-                ->label('Link' . $label, 'en')
+                ->label('Link ' . $label, 'en')
                 ->wrapWidth(10);
         }
 
@@ -602,33 +723,34 @@ class Multilanguage
         $enabled = true;
 
 
-        \add_filter('term_name', function ($pad_tag_name, $term) {
+        // \add_filter('term_name', function ($pad_tag_name, $term) {
 
-            $term = Cast::term($term);
+        //     $term = Cast::term($term);
 
-            // handles only the taxonomy added here
-            if ($term && in_array($term->taxonomy, $this->taxonomies)) {
-                return $term->get('name', Language::code()) ?: $term->name;
-            }
+        //     // handles only the taxonomy added here
+        //     if ($term && in_array($term->taxonomy, $this->taxonomies)) {
+        //         return $term->get('name', Language::code()) ?: $term->name;
+        //     }
 
-            return $term->name ?? '';
-        }, 10, 2);
+        //     return $term->name ?? '';
+        // }, 10, 2);
 
 
-        // TODO NOT Sticking to typeRadio
-        // MUST FIRST look for another wordpress hooks besides the term_name
+        // // TODO NOT Sticking to typeRadio
+        // // MUST FIRST look for another wordpress hooks besides the term_name
 
-        \add_filter('acf/fields/taxonomy/result', function ($title, $term) {
+        // \add_filter('acf/fields/taxonomy/result', function ($title, $term) {
 
-            $term = Cast::term($term);
+        //     $term = Cast::term($term);
 
-            // handles only the taxonomy added here
-            if ($term && in_array($term->taxonomy, $this->taxonomies)) {
-                return $term->get('name', Language::code());
-            }
-            //    TODO teste the limite stirng, and remove
-            return $term->name ?? '';
-        }, 10, 2);
+        //     // handles only the taxonomy added here
+        //     if ($term && in_array($term->taxonomy, $this->taxonomies)) {
+        //         return $term->get('name', Language::code())
+        //             ?: $term->name ?: $title;
+        //     }
+        //     //    TODO teste the limite stirng, and remove
+        //     return $term->name ?: $title;
+        // }, 10, 2);
     }
 
 
@@ -662,10 +784,10 @@ class Multilanguage
             $label = Language::fieldsLabel($code);
 
             $group->textField('name' . $suffix)
-                ->label('Name' . $label, 'en');
+                ->label('Name ' . $label, 'en');
 
             $group->textField('slug' . $suffix)
-                ->label('Slug' . $label, 'en');
+                ->label('Slug ' . $label, 'en');
         }
     }
 
@@ -709,7 +831,6 @@ class Multilanguage
             return;
         }
         $field_id = $taxonomy . '_' . $term_id;
-        $translation = app()->get('translation');
         $default_code = Language::defaultCode();
 
         foreach (Language::codes() as $code) {
@@ -722,20 +843,20 @@ class Multilanguage
 
             // ensure names
             if (empty($name)) {
-                $name = $translation->fromTo($default_code, $code, $term->name);
+                $name = app()->translation()->fromTo($default_code, $code, $term->name);
                 \update_field('name' . $suffix, $name, $field_id);
             }
 
             // ensure slugs
             if (empty($slug)) {
                 if (!empty($name)) {
-                    $slug = Str::slug($name);
+                    $slug = Str::kebab($name);
                     \update_field('slug' . $suffix, $slug, $field_id);
                 }
             } else {
                 // ensure it's slugfied
-                if ($slug !== Str::slug($slug)) {
-                    $slug = Str::slug($slug);
+                if ($slug !== Str::kebab($slug)) {
+                    $slug = Str::kebab($slug);
                     \update_field('slug' . $suffix, $slug, $field_id);
                 }
             }
