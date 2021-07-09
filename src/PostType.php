@@ -2,6 +2,7 @@
 
 namespace Bond;
 
+use Bond\Fields\Acf\FieldGroup;
 use Bond\Utils\Cache;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
@@ -101,14 +102,21 @@ abstract class PostType
 
     // helpers
 
+    public static function fieldGroup(string $title): FieldGroup
+    {
+        return (new FieldGroup(static::$post_type))
+            ->title($title)
+            ->location(static::$post_type);
+    }
+
     public static function name(bool $singular = false): string
     {
         return Query::postTypeName(static::$post_type, $singular);
     }
 
-    public static function count()
+    public static function count(): int
     {
-        return Cache::json(
+        return Cache::php(
             static::$post_type . '/count',
             -1,
             function () {
@@ -120,32 +128,8 @@ abstract class PostType
 
     public static function all(array $params = []): Posts
     {
-        $fn = function () use ($params) {
-            $query_args = [
-                'post_type' => static::$post_type,
-                'posts_per_page' => -1,
-                'post_status' => 'publish',
-                'no_found_rows' => true,
-                'update_post_meta_cache' => false,
-                'update_post_term_cache' => false,
-                'orderby' => 'date',
-                'order' => 'DESC',
-                // order as class vars? could help to set the archive columns too
-            ];
-            $query_args = array_merge($query_args, $params);
-            $query = new \WP_Query($query_args);
+        $params['post_type'] = static::$post_type;
 
-            return Cast::posts($query->posts);
-        };
-
-        if (config('cache.enabled')) {
-            $cache_key = static::$post_type
-                . '/all'
-                . (!empty($params) ? '-' . md5(Str::slug($params)) : '');
-
-            return Cache::php($cache_key, -1, $fn);
-        }
-
-        return $fn();
+        return Query::all($params);
     }
 }

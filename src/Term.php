@@ -13,9 +13,11 @@ class Term extends Fluent
 {
     public int $term_id;
     public string $taxonomy;
+    public string $slug;
 
 
     // TODO move cache logic into Cast
+    // change to Cache::php
 
     public function __construct($values = null, bool $skip_cache = false)
     {
@@ -105,20 +107,38 @@ class Term extends Fluent
 
     public function isMultilanguage(): bool
     {
-        return app()->get('multilanguage')->is($this);
+        return app()->multilanguage()->is($this);
     }
 
-    public function slug(string $language_code = null): string
+    public function taxonomyName(
+        bool $singular = false,
+        string $language = null
+    ): string {
+        return Query::taxonomyName($this->taxonomy, $singular, $language);
+    }
+
+    public function name(string $language = null): string
     {
         if ($this->isMultilanguage()) {
-            return $this->get('slug', $language_code) ?: $this->slug;
+            return $this->get('name', $language) ?: $this->name;
+        }
+        return $this->name;
+    }
+
+    public function slug(string $language = null): string
+    {
+        if (!isset($this->slug)) {
+            return '';
+        }
+        if ($this->isMultilanguage()) {
+            return $this->get('slug', $language) ?: $this->slug;
         }
         return $this->slug;
     }
 
-    public function link(string $language_code = null): string
+    public function link(string $language = null): string
     {
-        return Link::forTerms($this, $language_code);
+        return Link::forTerms($this, $language);
     }
 
     public function isEmpty(): bool

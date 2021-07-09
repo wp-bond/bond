@@ -2,6 +2,7 @@
 
 namespace Bond;
 
+use Bond\Fields\Acf\FieldGroup;
 use Bond\Utils\Cache;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
@@ -21,19 +22,6 @@ abstract class Taxonomy
     {
         return Link::forTaxonomies(static::$taxonomy, $language_code);
     }
-
-    // helpers
-
-    public static function name(bool $singular = false): string
-    {
-        return $singular
-            ? static::$singular_name ?? Query::taxonomyName(static::$taxonomy, true)
-            : static::$name ?? Query::taxonomyName(static::$taxonomy);
-    }
-
-    // TODO
-    // public static function count()
-
 
     public static function register()
     {
@@ -61,7 +49,26 @@ abstract class Taxonomy
     }
 
 
+    // helpers
 
+    public static function fieldGroup(string $title): FieldGroup
+    {
+        return (new FieldGroup(static::$taxonomy))
+            ->title($title)
+            ->location([
+                'tax' => static::$taxonomy
+            ]);
+    }
+
+    public static function name(bool $singular = false): string
+    {
+        return $singular
+            ? static::$singular_name ?? Query::taxonomyName(static::$taxonomy, true)
+            : static::$name ?? Query::taxonomyName(static::$taxonomy);
+    }
+
+    // TODO
+    // public static function count()
 
     public static function all(array $params = []): Terms
     {
@@ -75,7 +82,7 @@ abstract class Taxonomy
         if (config('cache.enabled')) {
             $cache_key = static::$taxonomy
                 . '/all'
-                . (!empty($params) ? '-' . Str::slug($params) : '');
+                . (!empty($params) ? '-' . Str::kebab($params) : '');
 
             return Cache::php($cache_key, -1, $fn);
         }
