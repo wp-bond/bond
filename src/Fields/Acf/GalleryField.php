@@ -28,4 +28,20 @@ class GalleryField extends Field
         $this->return_format = 'array';
         return $this;
     }
+
+
+    public function mimeTypes($extensions): self
+    {
+        if (is_array($extensions)) {
+            $extensions = implode(',', $extensions);
+        }
+        $this->mime_types = (string) $extensions;
+        return $this;
+    }
+
+    public function onlyJpg(): self
+    {
+        $this->mimeTypes('jpg,jpeg');
+        return $this;
+    }
 }

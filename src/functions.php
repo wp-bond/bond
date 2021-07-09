@@ -16,26 +16,28 @@ if (!function_exists('app')) {
     }
 }
 
+// TODO maybe remove these top-level helpers?
+
 if (!function_exists('config')) {
     function config(?string $key = null)
     {
         return $key
-            ? app()->get('config')->{$key}
-            : app()->get('config');
+            ? app()->config()->{$key}
+            : app()->config();
     }
 }
 
 if (!function_exists('view')) {
     function view(): View
     {
-        return app()->get('view');
+        return app()->view();
     }
 }
 
 if (!function_exists('meta')) {
     function meta(): Meta
     {
-        return app()->get('meta');
+        return app()->meta();
     }
 }
 
@@ -56,7 +58,7 @@ if (!function_exists('t')) {
         string $language_code = null,
         string $written_language = null
     ) {
-        return app()->get('translation')
+        return app()->translation()
             ->get($input, $language_code, $written_language);
     }
 }
@@ -69,7 +71,7 @@ if (!function_exists('tx')) {
         string $language_code = null,
         string $written_language = null
     ) {
-        return app()->get('translation')
+        return app()->translation()
             ->get($input, $language_code, $written_language, $context);
     }
 }

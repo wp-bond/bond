@@ -267,9 +267,9 @@ class View extends Fluent
     public function partial(string $base_name, $data = null)
     {
         // cast as Fluent or FluentList
-        if (is_array($data) && !Arr::isAssoc($data)) {
+        if (is_array($data) && array_is_list($data)) {
             $data = new FluentList($data);
-        } elseif (!($data instanceof Fluent)) {
+        } elseif (!($data instanceof Fluent) && !($data instanceof FluentList)) {
             // TODO if not array or object (i.e. pass string or number)
             // maybe add as "$content" var?
             $data = new Fluent($data);
@@ -443,6 +443,7 @@ class View extends Fluent
                 if (empty($post)) {
                     $post = $_post;
                 }
+
                 global $wp_query;
                 if (empty($wp_query->queried_object)) {
                     $wp_query->queried_object = $_post;
@@ -661,11 +662,11 @@ class View extends Fluent
                 $result[] = $template;
             }
             if (!empty($_post->post_mime_type)) {
-                $result[] = 'single-attachment-' . Str::slug($_post->post_mime_type);
+                $result[] = 'single-attachment-' . Str::kebab($_post->post_mime_type);
 
                 $mime = explode('/', $_post->post_mime_type);
                 if (count($mime) > 1) {
-                    $result[] = 'single-attachment-' . Str::slug($mime[1]);
+                    $result[] = 'single-attachment-' . Str::kebab($mime[1]);
                 }
                 $result[] = 'single-attachment-' . $mime[0];
             }
@@ -683,10 +684,11 @@ class View extends Fluent
             // [post-type]
             // single
             // singular
-
-            if ($template = Query::pageTemplate($_post->ID, true)) {
-                $result[] = $template . '-' . $post_type;
-                $result[] = $template;
+            if ($_post) {
+                if ($template = Query::pageTemplate($_post->ID, true)) {
+                    $result[] = $template . '-' . $post_type;
+                    $result[] = $template;
+                }
             }
             $result[] = 'single-' . $post_type . '-' . $post_slug;
             $result[] = 'single-' . $post_type;

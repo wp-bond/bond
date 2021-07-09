@@ -32,6 +32,10 @@ class Post extends Fluent
     // the source data, and the manager of that data
 
 
+    // IDEA
+    // don't store fields values into the object itself
+    // keep into a 'fields' var
+    // this way we could ensure the case for a multilanguage value stored without suffix
 
 
     // set properties that should not be added here
@@ -133,15 +137,7 @@ class Post extends Fluent
 
     public function isMultilanguage(): bool
     {
-        return app()->get('multilanguage')->is($this);
-    }
-
-    public function slug(string $language_code = null): string
-    {
-        if ($this->isMultilanguage()) {
-            return $this->get('slug', $language_code) ?: $this->post_name;
-        }
-        return $this->post_name;
+        return app()->multilanguage()->is($this);
     }
 
     public function postTypeName(
@@ -151,27 +147,38 @@ class Post extends Fluent
         return Query::postTypeName($this->post_type, $singular, $language);
     }
 
-    public function link(string $language_code = null): string
+    public function slug(string $language = null): string
     {
-        // if disabled honor external links, but do not fallback
-        if ($this->isDisabled($language_code)) {
-            return $this->get('external_link', $language_code) ?: '';
+        if (!isset($this->post_name)) {
+            return '';
         }
-        return Link::forPosts($this, $language_code);
+        if ($this->isMultilanguage()) {
+            return $this->get('slug', $language) ?: $this->post_name;
+        }
+        return $this->post_name;
     }
 
-    public function redirectLink(string $language_code = null): string
+    public function link(string $language = null): string
+    {
+        // if disabled honor external links, but do not fallback
+        if ($this->isDisabled($language)) {
+            return $this->get('external_link', $language) ?: '';
+        }
+        return Link::forPosts($this, $language);
+    }
+
+    public function redirectLink(string $language = null): string
     {
         // if disabled try external links, otherwise fallback to best bet
-        if ($this->isDisabled($language_code)) {
-            return $this->get('external_link', $language_code) ?: Link::fallback($this, $language_code);
+        if ($this->isDisabled($language)) {
+            return $this->get('external_link', $language) ?: Link::fallback($this, $language);
         }
         return '';
     }
 
-    public function isDisabled(string $language_code = null): bool
+    public function isDisabled(string $language = null): bool
     {
-        return !empty($this->get('is_disabled', $language_code));
+        return !empty($this->get('is_disabled', $language));
     }
 
     public function terms(string $taxonomy = null, array $args = []): Terms

@@ -4,8 +4,6 @@ namespace Bond\Utils;
 
 /**
  * Provides some helpers for Files. For use cases not covered here just use PHP functions directly.
- *
- * Some logic here are adapted from Laravel's Illuminate\Filesystem\Filesystem class, credit goes to Laravel LLC / Taylor Otwell, MIT licence.
  */
 class File
 {
@@ -68,6 +66,8 @@ class File
 
     public static function get(string $path): string
     {
+        // code from © Laravel LLC / Taylor Otwell, MIT licence.
+
         $contents = '';
 
         if (is_file($path)) {
@@ -100,6 +100,8 @@ class File
      */
     public static function replace(string $path, string $content)
     {
+        // code from © Laravel LLC / Taylor Otwell, MIT licence.
+
         // If the path already exists and is a symlink, get the real path...
         clearstatcache(true, $path);
 

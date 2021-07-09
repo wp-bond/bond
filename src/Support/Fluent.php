@@ -15,16 +15,6 @@ use Bond\Utils\Obj;
 use Bond\Utils\Str;
 use InvalidArgumentException;
 
-// would be lovable here methods like "only" to only retrieve the needed values
-// of course needs some thoughts so we create all needed methods in advance and don't change afterwards
-
-// TODO replaceAll method?
-// public function replaceAll(array $data)
-//     {
-//         $this->view_data = new Fluent($data);
-//     }
-
-
 class Fluent implements
     ArrayAccess,
     Countable,
@@ -88,7 +78,12 @@ class Fluent implements
      */
     public function count(): int
     {
-        return count(array_keys($this->all()));
+        return count($this->keys());
+    }
+
+    public function keys(): array
+    {
+        return array_keys($this->all());
     }
 
     public function isEmpty(): bool
@@ -313,5 +308,11 @@ class Fluent implements
     public function snakeKeys(): self
     {
         return $this->mapKeys([Str::class, 'snake']);
+    }
+
+    // TODO, when we are php8 add :static return type
+    public function only(array $keys)
+    {
+        return new static(Arr::only($this->all(), $keys));
     }
 }

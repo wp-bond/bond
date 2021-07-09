@@ -18,6 +18,8 @@ use RecursiveIteratorIterator;
 // https://www.php.net/manual/en/function.clearstatcache.php
 
 
+// TODO if is CLI, disable cache and file storage, the server stores and root user
+
 // implement a isEnabled() method
 class Cache
 {

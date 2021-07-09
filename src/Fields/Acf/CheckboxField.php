@@ -2,11 +2,10 @@
 
 namespace Bond\Fields\Acf;
 
-class SelectField extends Field
+class CheckboxField extends Field
 {
-    protected string $type = 'select';
+    protected string $type = 'checkbox';
     public string $return_format = 'value';
-    public bool $ui = true;
 
 
     public function choices(array $choices): self
@@ -15,27 +14,27 @@ class SelectField extends Field
         return $this;
     }
 
-    public function allowNull(bool $active = true): self
+    public function allowCustom(bool $active = true): self
     {
-        $this->allow_null = $active;
+        $this->allow_custom = $active;
         return $this;
     }
 
-    public function multiple(bool $active = true): self
+    public function selectAllToggle(bool $active = true): self
     {
-        $this->multiple = $active;
+        $this->toggle = $active;
         return $this;
     }
 
-    public function ui(bool $active = true): self
+    public function layoutVertical(): self
     {
-        $this->ui = $active;
+        $this->layout = 'vertical';
         return $this;
     }
 
-    public function ajax(bool $active = true): self
+    public function layoutHorizontal(): self
     {
-        $this->ajax = $active;
+        $this->layout = 'horizontal';
         return $this;
     }
 

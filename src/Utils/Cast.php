@@ -123,7 +123,7 @@ class Cast
 
         if (is_array($value)) {
 
-            if (Arr::isAssoc($value)) {
+            if (!array_is_list($value)) {
                 return new Fluent($value);
             }
 
@@ -422,6 +422,8 @@ class Cast
         if ($post instanceof WP_Post) {
             return $post;
         }
+
+        // TODO, maybe if cache is enabled we can convert a Post into WP_Post
 
         $id = self::postId($post);
         return $id ? \get_post($id) : null;

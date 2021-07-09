@@ -31,12 +31,7 @@ class FluentList implements
     public function set(array $items): self
     {
         $this->items = [];
-
-        foreach ($items as $item) {
-            $this->items[] = Cast::fluent($item);
-        }
-
-        return $this;
+        return $this->addMany($items);
     }
 
     public function add($item, ?int $index = null): self
@@ -53,14 +48,13 @@ class FluentList implements
 
     public function addMany($items, ?int $index = null): self
     {
-        $all = [];
-        foreach ($items as $item) {
-            $all[] = Cast::fluent($item);
-        }
-        if ($index === null) {
-            $this->items = array_merge($this->items, $all);
-        } else {
-            array_splice($this->items, $index, 0, $all);
+        if (is_iterable($items)) {
+            foreach ($items as $item) {
+                $this->add($item, $index);
+                if ($index !== null) {
+                    $index++;
+                }
+            }
         }
         return $this;
     }
@@ -247,6 +241,12 @@ class FluentList implements
     public function unshift($item): self
     {
         return $this->add($item, 0);
+    }
+
+    public function limit(int $length): self
+    {
+        array_splice($this->items, $length);
+        return $this;
     }
 
     public function localized(): self

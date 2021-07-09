@@ -96,6 +96,11 @@ class Link
 
     public static function path($path = null, string $language_code = null): string
     {
+        // ensures it's a language code
+        // fallbacks to current language if invalid
+        $language_code = Language::code($language_code);
+
+
         if (empty($path)) {
             return Language::urlPrefix($language_code) ?: '/';
         }
@@ -154,6 +159,10 @@ class Link
             return '';
         }
 
+        // ensures it's a language code
+        // fallbacks to current language if invalid
+        $language_code = Language::code($language_code);
+
         // is draft
         if (!$post->post_name) {
             return '/?post_type=' . $post->post_type . '&p=' . $post->ID . '&preview=true&lang=' . $language_code;
@@ -198,6 +207,12 @@ class Link
         if (empty($post_type)) {
             return '';
         }
+
+        // ensures it's a language code
+        // fallbacks to current language if invalid
+        $language_code = Language::code($language_code);
+
+
         if (is_array($post_type)) {
             $post_type = $post_type[0];
         }
@@ -238,6 +253,11 @@ class Link
         if (empty($taxonomy)) {
             return '';
         }
+
+        // ensures it's a language code
+        // fallbacks to current language if invalid
+        $language_code = Language::code($language_code);
+
         if (is_array($taxonomy)) {
             $taxonomy = $taxonomy[0];
         }

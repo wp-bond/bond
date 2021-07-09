@@ -148,7 +148,7 @@ class Language
                 // let's look into the url path
                 $uri = $_SERVER['REQUEST_URI'];
                 $parts = explode('/', trim($uri, '/'));
-                $code = Str::slug($parts[0] ?? '');
+                $code = Str::kebab($parts[0] ?? '');
             }
         }
 
@@ -187,7 +187,7 @@ class Language
         unset($l10n[app()->id()]);
 
         // load WP gettext, if not handling translations automatically
-        if (!app()->get('translation')->hasService()) {
+        if (!app()->translation()->hasService()) {
             \load_theme_textdomain(app()->id(), app()->languagesPath());
         }
     }

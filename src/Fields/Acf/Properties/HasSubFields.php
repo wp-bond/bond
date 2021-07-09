@@ -3,7 +3,8 @@
 namespace Bond\Fields\Acf\Properties;
 
 use Bond\Fields\Acf\BooleanField;
-use Bond\Fields\Acf\ColorPickerField;
+use Bond\Fields\Acf\CheckboxField;
+use Bond\Fields\Acf\ColorField;
 use Bond\Fields\Acf\DateField;
 use Bond\Fields\Acf\DateTimeField;
 use Bond\Fields\Acf\EmailField;
@@ -28,6 +29,7 @@ use Bond\Fields\Acf\TabField;
 use Bond\Fields\Acf\TaxonomyField;
 use Bond\Fields\Acf\TextAreaField;
 use Bond\Fields\Acf\TextField;
+use Bond\Fields\Acf\TimeField;
 use Bond\Fields\Acf\UrlField;
 use Bond\Fields\Acf\WysiwygField;
 use Closure;
@@ -151,6 +153,11 @@ trait HasSubFields
         return $this->_addField(new RadioField($name));
     }
 
+    public function checkboxField($name): CheckboxField
+    {
+        return $this->_addField(new CheckboxField($name));
+    }
+
     public function selectField($name): SelectField
     {
         return $this->_addField(new SelectField($name));
@@ -215,9 +222,14 @@ trait HasSubFields
         return $this->_addField(new DateTimeField($name));
     }
 
-    public function colorPickerField($name): ColorPickerField
+    public function timeField($name): TimeField
     {
-        return $this->_addField(new ColorPickerField($name));
+        return $this->_addField(new TimeField($name));
+    }
+
+    public function colorField($name): ColorField
+    {
+        return $this->_addField(new ColorField($name));
     }
 
     public function googleMapField($name): GoogleMapField

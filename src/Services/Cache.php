@@ -20,6 +20,7 @@ use RecursiveIteratorIterator;
 
 // TODO performance test on getting the cache with .php extension and without, to maybe discover if OPcache gets used, and file reads happens no more on filesystem
 
+// TODO if is CLI, disable cache and file storage, the server stores and root user
 
 class Cache extends CacheInterface
 {

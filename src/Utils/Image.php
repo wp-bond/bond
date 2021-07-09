@@ -114,24 +114,62 @@ class Image
             }
         }
 
-        // responsive
+        // find current values, the first
+        $current_image = null;
+        $current_size = null;
+        foreach (static::$media_sizes as $media) {
+            $name = $media['name'];
+
+            if (!$current_image && !empty($image[$name])) {
+                $current_image = $image[$name];
+            }
+            if (!$current_size && !empty($size[$name])) {
+                $current_size = $size[$name];
+            }
+
+            if ($current_image && $current_size) {
+                break;
+            }
+        }
+        if (!$current_image) {
+            $current_image = $image['default'];
+        }
+        if (!$current_size) {
+            $current_size = $size['default'];
+        }
+        // TODO maybe throw error if not found
+
+
+        // responsive sizes
         $responsive_sizes = [];
 
         foreach (static::$media_sizes as $media) {
             $name = $media['name'];
-            if (empty($size[$name])) {
+
+            // nothing to do, skip
+            if (empty($size[$name]) && empty($image[$name])) {
                 continue;
             }
 
-            $retina_sizes = (array) $size[$name];
-
-            // auto retina
-            if (count($retina_sizes) === 1) {
-                if (isset(static::$sizes[$retina_sizes[0] . '_2x'])) {
-                    $retina_sizes[] = $retina_sizes[0] . '_2x';
-                }
+            // update current if needed
+            if (!empty($image[$name])) {
+                $current_image = $image[$name];
+            }
+            if (!empty($size[$name])) {
+                $current_size = $size[$name];
             }
 
+            // auto retina
+            $retina_sizes = (array) $current_size;
+
+            if (
+                count($retina_sizes) === 1
+                && isset(static::$sizes[$retina_sizes[0] . '_2x'])
+            ) {
+                $retina_sizes[] = $retina_sizes[0] . '_2x';
+            }
+
+            // assemble the media rule
             $rule = isset($media['minWidth'])
                 ? 'min-width: ' . $media['minWidth'] . 'px'
                 : '';
@@ -139,18 +177,19 @@ class Image
             $responsive_sizes[] = [
                 'rule' => $rule,
                 'size' => $retina_sizes,
-                'image' => $image[$name] ?? $image['default'],
+                'image' => $current_image,
             ];
         }
 
         // default size
         $retina_sizes = (array) $size['default'];
 
-        // auto retina it
-        if (count($retina_sizes) === 1) {
-            if (isset(static::$sizes[$retina_sizes[0] . '_2x'])) {
-                $retina_sizes[] = $retina_sizes[0] . '_2x';
-            }
+        // auto retina it too
+        if (
+            count($retina_sizes) === 1
+            && isset(static::$sizes[$retina_sizes[0] . '_2x'])
+        ) {
+            $retina_sizes[] = $retina_sizes[0] . '_2x';
         }
 
         // get the tag
@@ -160,7 +199,7 @@ class Image
             $responsive_sizes
         );
 
-        // caption
+        // caption, if requested
         if ($tag && $with_caption) {
             $caption = static::caption($image['default']);
             if (!empty($caption)) {
@@ -486,61 +525,23 @@ class Image
 
 
 
-    public static function caption(
-        $image_id,
-        bool $with_fallback = false
-    ): string {
-
-        $attachment = Cast::post($image_id);
-        if (empty($attachment)) {
+    public static function caption($image): string
+    {
+        $att = Cast::post($image);
+        if (!$att) {
             return '';
         }
-
-        $result = $attachment->caption ?: $attachment->post_excerpt;
-
-        if ($with_fallback && empty($result)) {
-
-            // try the image description
-            $result = $attachment->content ?: $attachment->post_content;
-
-            // try the image alt field
-            if (empty($result)) {
-                $result = \get_post_meta($image_id, '_wp_attachment_image_alt', true);
-            }
-
-            // finally, use the image title
-            if (empty($result)) {
-                $result = $attachment->title ?: $attachment->post_title;
-            }
-        }
-
-        return (string) $result;
+        return (string) ($att->caption ?: $att->post_excerpt);
     }
 
 
-
-    public static function alt($image_id, $with_fallback = false): string
+    public static function alt($image): string
     {
-        $result = \get_post_meta($image_id, '_wp_attachment_image_alt', true);
-
-        if ($with_fallback && empty($result)) {
-            $attachment = \get_post($image_id);
-
-            // try the description
-            $result = $attachment->post_content;
-
-            // try the caption
-            if (empty($result)) {
-                $result = $attachment->post_excerpt;
-            }
-
-            // finally, use the title
-            if (empty($result)) {
-                $result = $attachment->post_title;
-            }
+        $att = Cast::post($image);
+        if (!$att) {
+            return '';
         }
-
-        return (string) $result;
+        return (string) ($att->alt ?: \get_post_meta($att->ID, '_wp_attachment_image_alt', true));
     }
 
 
@@ -595,7 +596,7 @@ class Image
                 $key = $key_prefix . $key;
             }
 
-            $key = Str::slug($key);
+            $key = Str::kebab($key);
 
             if ($value === true) {
                 $result .= ' ' . $key;

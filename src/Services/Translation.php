@@ -5,6 +5,7 @@ namespace Bond\Services;
 use Bond\Settings\Language;
 use Bond\Support\Fluent;
 use Bond\Support\FluentList;
+use Exception;
 
 // AWS Translate
 // https://docs.aws.amazon.com/translate/latest/dg/what-is.html#language-pairs
@@ -279,6 +280,13 @@ class Translation
 
     protected function translateGoogle($text, array $options = []): string
     {
+        // Google has these issues:
+        // if the HTML formatter is used (default), we have problems with line breaks, either on textarea, or wysiwyg
+        // if the TEXT formatter is used, the result is precise, but sometimes it adds spaces inside URLs, breaking then
+        // prefer AWS for now, or fix manually the line breaks on textareas after translated
+
+        // $options['format'] = 'text';
+
         $result = $this->googleClient()->translate(
             $text,
             $options
@@ -299,11 +307,40 @@ class Translation
 
     protected function translateAws($text, array $options = []): string
     {
-        $result = $this->awsClient()->translateText([
-            'SourceLanguageCode' => $options['source'] ?? 'auto',
-            'TargetLanguageCode' => $options['target'] ?? Language::code(),
-            'Text' => $text,
-        ]);
+        // TEMP CODE to remove language locale
+        // maybe look into aws sdk source code if there is a list of the supported languages
+        $source = !empty($options['source'])
+            ? Language::shortCode($options['source'])
+            : 'auto';
+
+        $target = Language::shortCode($options['target'] ?? Language::code());
+
+        // TODO try to break long texts and translate in batches to overcome the size limit
+        // TextSizeLimitExceededException
+
+        // detect if is html, then break into nodes
+        // if text, break into phrases by dots (if possible trying to avoid breaking urls.. maybe split by dot and space after, or even \n) --- then maybe split by words if the phrases were not enough
+
+        // if html
+        // would have to be smart enough to dig into nodes too, if we translate a <div>with a huge structure inside</div>, we must translate each part individually
+
+        // to check if is html
+        // if($string != strip_tags($string)) {
+        // but check for false positives if a text constains "<text"
+        // }
+        // or this https://stackoverflow.com/a/45291897
+        // or https://stackoverflow.com/a/10778067
+
+        try {
+            $result = $this->awsClient()->translateText([
+                'SourceLanguageCode' => $source,
+                'TargetLanguageCode' => $target,
+                'Text' => $text,
+            ]);
+        } catch (Exception $e) {
+            return '';
+        }
+
         return $result['TranslatedText'] ?? '';
     }
 
@@ -317,6 +354,7 @@ class Translation
             $client = new \Aws\Translate\TranslateClient([
                 'region' => config('translation.credentials.aws.region'),
                 'version' => 'latest',
+                'use_aws_shared_config_files' => false,
                 'credentials' => [
                     'key' => config('translation.credentials.aws.key'),
                     'secret' => config('translation.credentials.aws.secret'),

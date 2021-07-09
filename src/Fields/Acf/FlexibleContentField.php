@@ -2,10 +2,20 @@
 
 namespace Bond\Fields\Acf;
 
+use Closure;
+
 class FlexibleContentField extends Field
 {
     protected string $type = 'flexible_content';
     protected array $layouts = [];
+
+    public function layouts(Closure $closure): self
+    {
+        // can have autofill, if dev adds the type declaration
+        $closure($this);
+
+        return $this;
+    }
 
     public function layout(string $name): FlexibleContentLayout
     {

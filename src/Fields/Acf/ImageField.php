@@ -41,6 +41,12 @@ class ImageField extends Field
         return $this;
     }
 
+    public function onlyJpg(): self
+    {
+        $this->mimeTypes('jpg,jpeg');
+        return $this;
+    }
+
     public function libraryAll(): self
     {
         $this->library = 'all';

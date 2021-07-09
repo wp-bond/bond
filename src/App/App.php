@@ -58,31 +58,42 @@ class App extends Container
     {
         // register itself as the main App
         static::setInstance($this);
-        $this->share('app', $this);
+        $this->addShared('app', $this);
 
         // register default helpers
-        $this->share('config', new Config($this));
-        $this->share('view', View::class);
-        $this->share('meta', Meta::class);
-        $this->share('translation', Translation::class);
-        $this->share('multilanguage', Multilanguage::class);
-
-        // register aliases
-        foreach ([
-            App::class => 'app',
-            Config::class => 'config',
-            View::class => 'view',
-            Meta::class => 'meta',
-            Translation::class => 'translation',
-            Multilanguage::class => 'multilanguage',
-        ] as $alias => $definition) {
-            $this->share($alias, function () use ($definition) {
-                return $this->get($definition);
-            });
-        }
+        $this->addShared('config', new Config($this));
+        $this->addShared('view', View::class);
+        $this->addShared('meta', Meta::class);
+        $this->addShared('translation', Translation::class);
+        $this->addShared('multilanguage', Multilanguage::class);
 
         // Reflection fallback
         $this->delegate(new ReflectionContainer());
+    }
+
+    public function config(): Config
+    {
+        return $this->get('config');
+    }
+
+    public function view(): View
+    {
+        return $this->get('view');
+    }
+
+    public function meta(): Meta
+    {
+        return $this->get('meta');
+    }
+
+    public function translation(): Translation
+    {
+        return $this->get('translation');
+    }
+
+    public function multilanguage(): Multilanguage
+    {
+        return $this->get('multilanguage');
     }
 
     public function bootstrap(string $base_path = null)
@@ -91,13 +102,13 @@ class App extends Container
             $this->setBasePath($base_path);
         }
 
-        $this->get('config')->load($this->configPath());
+        $this->config()->load($this->configPath());
 
 
         if (\wp_using_themes() && !\is_admin()) {
 
             // auto initialize View, registers WP hooks
-            $this->get('view')->register();
+            $this->view()->register();
         }
 
         // Save post/terms hook
@@ -162,7 +173,7 @@ class App extends Container
                 is_subclass_of($classname, Taxonomy::class)
                 && isset($classname::$taxonomy)
             ) {
-                $this->share('taxonomy.' . $classname::$taxonomy, $classname);
+                $this->addShared('taxonomy.' . $classname::$taxonomy, $classname);
 
                 if (method_exists($classname, 'register')) {
                     call_user_func($classname . '::register');
@@ -172,7 +183,7 @@ class App extends Container
                 is_subclass_of($classname, PostType::class)
                 && isset($classname::$post_type)
             ) {
-                $this->share('post_type.' . $classname::$post_type, $classname);
+                $this->addShared('post_type.' . $classname::$post_type, $classname);
 
                 if (method_exists($classname, 'addToView')) {
                     call_user_func($classname . '::addToView');
@@ -198,17 +209,17 @@ class App extends Container
 
     public function id(): string
     {
-        return $this->get('config')->app->id ??= $this->themeId();
+        return $this->config()->app->id ??= $this->themeId();
     }
 
     public function name(): string
     {
-        return $this->get('config')->app->name ?: '';
+        return $this->config()->app->name ?: '';
     }
 
     public function url(): string
     {
-        return $this->get('config')->app->url ??= \untrailingslashit(c('WP_HOME') ?: \get_site_url());
+        return $this->config()->app->url ??= \untrailingslashit(c('WP_HOME') ?: \get_site_url());
     }
 
     public function isProduction(): bool
@@ -434,6 +445,7 @@ class App extends Container
         // clear cache
         Cache::forget($post->post_type);
         Cache::forget('bond/posts');
+        Cache::forget('bond/query');
         Cache::forget('global');
 
         // Translate before
@@ -492,6 +504,7 @@ class App extends Container
         // clear cache
         Cache::forget($post->post_type);
         Cache::forget('bond/posts');
+        Cache::forget('bond/query');
         Cache::forget('global');
 
         // emit actions
@@ -522,6 +535,7 @@ class App extends Container
 
         // clear cache
         Cache::forget('options');
+        Cache::forget('bond/query');
         Cache::forget('global');
 
         // Translate before
@@ -560,6 +574,7 @@ class App extends Container
         // clear cache
         Cache::forget($taxonomy);
         Cache::forget('bond/terms');
+        Cache::forget('bond/query');
         Cache::forget('global');
 
         // Translate before
@@ -610,6 +625,7 @@ class App extends Container
         config()->cache->enabled = false;
 
         // clear cache
+        Cache::forget('bond/query');
         Cache::forget('global');
 
         // do action
@@ -631,6 +647,7 @@ class App extends Container
     public function deletedUserHook($user_id)
     {
         // clear cache
+        Cache::forget('bond/query');
         Cache::forget('global');
 
         // do action

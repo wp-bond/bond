@@ -61,6 +61,7 @@ class Field implements ArrayAccess
         return $this->is_multilanguage;
     }
 
+    // rename to just width / class / id
     public function wrapWidth(int $percentage): self
     {
         if (!isset($this->wrapper)) {
@@ -99,6 +100,22 @@ class Field implements ArrayAccess
         $this->required = $required;
         return $this;
     }
+
+    // public function conditionalLogic(array $logic): self
+    // {
+    //     $this->conditional_logic = self::formatConditionalLogic($logic);
+    //     return $this;
+    // }
+
+    // private static function formatConditionalLogic(array $logic): array
+    // {
+    //     $result = [];
+
+    //     foreach ((array) $logic as $location => $options) {
+    //     }
+
+    //     return $result;
+    // }
 
     public function toArray(): array
     {
