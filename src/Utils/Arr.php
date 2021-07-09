@@ -9,22 +9,10 @@ use Bond\Support\FluentList;
 /**
  * Provides basic helpers for Arrays.
  *
- * For more advanced use cases look for illuminate/support.
- *
- * Some methods here are adapted from Laravel's Illuminate\Support\Arr class, credit goes to Laravel LLC / Taylor Otwell, MIT licence. Note: Don't rely this class to be equivalent to Laravel Arr, some logic are intentionally different.
+ * We include PHP 8.1 polyfill so you can use native array_is_list to determine if an array is associative or not.
  */
 class Arr
 {
-    /**
-     * Determine if array is associative.
-     */
-    public static function isAssoc(array $array): bool
-    {
-        if (!count($array)) {
-            return false;
-        }
-        return array_keys($array) !== range(0, count($array) - 1);
-    }
 
     public static function mapKeys(callable $f, array $array): array
     {
@@ -62,5 +50,11 @@ class Arr
     public static function accessible($value): bool
     {
         return is_array($value) || $value instanceof ArrayAccess;
+    }
+
+    // $keys array|string
+    public static function only(array $array, array $keys): array
+    {
+        return array_intersect_key($array, array_flip((array) $keys));
     }
 }
