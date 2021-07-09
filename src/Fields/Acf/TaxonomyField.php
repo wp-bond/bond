@@ -5,6 +5,8 @@ namespace Bond\Fields\Acf;
 class TaxonomyField extends Field
 {
     protected string $type = 'taxonomy';
+    public bool $load_terms = true;
+    public bool $save_terms = true;
 
     public function taxonomy(string $taxonomy): self
     {
@@ -36,15 +38,22 @@ class TaxonomyField extends Field
         return $this;
     }
 
-    public function allowNull(bool $active = true): self
+    // should not be needed
+    // public function allowNull(bool $active = true): self
+    // {
+    //     $this->allow_null = $active;
+    //     return $this;
+    // }
+
+    public function loadTerms(bool $active = true): self
     {
-        $this->allow_null = $active;
+        $this->load_terms = $active;
         return $this;
     }
 
     public function saveTerms(bool $active = true): self
     {
-        $this->load_save_terms = $active;
+        $this->save_terms = $active;
         return $this;
     }
 
