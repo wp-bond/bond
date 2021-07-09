@@ -2,7 +2,7 @@
 
 namespace Bond\Fields\Acf;
 
-class ColorPickerField extends Field
+class ColorField extends Field
 {
     protected string $type = 'color_picker';
 }
