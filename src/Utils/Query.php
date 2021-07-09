@@ -22,6 +22,48 @@ class Query
     // termbySlug
 
 
+    public static function posts(array $params = []): Posts
+    {
+        $fn = function () use ($params) {
+            $query_args = [
+                'post_status' => 'publish',
+                'no_found_rows' => true,
+                'update_post_meta_cache' => false,
+                'update_post_term_cache' => false,
+            ];
+            $query_args = array_merge($query_args, $params);
+
+            $query = new WP_Query($query_args);
+
+            return Cast::posts($query->posts);
+        };
+
+        return static::cached($fn, 'posts', $params);
+    }
+
+    protected static function cached(callable $fn, string $prefix, array $params)
+    {
+        if (config('cache.enabled')) {
+
+            $cache_key = 'bond/query/' . $prefix;
+            if (!empty($params)) {
+                $cache_key .= '-' . md5(Str::kebab($params));
+            }
+
+            return Cache::php($cache_key, config('cache.ttl'), $fn);
+        }
+
+        return $fn();
+    }
+
+    public static function all(array $params = []): Posts
+    {
+        $params['posts_per_page'] = -1;
+
+        return static::posts($params);
+    }
+
+
     public static function postBySlug(
         string $slug,
         string $post_type = 'any',
@@ -105,8 +147,6 @@ class Query
         array $args = []
     ): int {
 
-        // TODO maybe change to SQL query
-
         $query_args = [
             'post_type' => (array) $post_type,
             'posts_per_page' => 1,
@@ -127,7 +167,7 @@ class Query
 
     public static function slug($post_id): string
     {
-        $post = Cast::wpPost($post_id);
+        $post = Cast::post($post_id);
         return $post ? $post->post_name : '';
     }
 
