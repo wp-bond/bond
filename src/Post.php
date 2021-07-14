@@ -147,6 +147,14 @@ class Post extends Fluent
         return Query::postTypeName($this->post_type, $singular, $language);
     }
 
+    public function title(string $language = null): string
+    {
+        if ($this->isMultilanguage()) {
+            return $this->get('title', $language) ?: $this->post_title;
+        }
+        return $this->post_title;
+    }
+
     public function slug(string $language = null): string
     {
         if (!isset($this->post_name)) {

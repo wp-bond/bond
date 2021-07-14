@@ -44,11 +44,6 @@ class Posts extends FluentList
         return $this;
     }
 
-    public function ids(): array
-    {
-        return array_column($this->items, 'ID');
-    }
-
     public function unique(): self
     {
         $unique = [];
@@ -61,5 +56,28 @@ class Posts extends FluentList
 
         $this->items = array_values($unique);
         return $this;
+    }
+
+    public function ids(): array
+    {
+        return array_column($this->items, 'ID');
+    }
+
+    public function titles(string $language = null): array
+    {
+        $res = [];
+        foreach ($this->items as $item) {
+            $res[] = $item->title($language);
+        }
+        return $res;
+    }
+
+    public function slugs(string $language = null): array
+    {
+        $res = [];
+        foreach ($this->items as $item) {
+            $res[] = $item->slug($language);
+        }
+        return $res;
     }
 }
