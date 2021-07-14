@@ -36,6 +36,7 @@ class FluentList implements
 
     public function add($item, ?int $index = null): self
     {
+        // TODO here we could enforce Fluent or FluentList always...
         $item = Cast::fluent($item);
 
         if ($index === null) {

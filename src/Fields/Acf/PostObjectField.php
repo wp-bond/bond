@@ -10,6 +10,7 @@ class PostObjectField extends Field
     protected string $type = 'post_object';
     public bool $ui = true;
     public string $return_format = 'id';
+    public bool $allow_null = true;
 
 
     public function returnId(): self

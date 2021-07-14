@@ -9,6 +9,8 @@ use Carbon\Carbon;
 // the default field will not have language suffixes
 // Also the opposite, working multilanguage, than temporally turning off
 
+// TODO consider moving inside app() would make sense so we can have separate apps with different languages
+
 class Language
 {
     private static array $languages = [

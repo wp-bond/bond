@@ -208,8 +208,9 @@ class Str
 
     public static function br($string): string
     {
+        $string = (string) $string;
         if ($string) {
-            $string = preg_replace("/\n/", '<br>', (string) $string);
+            $string = preg_replace("/\n/", '<br>', $string);
             $string = preg_replace("/\r/", '', $string);
         }
         return $string;
