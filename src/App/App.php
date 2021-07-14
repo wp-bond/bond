@@ -173,8 +173,6 @@ class App extends Container
                 is_subclass_of($classname, Taxonomy::class)
                 && isset($classname::$taxonomy)
             ) {
-                $this->addShared('taxonomy.' . $classname::$taxonomy, $classname);
-
                 if (method_exists($classname, 'register')) {
                     call_user_func($classname . '::register');
                 }
@@ -183,8 +181,6 @@ class App extends Container
                 is_subclass_of($classname, PostType::class)
                 && isset($classname::$post_type)
             ) {
-                $this->addShared('post_type.' . $classname::$post_type, $classname);
-
                 if (method_exists($classname, 'addToView')) {
                     call_user_func($classname . '::addToView');
                 }
