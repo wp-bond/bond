@@ -17,42 +17,23 @@ use WP_User;
 
 class Cast
 {
-    protected static bool $loaded_classes = false;
+    protected static bool $has_loaded_classes = false;
     protected static array $posts = [];
     protected static array $post_types = [];
     protected static array $terms = [];
     protected static array $taxonomies = [];
     protected static array $users = [];
 
-
-    // TODO consider moving to app container
-    // would completelly change the API
-    // would have to be non-static itself, to allow different mappings of post_type => concrete
-    // would go out of Utils, into Support or Service or other
-    // would have the api as cast()->post($post) instead of Cast::post()
-    // or would be change to type()->post($post) or typeMap()->post()
-
-    // would be a broad idea, to move Meta and others too
-    // to have inject the app in their constructor
-    // that way we trully can have several Meta, instead of hard-coded app() calls, that would fall into the default app anyway, invalidating the non-static usage after all
-
-    // language, most control classes would move too
-    // one app can have one language, the other can have another
-    // in this case, we would spli Languages into Locale and Languages
-    // where Locale is Settings still, and Languages can be one per app
-
-    // feels strange on Links, but anyway, it's a way to have different links providers for each app
-    // let's say we want to completly customize how to links are generated
-    // link()->post($post) link()->search()
-
-    // !!!! the worst issue is the Fluent using the Languages, which would it fallback? Maybe not a issue regarding cast() ??!?
-
+    // TODO MAYBE move cast into app() ? to have separate apps, handling differently the casting
+    // at least consider that currently app is hard coded to load App namespace classes, whereas this Cast class is not
+    // maybe move all as App?
 
     protected static function loadClasses()
     {
-        if (static::$loaded_classes) {
+        if (static::$has_loaded_classes) {
             return;
         }
+        static::$has_loaded_classes = true;
 
         foreach (get_declared_classes() as $_class) {
 
@@ -60,56 +41,43 @@ class Cast
             if (is_subclass_of($_class, Post::class)) {
                 $_post = new $_class();
 
-                if ($_post->post_type ?? false) {
-
-                    if ($_post->post_name ?? false) {
+                if (isset($_post->post_type)) {
+                    if (isset($_post->post_name)) {
                         static::$posts[$_post->post_type . '/' . $_post->post_name] = $_class;
                         //
-                    } elseif ($_post->page_template ?? false) {
+                    } elseif (isset($_post->page_template)) {
                         static::$posts[$_post->post_type . ':' . $_post->page_template] = $_class;
                         //
                     } else {
                         static::$posts[$_post->post_type] = $_class;
                     }
                 }
-            }
-
-            // post types
-            if (is_subclass_of($_class, PostType::class)) {
+            } elseif (is_subclass_of($_class, PostType::class)) {
                 if (isset($_class::$post_type)) {
                     static::$post_types[$_class::$post_type] = $_class;
                 }
-            }
-
-            // terms
-            if (is_subclass_of($_class, Term::class)) {
+            } elseif (is_subclass_of($_class, Term::class)) {
                 $_term = new $_class();
                 if (isset($_term->taxonomy)) {
                     static::$terms[$_term->taxonomy] = $_class;
                 }
-            }
-
-            // taxonomies
-            if (is_subclass_of($_class, Taxonomy::class)) {
+            } elseif (is_subclass_of($_class, Taxonomy::class)) {
                 if (isset($_class::$taxonomy)) {
                     static::$taxonomies[$_class::$taxonomy] = $_class;
                 }
-            }
-
-            // users
-            if (is_subclass_of($_class, User::class)) {
+            } elseif (is_subclass_of($_class, User::class)) {
                 $_user = new $_class();
                 if (isset($_user->role)) {
                     static::$users[$_user->role] = $_class;
                 }
             }
         }
-
-        static::$loaded_classes = true;
     }
 
 
-
+    // TODO move to fluent itself or somewhere else
+    // create an internal variant as maybeFluent, which is this code
+    // and a public which strictly returns Fluent / FluentList
     public static function fluent($value)
     {
         if ($value instanceof stdClass) {
@@ -128,7 +96,6 @@ class Cast
             }
 
             // indexed arrays stay Array
-            // TODO reconsider, may be more consistent as FluentList
             $_value = [];
             foreach ($value as $v) {
                 $_value[] = self::fluent($v);
@@ -140,63 +107,6 @@ class Cast
     }
 
 
-    public static function array($value): array
-    {
-        if (is_null($value)) {
-            return [];
-        }
-        if (is_array($value)) {
-            return $value;
-        }
-        if ($value instanceof \WP_REST_Request) {
-            return $value->get_params();
-        }
-        if (is_object($value)) {
-            if (method_exists($value, 'toArray')) {
-                return $value->toArray();
-            }
-            if (method_exists($value, 'getArrayCopy')) {
-                return $value->getArrayCopy();
-            }
-            return get_object_vars($value);
-        }
-        return (array) $value;
-    }
-
-    public static function arrayRecursive($object, string $only = null): array
-    {
-        if (is_null($object)) {
-            return [];
-        }
-        if (!is_object($object) && !is_array($object)) {
-            return [];
-        }
-
-        $result = [];
-        foreach ($object as $key => $value) {
-
-            if (is_array($value)) {
-                $result[$key] = static::arrayRecursive($value, $only);
-            } elseif ($only) {
-                if (is_a($value, $only)) {
-                    $result[$key] = static::arrayRecursive($value, $only);
-                } else {
-                    $result[$key] = $value;
-                }
-            } elseif (is_object($value)) {
-                if (method_exists($value, 'toArray')) {
-                    $result[$key] = static::arrayRecursive($value->toArray(), $only);
-                } elseif (method_exists($value, 'getArrayCopy')) {
-                    $result[$key] = static::arrayRecursive($value->getArrayCopy(), $only);
-                } else {
-                    $result[$key] = static::arrayRecursive(get_object_vars($value), $only);
-                }
-            } else {
-                $result[$key] = $value;
-            }
-        }
-        return $result;
-    }
 
 
 
@@ -212,7 +122,6 @@ class Cast
     // TODO maybe remove the convertion of post types
     // if needed users do it directly
 
-    // TODO maybe don't return null anymore, it's better for chaining
     public static function post($post, string $post_type = null): ?Post
     {
         if (empty($post)) {
