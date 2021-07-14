@@ -17,11 +17,14 @@ class Query
     // Query post by id not needed, use Cast::post
     // Query term by id not needed, use Cast::term
 
-    // TODO postOfPostType()
+    // TODO
     // termByMeta()
     // termbySlug
 
 
+    // TODO syncronize api with taxonomy method:
+    // either add a post_type param
+    // or remove taxonomy
     public static function posts(array $params = []): Posts
     {
         $fn = function () use ($params) {
@@ -41,20 +44,7 @@ class Query
         return static::cached($fn, 'posts', $params);
     }
 
-    protected static function cached(callable $fn, string $prefix, array $params)
-    {
-        if (config('cache.enabled')) {
 
-            $cache_key = 'bond/query/' . $prefix;
-            if (!empty($params)) {
-                $cache_key .= '-' . md5(Str::kebab($params));
-            }
-
-            return Cache::php($cache_key, config('cache.ttl'), $fn);
-        }
-
-        return $fn();
-    }
 
     public static function all(array $params = []): Posts
     {
@@ -176,44 +166,37 @@ class Query
      */
     public static function id(string $slug, string $post_type, string $post_status = 'publish'): int
     {
-        $query = "SELECT ID FROM wp_posts WHERE post_name = '$slug' AND post_type = '$post_type' AND post_status = '$post_status'";
-
-        if (config('cache.enabled')) {
-            return Cache::php(
-                $post_type . '/id-' . $slug . '-' . $post_status,
-                -1,
-                function () use ($query) {
-                    global $wpdb;
-                    return (int) $wpdb->get_var($query);
-                }
-            );
-        }
-
         global $wpdb;
-        return (int) $wpdb->get_var($query);
+
+        $query = "SELECT ID FROM $wpdb->posts WHERE post_name = '$slug' AND post_type = '$post_type' AND post_status = '$post_status'";
+
+        $fn = function () use ($query) {
+            global $wpdb;
+            return (int) $wpdb->get_var($query);
+        };
+
+        return static::cached($fn, 'id', $query);
     }
 
-    /**
-     *
-     *
-     * @param string|array $post_types
-     * @param string $order_by
-     * @param string $order
-     * @param int $limit
-     * @return array of int
-     */
+
     public static function ids(
         $post_types,
-        $order_by = 'post_date',
-        $order = 'DESC',
-        $limit = 0
+        string $order_by = 'post_date',
+        string $order = 'DESC',
+        string $post_status = 'publish'
     ): array {
-        global $wpdb;
-        $limit = (int) $limit;
 
+        global $wpdb;
         $post_types = "'" . implode("', '", (array) $post_types) . "'";
 
-        return array_map('intval', $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_type IN ({$post_types}) AND post_status = 'publish' ORDER BY $order_by $order" . ($limit ? " LIMIT $limit" : '')));
+        $query = "SELECT ID FROM $wpdb->posts WHERE post_type IN ({$post_types}) AND post_status = '$post_status' ORDER BY $order_by $order";
+
+        $fn = function () use ($query) {
+            global $wpdb;
+            return array_map('intval', $wpdb->get_col($query));
+        };
+
+        return static::cached($fn, 'ids', $query);
     }
 
     /**
@@ -512,61 +495,39 @@ class Query
     }
 
 
-    // review this again, may have better ways to get this in newer WP
+    public static function termsOfPostType(
+        $taxonomy,
+        $post_type,
+        array $args = []
+    ): Terms {
+        return Cast::terms(static::wpTermsOfPostType(
+            $taxonomy,
+            $post_type,
+            $args
+        ));
+    }
+
     public static function wpTermsOfPostType(
         $taxonomy,
         $post_type,
         array $args = []
     ): array {
 
-        \add_filter('terms_clauses', [static::class, 'wpTermsOfPostTypeHelper'], 10, 3);
-
-        $args['post_types'] = (array) $post_type;
-        $terms = \get_terms($taxonomy, $args);
-
-        \remove_filter('terms_clauses', [static::class, 'wpTermsOfPostTypeHelper'], 10, 3);
+        $terms = \wp_get_object_terms(static::ids($post_type), $taxonomy, $args);
 
         return empty($terms) || \is_wp_error($terms) ? [] : $terms;
     }
 
-    public static function wpTermsOfPostTypeHelper($pieces, $tax, $args)
-    {
-        global $wpdb;
-
-        // Don't use db count
-        $pieces['fields'] .= ', COUNT(*) ';
-
-        // Join extra tables to restrict by post type.
-        $pieces['join'] .= " INNER JOIN $wpdb->term_relationships AS r ON r.term_taxonomy_id = tt.term_taxonomy_id INNER JOIN $wpdb->posts AS p ON p.ID = r.object_id ";
-
-        // Restrict by post type and Group by term_id for counting.
-        $pieces['where'] .= $wpdb->prepare(
-            ' AND p.post_type IN(%s) GROUP BY t.term_id',
-            implode(',', $args['post_types'])
-        );
-
-        return $pieces;
-    }
 
 
 
-    // public static function id($value, $taxonomy, $field = 'slug'): int
+    // public static function termId($value, $taxonomy, $field = 'slug'): int
     // {
     //     $term = \get_term_by($field, $value, $taxonomy);
 
     //     return $term ? (int) $term->term_id : 0;
     // }
 
-
-    // public static function ids($taxonomy, array $args = []): array
-    // {
-    //     $result = [];
-
-    //     foreach (self::all($taxonomy, $args) as $term) {
-    //         $result[] = (int) $term->term_id;
-    //     }
-    //     return $result;
-    // }
 
 
     public static function postTerms($post_id, string $taxonomy = null, array $args = []): Terms
@@ -588,10 +549,6 @@ class Query
 
 
 
-
-
-
-
     /**
      * Note: Beware when trying to read the post type name before it is registered, usually at the init action.
      */
@@ -607,8 +564,8 @@ class Query
             $post_type = $post_type[0];
         }
 
-        // try app container
-        $class = app()->get('post_type.' . $post_type);
+        // try our app
+        $class = Cast::postTypeClass($post_type);
 
         if ($class) {
             if ($singular && isset($class::$singular_name)) {
@@ -718,5 +675,22 @@ class Query
         \remove_filter('wp_insert_post_data',  $handler, 99);
 
         return (int) $id;
+    }
+
+
+
+    protected static function cached(callable $fn, string $prefix,  $params)
+    {
+        if (config('cache.enabled')) {
+
+            $cache_key = 'bond/query/' . $prefix;
+            if (!empty($params)) {
+                $cache_key .= '-' . md5(Str::kebab($params));
+            }
+
+            return Cache::php($cache_key, config('cache.ttl'), $fn);
+        }
+
+        return $fn();
     }
 }
