@@ -2,7 +2,7 @@
 
 namespace Bond\Tooling;
 
-use Bond\Utils\File;
+use Bond\Utils\Filesystem;
 
 /**
  * Usage:
@@ -233,7 +233,7 @@ class Vite
 
     protected function manifest(): array
     {
-        $content = File::get(
+        $content = Filesystem::get(
             app()->themePath()
                 . '/' . $this->out_dir
                 . '/manifest.json'

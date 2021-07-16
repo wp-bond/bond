@@ -19,11 +19,22 @@ class OEmbed
         if (empty($url)) {
             return null;
         }
-        require_once ABSPATH . WPINC . '/class-wp-oembed.php';
 
-        $res = \_wp_oembed_get_object()->get_data($url, $args);
+        $fn = function () use ($url, $args) {
+            // seens to not need anymore
+            // require_once ABSPATH . WPINC . '/class-wp-oembed.php';
 
-        return $res ? get_object_vars($res) : null;
+            $res = \_wp_oembed_get_object()->get_data($url, $args);
+
+            return $res ? get_object_vars($res) : null;
+        };
+
+        return cache()->remember(
+            'bond/oembed/' . md5($url . Str::kebab($args)),
+            $fn,
+            cache()->ttl() === 0 ? 120 : null
+            // we set a minimun TTL even if disabled
+        );
     }
 
 

@@ -148,7 +148,21 @@ class Config extends Fluent
 
     protected function cacheSettings()
     {
-        // empty, here for subclasses override
+        if (Wp::isCli()) {
+            $this->cache->enabled = false;
+        }
+
+        if ($this->cache->class) {
+            $this->container->addShared('cache', $this->cache->class);
+        }
+
+        $this->container->cache()->enabled($this->cache->enabled);
+
+        $this->container->cache()->ttl($this->cache->ttl);
+
+        if ($this->cache->path) {
+            $this->container->cache()->path($this->cache->path);
+        }
     }
 
     protected function imageSettings()

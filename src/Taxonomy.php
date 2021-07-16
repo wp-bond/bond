@@ -3,8 +3,6 @@
 namespace Bond;
 
 use Bond\Fields\Acf\FieldGroup;
-use Bond\Utils\Cache;
-use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use Bond\Utils\Query;
 use Bond\Utils\Register;
@@ -72,21 +70,6 @@ abstract class Taxonomy
 
     public static function all(array $params = []): Terms
     {
-        $fn = function () use ($params) {
-            return Cast::terms(Query::wpTerms(
-                static::$taxonomy,
-                $params
-            ));
-        };
-
-        if (config('cache.enabled')) {
-            $cache_key = static::$taxonomy
-                . '/all'
-                . (!empty($params) ? '-' . Str::kebab($params) : '');
-
-            return Cache::php($cache_key, -1, $fn);
-        }
-
-        return $fn();
+        return Query::allTerms(static::$taxonomy, $params);
     }
 }

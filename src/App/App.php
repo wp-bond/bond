@@ -6,7 +6,8 @@ use Bond\PostType;
 use Bond\Taxonomy;
 use Bond\Services\Meta;
 use Bond\Services\Translation;
-use Bond\Utils\Cache;
+use Bond\Services\Cache\CacheInterface;
+use Bond\Services\Cache\FileCache;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use League\Container\Container;
@@ -20,7 +21,7 @@ class App extends Container
     /**
      * The current App
      */
-    protected static App $instance;
+    protected static App $current;
 
     protected string $theme_id;
     protected string $base_path;
@@ -34,38 +35,36 @@ class App extends Container
         // initialize the Container itself
         parent::__construct();
 
-        //
+        // ensure utf-8
         mb_internal_encoding('UTF-8');
 
         // set local vars
         $this->env = c('APP_ENV') ?: 'production';
 
+        // register itself as the main App
+        static::current($this);
+
         // register base bindings
         $this->registerBaseBindings();
     }
 
-    public static function getInstance(): self
+    public static function current(App $app = null): self
     {
-        return static::$instance ??= new static;
-    }
-
-    public static function setInstance(App $app)
-    {
-        static::$instance = $app;
+        return $app
+            ? static::$current = $app
+            : static::$current ??= new static;
     }
 
     protected function registerBaseBindings()
     {
-        // register itself as the main App
-        static::setInstance($this);
-        $this->addShared('app', $this);
-
         // register default helpers
+        $this->addShared('app', $this);
         $this->addShared('config', new Config($this));
         $this->addShared('view', View::class);
         $this->addShared('meta', Meta::class);
         $this->addShared('translation', Translation::class);
         $this->addShared('multilanguage', Multilanguage::class);
+        $this->addShared('cache', FileCache::class);
 
         // Reflection fallback
         $this->delegate(new ReflectionContainer());
@@ -96,6 +95,11 @@ class App extends Container
         return $this->get('multilanguage');
     }
 
+    public function cache(): CacheInterface
+    {
+        return $this->get('cache');
+    }
+
     public function bootstrap(string $base_path = null)
     {
         if ($base_path) {
@@ -103,7 +107,6 @@ class App extends Container
         }
 
         $this->config()->load($this->configPath());
-
 
         if (\wp_using_themes() && !\is_admin()) {
 
@@ -439,10 +442,10 @@ class App extends Container
         }
 
         // clear cache
-        Cache::forget($post->post_type);
-        Cache::forget('bond/posts');
-        Cache::forget('bond/query');
-        Cache::forget('global');
+        cache()->delete($post->post_type);
+        cache()->delete('bond/posts');
+        cache()->delete('bond/query');
+        cache()->delete('global');
 
         // Translate before
         \do_action('Bond/translate_post', $post->post_type, $post_id);
@@ -498,10 +501,10 @@ class App extends Container
         }
 
         // clear cache
-        Cache::forget($post->post_type);
-        Cache::forget('bond/posts');
-        Cache::forget('bond/query');
-        Cache::forget('global');
+        cache()->delete($post->post_type);
+        cache()->delete('bond/posts');
+        cache()->delete('bond/query');
+        cache()->delete('global');
 
         // emit actions
         if (\has_action('Bond/delete_post')) {
@@ -530,9 +533,9 @@ class App extends Container
         config()->cache->enabled = false;
 
         // clear cache
-        Cache::forget('options');
-        Cache::forget('bond/query');
-        Cache::forget('global');
+        cache()->delete('options');
+        cache()->delete('bond/query');
+        cache()->delete('global');
 
         // Translate before
         \do_action('Bond/translate_options');
@@ -568,10 +571,10 @@ class App extends Container
         config()->cache->enabled = false;
 
         // clear cache
-        Cache::forget($taxonomy);
-        Cache::forget('bond/terms');
-        Cache::forget('bond/query');
-        Cache::forget('global');
+        cache()->delete($taxonomy);
+        cache()->delete('bond/terms');
+        cache()->delete('bond/query');
+        cache()->delete('global');
 
         // Translate before
         \do_action('Bond/translate_term', $taxonomy, $term_id);
@@ -621,8 +624,8 @@ class App extends Container
         config()->cache->enabled = false;
 
         // clear cache
-        Cache::forget('bond/query');
-        Cache::forget('global');
+        cache()->delete('bond/query');
+        cache()->delete('global');
 
         // do action
         if (\has_action('Bond/save_user')) {
@@ -643,8 +646,8 @@ class App extends Container
     public function deletedUserHook($user_id)
     {
         // clear cache
-        Cache::forget('bond/query');
-        Cache::forget('global');
+        cache()->delete('bond/query');
+        cache()->delete('global');
 
         // do action
         \do_action('Bond/deleted_user', $user_id);

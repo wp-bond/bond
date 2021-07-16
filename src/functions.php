@@ -2,17 +2,18 @@
 
 use Bond\App\App;
 use Bond\App\View;
+use Bond\Services\Cache\CacheInterface;
 use Bond\Services\Meta;
 use Bond\Tooling\Vite;
 use Bond\Utils\Str;
 
 if (!function_exists('app')) {
     /**
-     * Get the main App container.
+     * Get the current App container.
      */
     function app(): App
     {
-        return App::getInstance();
+        return App::current();
     }
 }
 
@@ -41,7 +42,13 @@ if (!function_exists('meta')) {
     }
 }
 
-// TODO maybe rename to env, just check Laravel code to see what's up, check if phpdotenv creates a env function too, that would conflict
+if (!function_exists('cache')) {
+    function cache(): CacheInterface
+    {
+        return app()->cache();
+    }
+}
+
 if (!function_exists('c')) {
     function c(string $name, $default = null)
     {

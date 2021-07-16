@@ -3,8 +3,8 @@
 namespace Bond\Utils;
 
 use Carbon\Carbon;
-use DateTime;
-use Exception;
+use DateInterval;
+use DateTimeInterface;
 
 class Date
 {
@@ -103,8 +103,30 @@ class Date
             return $date;
         }
 
-        $date = self::carbon($date, $timezone);
+        $date = static::carbon($date, $timezone);
 
         return $date ? new \MongoDB\BSON\UTCDateTime($date) : null;
+    }
+
+    // determine a ttl in seconds
+    public static function ttl(int|DateInterval|DateTimeInterface $ttl): int
+    {
+        if (is_numeric($ttl)) {
+            return (int) $ttl;
+        }
+
+        if ($ttl instanceof DateInterval) {
+            $ttl = static::carbon()->add($ttl);
+        }
+
+        if ($ttl instanceof DateTimeInterface) {
+            $ttl = static::carbon()->diffInRealSeconds($ttl, false);
+        }
+
+        $ttl = (int) $ttl;
+        if ($ttl < 0) {
+            $ttl = 0;
+        }
+        return $ttl;
     }
 }

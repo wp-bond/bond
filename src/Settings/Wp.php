@@ -10,14 +10,19 @@ use Bond\Utils\Str;
 
 class Wp
 {
-    public static function isTheme()
+    public static function isTheme(): bool
     {
-        return !defined('WP_USE_THEMES') || \WP_USE_THEMES;
+        return (bool) c('WP_USE_THEMES');
     }
 
-    public static function isAdminWithTheme()
+    public static function isAdminWithTheme(): bool
     {
         return static::isTheme() && \is_admin();
+    }
+
+    public static function isCli(): bool
+    {
+        return (bool) c('WP_CLI');
     }
 
 

@@ -15,6 +15,7 @@ use Bond\Utils\Str;
 
 // TODO needs upgrade
 
+// TODO remove the config usage for a constructor based settings
 class Meta
 {
     // settings
@@ -120,7 +121,7 @@ class Meta
         if (is_404()) {
             $this->title[] = __('Page not found');
         } elseif (is_post_type_archive()) {
-            $this->title[] = Query::postTypeName($post_type);
+            $this->title[] = Query::postTypeName(is_array($post_type) ? $post_type[0] : $post_type);
         } elseif (is_search()) {
             global $s;
             $this->title[] = __($this->search_title) . (!empty($s) ? ': ' . $s : '');

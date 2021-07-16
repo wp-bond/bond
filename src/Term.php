@@ -3,7 +3,6 @@
 namespace Bond;
 
 use Bond\Support\Fluent;
-use Bond\Utils\Cache;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use Bond\Utils\Query;
@@ -17,7 +16,6 @@ class Term extends Fluent
 
 
     // TODO move cache logic into Cast
-    // change to Cache::php
 
     public function __construct($values = null, bool $skip_cache = false)
     {
@@ -34,10 +32,8 @@ class Term extends Fluent
 
             $has_initted = false;
 
-            $cached = $this->add(Cache::json(
+            $cached = $this->add(cache()->remember(
                 'bond/terms/' . $id,
-                config('cache.ttl') ?? 60 * 10,
-
                 function () use ($values, &$has_initted) {
                     $this->init($values);
                     $has_initted = true;

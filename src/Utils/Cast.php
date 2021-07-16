@@ -146,10 +146,8 @@ class Cast
 
                 $id = (int) $post;
 
-                $post = Cache::php(
+                $post = cache()->remember(
                     'bond/posts/' . $id,
-                    config('cache.ttl') ?? 60 * 10,
-
                     function () use ($id) {
 
                         $post = Cast::wpPost($id);
@@ -158,11 +156,14 @@ class Cast
                         }
 
                         $class = static::matchPostClass($post);
+                        $p = new $class($post);
 
-                        return Cache::putPhp(
+                        cache()->set(
                             'bond/posts/' . $post->post_type . '/' . $post->post_name,
-                            new $class($post)
+                            $p
                         );
+
+                        return $p;
                     }
                 );
                 return static::maybeConvert($post, $post_type);
@@ -177,9 +178,8 @@ class Cast
 
                 $slug = $post;
 
-                return Cache::php(
+                return cache()->remember(
                     'bond/posts/' . $post_type . '/' . $slug,
-                    config('cache.ttl') ?? 60 * 10,
 
                     function () use ($slug, $post_type) {
 
@@ -192,11 +192,13 @@ class Cast
                         }
 
                         $class = static::matchPostClass($post);
+                        $p = new $class($post);
 
-                        return Cache::putPhp(
+                        cache()->set(
                             'bond/posts/' . $post->ID,
-                            new $class($post)
+                            $p
                         );
+                        return $p;
                     }
                 );
             }
@@ -210,18 +212,19 @@ class Cast
             // 3b - is WP_Post
             if ($post instanceof WP_Post) {
 
-                $post = Cache::php(
+                $post = cache()->remember(
                     'bond/posts/' . $post->ID,
-                    config('cache.ttl') ?? 60 * 10,
 
                     function () use ($post) {
 
                         $class = static::matchPostClass($post);
+                        $p = new $class($post);
 
-                        return Cache::putPhp(
+                        cache()->set(
                             'bond/posts/' . $post->post_type . '/' . $post->post_name,
-                            new $class($post)
+                            $p
                         );
+                        return $p;
                     }
                 );
                 return static::maybeConvert($post, $post_type);

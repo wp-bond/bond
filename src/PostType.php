@@ -3,7 +3,6 @@
 namespace Bond;
 
 use Bond\Fields\Acf\FieldGroup;
-use Bond\Utils\Cache;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use Bond\Utils\Query;
@@ -116,20 +115,17 @@ abstract class PostType
 
     public static function count(): int
     {
-        return Cache::php(
+        return cache()->remember(
             static::$post_type . '/count',
-            -1,
             function () {
                 return Query::count(static::$post_type);
-            }
+            },
+            -1
         );
     }
 
-
     public static function all(array $params = []): Posts
     {
-        $params['post_type'] = static::$post_type;
-
-        return Query::all($params);
+        return Query::all(static::$post_type, $params);
     }
 }

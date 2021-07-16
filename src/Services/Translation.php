@@ -13,6 +13,7 @@ use Exception;
 // Google Translate
 // https://googleapis.github.io/google-cloud-php/#/docs/google-cloud/v0.130.0/translate/v2/translateclient
 
+// TODO remove the config usage for a constructor based settings
 class Translation
 {
     protected array $glossaries = [];
