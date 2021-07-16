@@ -139,7 +139,7 @@ class Cast
         }
 
         //
-        if (config('cache.enabled')) {
+        if (cache()->enabled()) {
 
             // 1
             if (is_numeric($post)) {

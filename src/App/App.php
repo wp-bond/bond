@@ -433,8 +433,8 @@ class App extends Container
         $this->removeSavePostHook();
 
         // turn off cache
-        $original_state = config()->cache->enabled ?? false;
-        config()->cache->enabled = false;
+        $original_state = cache()->enabled();
+        cache()->enabled(false);
 
         // in case it's attachment, it misses the post object
         if (!$post) {
@@ -464,7 +464,7 @@ class App extends Container
         // deleted, when deleted
 
         // turn on posts cache
-        config()->cache->enabled = $original_state;
+        cache()->enabled($original_state);
 
         // re-add action
         $this->addSavePostHook();
@@ -492,8 +492,8 @@ class App extends Container
         $this->removeDeletePostHook();
 
         // turn off cache
-        $original_state = config()->cache->enabled ?? false;
-        config()->cache->enabled = false;
+        $original_state = cache()->enabled();
+        cache()->enabled(false);
 
         // in case it's attachment, it misses the post object
         if (!$post) {
@@ -514,7 +514,7 @@ class App extends Container
             \do_action('Bond/delete_post/' . $post->post_type, Cast::post($post));
         }
         // turn on posts cache
-        config()->cache->enabled = $original_state;
+        cache()->enabled($original_state);
 
         // re-add action
         $this->addDeletePostHook();
@@ -529,8 +529,8 @@ class App extends Container
         }
 
         // turn off cache
-        $original_state = config()->cache->enabled ?? false;
-        config()->cache->enabled = false;
+        $original_state = cache()->enabled();
+        cache()->enabled(false);
 
         // clear cache
         cache()->delete('options');
@@ -546,7 +546,7 @@ class App extends Container
         }
 
         // turn on posts cache
-        config()->cache->enabled = $original_state;
+        cache()->enabled($original_state);
     }
 
 
@@ -567,8 +567,8 @@ class App extends Container
         $this->removeSaveTermHook();
 
         // turn off cache
-        $original_state = config()->cache->enabled ?? false;
-        config()->cache->enabled = false;
+        $original_state = cache()->enabled();
+        cache()->enabled(false);
 
         // clear cache
         cache()->delete($taxonomy);
@@ -590,7 +590,7 @@ class App extends Container
         // TODO save_term doesn't get the delete right?
 
         // turn on posts cache
-        config()->cache->enabled = $original_state;
+        cache()->enabled($original_state);
 
         // re-add action
         $this->addSaveTermHook();
@@ -620,8 +620,8 @@ class App extends Container
         $this->removeSaveUserHook();
 
         // turn off cache
-        $original_state = config()->cache->enabled ?? false;
-        config()->cache->enabled = false;
+        $original_state = cache()->enabled();
+        cache()->enabled(false);
 
         // clear cache
         cache()->delete('bond/query');
@@ -637,7 +637,7 @@ class App extends Container
         }
 
         // turn on posts cache
-        config()->cache->enabled = $original_state;
+        cache()->enabled($original_state);
 
         // re-add action
         $this->addSaveUserHook();
