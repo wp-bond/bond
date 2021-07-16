@@ -22,13 +22,13 @@ class Query
     // termbySlug
 
 
-    // TODO syncronize api with taxonomy method:
-    // either add a post_type param
-    // or remove taxonomy
-    public static function posts(array $params = []): Posts
-    {
-        $fn = function () use ($params) {
+    public static function posts(
+        string|array $post_type,
+        array $params = []
+    ): Posts {
+        $fn = function () use ($post_type, $params) {
             $query_args = [
+                'post_type' => $post_type,
                 'post_status' => 'publish',
                 'no_found_rows' => true,
                 'update_post_meta_cache' => false,
@@ -41,38 +41,42 @@ class Query
             return Cast::posts($query->posts);
         };
 
+        // increase cache key
+        $params[] = $post_type;
+
         return static::cached($fn, 'posts', $params);
     }
 
 
 
-    public static function all(array $params = []): Posts
-    {
+    public static function all(
+        string|array $post_type,
+        array $params = []
+    ): Posts {
         $params['posts_per_page'] = -1;
-
-        return static::posts($params);
+        return static::posts($post_type, $params);
     }
 
 
     public static function postBySlug(
         string $slug,
-        string $post_type = 'any',
+        string|array $post_type = 'any',
         string $language_code = null,
-        array $args = []
+        array $params = []
     ): ?Post {
         return Cast::post(static::wpPostBySlug(
             $slug,
             $post_type,
             $language_code,
-            $args
+            $params
         ));
     }
 
     public static function wpPostBySlug(
         string $slug,
-        string $post_type = 'any',
+        string|array $post_type = 'any',
         string $language_code = null,
-        array $args = []
+        array $params = []
     ): ?WP_Post {
 
         if (Language::isMultilanguage()) {
@@ -92,7 +96,7 @@ class Query
                     ],
                 ],
             ];
-            $query_args = array_merge($query_args, $args);
+            $query_args = array_merge($query_args, $params);
             $query = new WP_Query($query_args);
 
             if (!empty($query->posts)) {
@@ -100,14 +104,14 @@ class Query
             }
         }
 
-        return static::wpPostByName($slug, $post_type, $args);
+        return static::wpPostByName($slug, $post_type, $params);
     }
 
 
     public static function wpPostByName(
         string $name,
         string $post_type = 'any',
-        array $args = []
+        array $params = []
     ): ?WP_Post {
 
         $query_args = [
@@ -122,7 +126,7 @@ class Query
             'update_post_meta_cache' => false,
             'update_post_term_cache' => false,
         ];
-        $query_args = array_merge($query_args, $args);
+        $query_args = array_merge($query_args, $params);
 
         $query = new WP_Query($query_args);
 
@@ -134,7 +138,7 @@ class Query
 
     public static function count(
         $post_type,
-        array $args = []
+        array $params = []
     ): int {
 
         $query_args = [
@@ -145,7 +149,7 @@ class Query
             'update_post_meta_cache' => false,
             'update_post_term_cache' => false,
         ];
-        $query_args = array_merge($query_args, $args);
+        $query_args = array_merge($query_args, $params);
 
         $query = new WP_Query($query_args);
 
@@ -180,7 +184,7 @@ class Query
 
 
     public static function ids(
-        $post_types,
+        string|array $post_types,
         string $order_by = 'post_date',
         string $order = 'DESC',
         string $post_status = 'publish'
@@ -291,7 +295,7 @@ class Query
 
 
 
-    public static function pageChildren($page_id, array $args = []): ?Posts
+    public static function pageChildren($page_id, array $params = []): ?Posts
     {
         if (empty($page_id)) {
             return null;
@@ -308,14 +312,14 @@ class Query
             'update_post_meta_cache' => false,
             'update_post_term_cache' => false,
         ];
-        $query_args = array_merge($query_args, $args);
+        $query_args = array_merge($query_args, $params);
 
         $query = new WP_Query($query_args);
 
         return Cast::posts($query->posts);
     }
 
-    public static function firstPageChild($page_id, array $args = []): ?Post
+    public static function firstPageChild($page_id, array $params = []): ?Post
     {
         if (empty($page_id)) {
             return null;
@@ -332,7 +336,7 @@ class Query
             'update_post_meta_cache' => false,
             'update_post_term_cache' => false,
         ];
-        $query_args = array_merge($query_args, $args);
+        $query_args = array_merge($query_args, $params);
 
         $query = new WP_Query($query_args);
 
@@ -403,10 +407,8 @@ class Query
 
     // Taxonomy
 
-    public static function wpTerm(
-        $id
-    ): ?WP_Term {
-
+    public static function wpTerm($id): ?WP_Term
+    {
         $id = Cast::termId($id);
         if (!$id) {
             return null;
@@ -426,112 +428,93 @@ class Query
         if (empty($slug)) {
             return null;
         }
-
         $term = \get_term_by('slug', $slug, $taxonomy);
         return $term instanceof WP_Term ? $term : null;
     }
 
 
-    // public static function wpTerm(
-    //     $id,
-    //     array $args = []
-    // ): ?WP_Term {
+    public static function terms(
+        string|array $taxonomy,
+        array $params = []
+    ): Terms {
 
-    //     $id = Cast::termId($id);
-    //     if (!$id) {
-    //         return null;
-    //     }
+        $fn = function () use ($taxonomy, $params) {
+            return Cast::terms(static::wpTerms($taxonomy, $params));
+        };
 
-    //     $query = new WP_Term_Query(array_merge([
-    //         'term_taxonomy_id' => (int) $id,
-    //         'number' => 1,
-    //         'hide_empty' => false,
-    //         'update_term_meta_cache' => false,
-    //     ], $args));
+        // increase cache key
+        $params[] = $taxonomy;
 
-    //     return !empty($query->terms) ? $query->terms[0] : null;
-    // }
-
-
-    // public static function wpTermBySlug(
-    //     string $slug,
-    //     string $taxonomy,
-    //     array $args = []
-    // ): ?WP_Term {
-
-    //     if (empty($slug)) {
-    //         return null;
-    //     }
-
-    //     $query = new WP_Term_Query(array_merge([
-    //         'taxonomy' => $taxonomy,
-    //         'slug' => $slug,
-    //         'number' => 1,
-    //         'hide_empty' => false,
-    //         'update_term_meta_cache' => false,
-    //     ], $args));
-
-    //     return !empty($query->terms) ? $query->terms[0] : null;
-    // }
-
-
-
-    public static function terms($taxonomy, array $args = []): Terms
-    {
-        return Cast::terms(static::wpTerms(
-            $taxonomy,
-            $args
-        ));
+        return static::cached($fn, 'terms', $params);
     }
 
-    public static function wpTerms($taxonomy, array $args = []): array
-    {
+
+    public static function allTerms(
+        string|array $taxonomy,
+        array $params = []
+    ): Terms {
+        $params['number'] = 0;
+        return static::terms($taxonomy, $params);
+    }
+
+
+    public static function wpTerms(
+        string|array $taxonomy,
+        array $params = []
+    ): array {
         $query = new WP_Term_Query(array_merge([
             'taxonomy' => $taxonomy,
             'update_term_meta_cache' => false,
-        ], $args));
+        ], $params));
 
         return $query->terms ?: [];
     }
 
 
     public static function termsOfPostType(
-        $taxonomy,
-        $post_type,
-        array $args = []
+        string|array $taxonomy,
+        string|array $post_type,
+        array $params = []
     ): Terms {
-        return Cast::terms(static::wpTermsOfPostType(
+
+        $fn = function () use (
             $taxonomy,
             $post_type,
-            $args
-        ));
+            $params
+        ) {
+            return Cast::terms(static::wpTermsOfPostType(
+                $taxonomy,
+                $post_type,
+                $params
+            ));
+        };
+
+        // increase cache key
+        $params[] = $taxonomy;
+        $params[] = $post_type;
+
+        return static::cached($fn, 'terms-of', $params);
     }
 
+
     public static function wpTermsOfPostType(
-        $taxonomy,
-        $post_type,
-        array $args = []
+        string|array $taxonomy,
+        string|array $post_type,
+        array $params = []
     ): array {
 
-        $terms = \wp_get_object_terms(static::ids($post_type), $taxonomy, $args);
+        $terms = \wp_get_object_terms(static::ids($post_type), $taxonomy, $params);
 
         return empty($terms) || \is_wp_error($terms) ? [] : $terms;
     }
 
 
-
-
-    // public static function termId($value, $taxonomy, $field = 'slug'): int
-    // {
-    //     $term = \get_term_by($field, $value, $taxonomy);
-
-    //     return $term ? (int) $term->term_id : 0;
-    // }
-
-
-
-    public static function postTerms($post_id, string $taxonomy = null, array $args = []): Terms
-    {
+    // TODO add cache
+    public static function postTerms(
+        $post_id,
+        string|array $taxonomy = null,
+        array $params = []
+    ): Terms {
         $id = Cast::postId($post_id);
         if (!$id) {
             return new Terms();
@@ -542,7 +525,7 @@ class Query
             'object_ids' => $id,
             // 'hide_empty' => false, // just check, but may be activated if helps performance
             'update_term_meta_cache' => false,
-        ], $args));
+        ], $params));
 
         return Cast::terms($query->terms);
     }
@@ -553,7 +536,7 @@ class Query
      * Note: Beware when trying to read the post type name before it is registered, usually at the init action.
      */
     public static function postTypeName(
-        $post_type,
+        string $post_type,
         bool $singular = false,
         string $language = null
     ): string {
@@ -681,16 +664,8 @@ class Query
 
     protected static function cached(callable $fn, string $prefix,  $params)
     {
-        if (config('cache.enabled')) {
+        $key = cache()->keyHash('bond/query/' . $prefix, $params);
 
-            $cache_key = 'bond/query/' . $prefix;
-            if (!empty($params)) {
-                $cache_key .= '-' . md5(Str::kebab($params));
-            }
-
-            return Cache::php($cache_key, config('cache.ttl'), $fn);
-        }
-
-        return $fn();
+        return cache()->remember($key, $fn);
     }
 }
