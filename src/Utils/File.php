@@ -3,7 +3,7 @@
 namespace Bond\Utils;
 
 /**
- * Provides some helpers for Files. For use cases not covered here just use PHP functions directly.
+ * Provides some helpers for WP Files.
  */
 class File
 {
@@ -62,58 +62,5 @@ class File
         }
 
         return $size . ($with_unit ? ' ' . $unit : '');
-    }
-
-    public static function get(string $path): string
-    {
-        // code from © Laravel LLC / Taylor Otwell, MIT licence.
-
-        $contents = '';
-
-        if (is_file($path)) {
-            $handle = fopen($path, 'rb');
-
-            if ($handle) {
-                try {
-                    if (flock($handle, LOCK_SH)) {
-                        clearstatcache(true, $path);
-
-                        $contents = fread($handle, filesize($path) ?: 1);
-
-                        flock($handle, LOCK_UN);
-                    }
-                } finally {
-                    fclose($handle);
-                }
-            }
-        }
-        return $contents;
-    }
-
-    public static function put($path, $contents): bool
-    {
-        return file_put_contents($path, $contents, LOCK_EX) > 0;
-    }
-
-    /**
-     * Write the contents of a file, replacing it atomically if it already exists.
-     */
-    public static function replace(string $path, string $content)
-    {
-        // code from © Laravel LLC / Taylor Otwell, MIT licence.
-
-        // If the path already exists and is a symlink, get the real path...
-        clearstatcache(true, $path);
-
-        $path = realpath($path) ?: $path;
-
-        $tempPath = tempnam(dirname($path), basename($path));
-
-        // Fix permissions of tempPath because `tempnam()` creates it with permissions set to 0600...
-        chmod($tempPath, 0777 - umask());
-
-        file_put_contents($tempPath, $content);
-
-        rename($tempPath, $path);
     }
 }
