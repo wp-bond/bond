@@ -154,10 +154,12 @@ class Cast
                         $class = static::matchPostClass($post);
                         $p = new $class($post);
 
-                        cache()->set(
-                            'bond/posts/' . $post->post_type . '/' . $post->post_name,
-                            $p
-                        );
+                        if ($post->post_name) {
+                            cache()->set(
+                                'bond/posts/' . $post->post_type . '/' . $post->post_name,
+                                $p
+                            );
+                        }
 
                         return $p;
                     }
@@ -216,10 +218,13 @@ class Cast
                         $class = static::matchPostClass($post);
                         $p = new $class($post);
 
-                        cache()->set(
-                            'bond/posts/' . $post->post_type . '/' . $post->post_name,
-                            $p
-                        );
+                        if ($post->post_name) {
+                            cache()->set(
+                                'bond/posts/' . $post->post_type . '/' . $post->post_name,
+                                $p
+                            );
+                        }
+
                         return $p;
                     }
                 );

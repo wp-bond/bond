@@ -103,7 +103,7 @@ class FileCache extends AbstractCache
     public function delete($key): bool
     {
         // delete the file or directory
-        Filesystem::delete($this->keyPath((string) $key));
+        Filesystem::delete($this->path . DIRECTORY_SEPARATOR . $key);
 
         // now let's find all files and folders prefixed with that
         // TODO ???
@@ -184,16 +184,25 @@ class FileCache extends AbstractCache
         // we could explode on separators, and slug all parts
 
         // create folder if needed
+        // TODO test if needed, or if the Filesystem::put can create the needed folder by itself, may be the best!
         if ($create_folder && $last_slash = strrpos($key, DIRECTORY_SEPARATOR)) {
 
             $dir = $this->path . DIRECTORY_SEPARATOR . substr($key, 0, $last_slash);
 
-            if (!file_exists($dir)) {
+            if (!is_dir($dir)) {
+                @unlink($dir);
                 mkdir($dir, 0755, true);
             }
         }
 
-        return $this->path . DIRECTORY_SEPARATOR . $key;
+        $path = $this->path . DIRECTORY_SEPARATOR . $key;
+
+        // if path is a directory, append and extra character
+        if (is_dir($path)) {
+            $path .= '_';
+        }
+
+        return $path;
     }
 
     protected function expired(
