@@ -75,7 +75,7 @@ class Cast
     }
 
 
-    // TODO move to fluent itself or somewhere else
+    // TODO move to fluent itself or Obj::fluent
     // create an internal variant as maybeFluent, which is this code
     // and a public which strictly returns Fluent / FluentList
     public static function fluent($value)
@@ -114,10 +114,6 @@ class Cast
 
     // TODO maybe use class at the post_type param
     // IMPORTANT use class as param may be better, it would allow the dev to really request the post as he wants, instead of depending it was registered or not
-
-    // or just allow both!
-
-    // or post_type is fine, as it's a shortcut, if it's implemented in many places, it's just better to not have to change everywhere, and just change the casting map
 
     // TODO maybe remove the convertion of post types
     // if needed users do it directly

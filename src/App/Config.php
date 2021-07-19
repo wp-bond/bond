@@ -190,7 +190,7 @@ class Config extends Fluent
     protected function metaSettings()
     {
         // auto initialize Meta, registers WP hooks
-        if ($this->meta->enabled && \wp_using_themes()) {
+        if ($this->meta->enabled && Wp::isFrontEnd()) {
             $this->container->get('meta')->config($this->meta);
         }
     }

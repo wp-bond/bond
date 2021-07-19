@@ -51,7 +51,9 @@ class Meta
 
     public function __construct()
     {
-        if (\wp_using_themes()) {
+        // do not initialize when it is on WP admin
+        // nor when programatically loading WP
+        if (Wp::isFrontEnd()) {
             $this->init();
         }
     }
@@ -63,12 +65,9 @@ class Meta
             'meta' => [2400, 2400],
         ]);
 
-        // do not initialize when it is on WP admin
-        // nor when programatically loading WP
-        if (!Wp::isAdminWithTheme()) {
-            \add_action('wp', [$this, 'setDefaults'], 2);
-            \add_action('wp_head', [$this, 'printAllTags'], 99);
-        }
+        // add hooks
+        \add_action('wp', [$this, 'setDefaults'], 2);
+        \add_action('wp_head', [$this, 'printAllTags'], 99);
     }
 
     public function config(Fluent $settings)

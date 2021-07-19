@@ -10,6 +10,7 @@ use Bond\Services\Cache\CacheInterface;
 use Bond\Services\Cache\FileCache;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
+use Bond\Settings\Wp;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Mobile_Detect;
@@ -108,7 +109,7 @@ class App extends Container
 
         $this->config()->load($this->configPath());
 
-        if (\wp_using_themes() && !\is_admin()) {
+        if (Wp::isFrontEnd()) {
 
             // auto initialize View, registers WP hooks
             $this->view()->register();
@@ -200,7 +201,7 @@ class App extends Container
             }
 
             // admin too
-            if (\is_admin() && method_exists($classname, 'bootAdmin')) {
+            if (Wp::isAdmin() && method_exists($classname, 'bootAdmin')) {
                 call_user_func($classname . '::bootAdmin');
             }
         }
@@ -442,10 +443,10 @@ class App extends Container
         }
 
         // clear cache
-        cache()->delete($post->post_type);
         cache()->delete('bond/posts');
         cache()->delete('bond/query');
         cache()->delete('global');
+        cache()->delete($post->post_type);
 
         // Translate before
         \do_action('Bond/translate_post', $post->post_type, $post_id);

@@ -9,7 +9,7 @@ class Rewrite
     public static function reset()
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -58,7 +58,7 @@ class Rewrite
     public static function pages()
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -105,7 +105,7 @@ class Rewrite
         array $extra_params = []
     ) {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -153,7 +153,7 @@ class Rewrite
     public static function rss()
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -197,7 +197,7 @@ class Rewrite
         array $extra_params = []
     ) {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -265,7 +265,7 @@ class Rewrite
         array $extra_params = []
     ) {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -306,7 +306,7 @@ class Rewrite
         array $params = []
     ) {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -338,7 +338,7 @@ class Rewrite
         array $extra_params = []
     ) {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 

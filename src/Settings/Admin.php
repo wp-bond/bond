@@ -17,7 +17,7 @@ class Admin
     public static function setEditorImageSizes(array $sizes)
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -36,7 +36,7 @@ class Admin
     public static function removeUpdateNag()
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -53,7 +53,7 @@ class Admin
     public static function addEditorCss()
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -90,7 +90,7 @@ class Admin
     public static function addAdminCss()
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -144,13 +144,13 @@ class Admin
 
     public static function hidePosts()
     {
-        if (\is_admin() || config('html.admin_bar') !== false) {
+        if (Wp::isAdmin() || config('html.admin_bar') !== false) {
             \add_action('wp_before_admin_bar_render', function () {
                 global $wp_admin_bar;
                 $wp_admin_bar->remove_menu('new-post');
             });
         }
-        if (\is_admin()) {
+        if (Wp::isAdmin()) {
             \add_action('admin_menu', function () {
                 \remove_menu_page('edit.php');
             }, 999);
@@ -161,7 +161,7 @@ class Admin
     public static function addFooterCredits()
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -173,7 +173,7 @@ class Admin
     public static function removeWpVersion()
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -254,7 +254,7 @@ class Admin
     public static function setColumns(string $post_type, array $columns)
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -275,7 +275,7 @@ class Admin
     public static function addColumnHandler($name, callable $handler)
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -316,7 +316,7 @@ class Admin
     public static function setTaxonomyColumns(string $taxonomy, array $columns)
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -331,7 +331,7 @@ class Admin
     public static function addTaxonomyColumnHandler($name, callable $handler)
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -355,7 +355,7 @@ class Admin
     public static function setUsersColumns(array $columns)
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -370,7 +370,7 @@ class Admin
     public static function addUsersColumnHandler($name, callable $handler)
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -397,7 +397,7 @@ class Admin
     public static function replaceDashboard()
     {
         // only needed on admin
-        if (!\is_admin()) {
+        if (!Wp::isAdmin()) {
             return;
         }
 
@@ -461,7 +461,7 @@ class Admin
 
     public static function hideTitle($post_types)
     {
-        if (empty($post_types) || !Wp::isAdminWithTheme()) {
+        if (empty($post_types) || !Wp::isAdmin()) {
             return;
         }
 

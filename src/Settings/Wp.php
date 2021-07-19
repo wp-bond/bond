@@ -10,14 +10,14 @@ use Bond\Utils\Str;
 
 class Wp
 {
-    public static function isTheme(): bool
+    public static function isFrontEnd(): bool
     {
-        return (bool) c('WP_USE_THEMES');
+        return !\is_admin() && \wp_using_themes() && !static::isCli();
     }
 
-    public static function isAdminWithTheme(): bool
+    public static function isAdmin(): bool
     {
-        return static::isTheme() && \is_admin();
+        return \is_admin() && \is_user_logged_in();
     }
 
     public static function isCli(): bool
@@ -118,7 +118,8 @@ class Wp
 
     public static function disableUserRegistration()
     {
-        if (!static::isAdminWithTheme()) {
+        // only on admin
+        if (!static::isAdmin()) {
             return;
         }
 
@@ -145,7 +146,8 @@ class Wp
 
     public static function updateSettings()
     {
-        if (!static::isAdminWithTheme()) {
+        // only on admin
+        if (!static::isAdmin()) {
             return;
         }
 
@@ -162,7 +164,6 @@ class Wp
             \update_option('timezone_string', config('app.timezone'));
             \update_option('start_of_week', 1); //monday
 
-            \update_option('users_can_register', false);
             \update_option('show_avatars', false);
 
             // link structure
