@@ -6,6 +6,7 @@ use Bond\Utils\Link;
 use Bond\Support\Fluent;
 use Bond\Utils\Cast;
 use Bond\Utils\Query;
+use Bond\Utils\Str;
 use WP_Post;
 
 class Post extends Fluent
@@ -164,6 +165,14 @@ class Post extends Fluent
             return $this->get('slug', $language) ?: $this->post_name;
         }
         return $this->post_name;
+    }
+
+    public function content(string $language = null): string
+    {
+        if ($this->isMultilanguage()) {
+            return $this->get('content', $language) ?: '';
+        }
+        return Str::filterContent($this->post_content);
     }
 
     public function link(string $language = null): string
