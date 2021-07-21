@@ -163,7 +163,7 @@ class Meta
             //     $this->description = get_field('field_post_meta_description', $post->ID);
 
             if (empty($this->description)) {
-                $this->description = !empty($post->post_excerpt) ? $post->post_excerpt : $post->post_content;
+                $this->description = $p->content();
             }
 
             $this->url = \get_permalink($post->ID);

@@ -60,7 +60,7 @@ class Query
 
     public static function postBySlug(
         string $slug,
-        string|array $post_type = 'any',
+        string|array|null $post_type = null,
         string $language_code = null,
         array $params = []
     ): ?Post {
@@ -74,14 +74,14 @@ class Query
 
     public static function wpPostBySlug(
         string $slug,
-        string|array $post_type = 'any',
+        string|array|null $post_type = null,
         string $language_code = null,
         array $params = []
     ): ?WP_Post {
 
         if (Language::isMultilanguage()) {
             $query_args = [
-                'post_type' => $post_type,
+                'post_type' => $post_type ?: 'any',
                 'posts_per_page' => 1,
                 'post_status' => 'publish',
                 'no_found_rows' => true,
@@ -110,12 +110,12 @@ class Query
 
     public static function wpPostByName(
         string $name,
-        string $post_type = 'any',
+        string|array|null $post_type = null,
         array $params = []
     ): ?WP_Post {
 
         $query_args = [
-            'post_type' => $post_type,
+            'post_type' => $post_type ?: 'any',
             'posts_per_page' => 1,
             'post_status' => 'publish',
             'name' => $name,

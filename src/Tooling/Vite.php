@@ -6,8 +6,11 @@ use Bond\Utils\Filesystem;
 
 /**
  * Usage:
- * echo vite(); // with defaults (main.js)
  *
+ * with defaults:
+ * echo vite();
+ *
+ * change settings as needed:
  * echo vite()
  *     ->entry('admin.js')
  *     ->port(3001)
@@ -21,17 +24,6 @@ class Vite
     protected string $entry = 'main.js';
     protected string $out_dir = 'dist';
 
-    public function __construct()
-    {
-        // if (!isset($this->hostname)) {
-        //     $this->hostname = app()->url();
-        // }
-
-        // made no diffence yet, Vite still didn't create more than one server in the same port with diffent hostnames
-
-        // if that is the case in the future, we may change here
-        // so each project has its own vite client, and the port never changes
-    }
 
     public function __toString(): string
     {
@@ -40,6 +32,7 @@ class Vite
             . $this->jsPreloadImports()
             . $this->cssTag();
     }
+
 
     public function entry(string $entry): self
     {
@@ -185,7 +178,9 @@ class Vite
                 continue;
             }
             if ($type === 'woff2') {
-                $res .= '<link rel="preload" href="' . $url . '" as="font" type="font/woff2" crossorigin="anonymous">';
+                $res .= '<link rel="preload" href="'
+                    . $url
+                    . '" as="font" type="font/woff2" crossorigin="anonymous">';
             }
         }
         return $res;
