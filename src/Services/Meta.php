@@ -365,24 +365,24 @@ class Meta
                 echo '<meta property="article:section" content="' . $this->article_section . '">' . "\n";
             }
 
-            if (config('services.facebook.url')) {
-                echo '<meta property="article:publisher" content="' . config('services.facebook.url') . '">' . "\n";
+            if (config('meta.facebook.url')) {
+                echo '<meta property="article:publisher" content="' . config('meta.facebook.url') . '">' . "\n";
             }
 
-            if (config('services.facebook.pages')) {
-                echo '<meta property="fb:pages" content="' . config('services.facebook.pages') . '">' . "\n";
+            if (config('meta.facebook.pages')) {
+                echo '<meta property="fb:pages" content="' . config('meta.facebook.pages') . '">' . "\n";
             }
         }
     }
 
     public function printFacebookTags()
     {
-        if (config('services.facebook.app_id')) {
-            echo '<meta property="fb:app_id" content="' . config('services.facebook.app_id') . '">' . "\n";
+        if (config('meta.facebook.app_id')) {
+            echo '<meta property="fb:app_id" content="' . config('meta.facebook.app_id') . '">' . "\n";
         }
 
-        if (config('services.facebook.admins')) {
-            echo '<meta property="fb:admins" content="' . config('services.facebook.admins') . '">' . "\n";
+        if (config('meta.facebook.admins')) {
+            echo '<meta property="fb:admins" content="' . config('meta.facebook.admins') . '">' . "\n";
         }
     }
 
@@ -390,8 +390,8 @@ class Meta
     {
         echo '<meta name="twitter:card" content="' . $this->twitter_card . '">' . "\n";
 
-        if (config('services.twitter.user')) {
-            echo '<meta name="twitter:site" content="@' . config('services.twitter.user') . '">' . "\n";
+        if (config('meta.twitter.user')) {
+            echo '<meta name="twitter:site" content="@' . config('meta.twitter.user') . '">' . "\n";
         }
 
         echo '<meta name="twitter:domain" content="' . Str::domain(app()->url()) . '">' . "\n";
