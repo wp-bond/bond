@@ -5,6 +5,8 @@ namespace Bond;
 use Bond\Utils\Link;
 use Bond\Support\Fluent;
 use Bond\Utils\Cast;
+use Bond\Utils\Date;
+use Bond\Utils\Image;
 use Bond\Utils\Query;
 use Bond\Utils\Str;
 use WP_Post;
@@ -136,6 +138,13 @@ class Post extends Fluent
         return null;
     }
 
+    public function isEmpty(): bool
+    {
+        return empty($this->ID)
+            || empty($this->post_type)
+            || parent::isEmpty();
+    }
+
     public function isMultilanguage(): bool
     {
         return app()->multilanguage()->is($this);
@@ -198,15 +207,114 @@ class Post extends Fluent
         return !empty($this->get('is_disabled', $language));
     }
 
+    public function date()
+    {
+        return Date::iso($this->post_date, 'DD/MM/Y');
+    }
+
+    public function dateLong()
+    {
+        return Date::iso($this->post_date, 'D MMMM Y');
+    }
+
     public function terms(string $taxonomy = null, array $args = []): Terms
     {
         return Query::postTerms($this->ID, $taxonomy, $args);
     }
 
-    public function isEmpty(): bool
+
+    public function thumbnailId(): int
     {
-        return empty($this->ID)
-            || empty($this->post_type)
-            || parent::isEmpty();
+        return (int) \get_post_thumbnail_id($this->ID);
+    }
+
+    public function archiveImage(): ?Attachment
+    {
+        return Cast::post($this->archiveImageId());
+    }
+
+    public function archiveImageId(): int
+    {
+        return (int) $this->archive_image;
+    }
+
+    public function image(): ?Attachment
+    {
+        return Cast::post($this->imageId());
+    }
+
+    public function imageId(): int
+    {
+        // return id if is attachment already
+        if ($this->post_type === 'attachment') {
+            return (int) $this->ID;
+        }
+
+        // try common ACF image fields
+        // IMPORTANT relies that the return_type is id
+        if ($this->image) {
+            return (int) $this->image;
+        }
+        if ($this->archive_image) {
+            return (int) $this->archive_image;
+        }
+        if ($this->feature_image) {
+            return (int) $this->feature_image;
+        }
+        // gallery field
+        if (!empty($this->images[0])) {
+            return (int) $this->images[0];
+        }
+
+        // modules
+        $images = $this->modulesImages();
+        if (count($images)) {
+            return (int) $images[0];
+        }
+
+        // thumbnail
+        if ($id = $this->thumbnailId()) {
+            return $id;
+        }
+
+        // raw body content
+        $content = $this->content();
+        $images = Image::findWpImages($content);
+        if (count($images)) {
+            return (int) $images[0];
+        }
+
+        return 0;
+    }
+
+    // looks for a very generic ACF flex field called 'modules'
+    protected function modulesImages(): array
+    {
+        if (empty($this->modules)) {
+            return [];
+        }
+        $images = [];
+
+        foreach ($this->modules as $module) {
+
+            if (is_int($module['image'])) {
+                $images[] = $module['image'];
+            }
+
+            if (is_iterable($module['images'])) {
+                foreach ($module['images'] as $image) {
+
+                    if (is_int($image)) {
+                        $images[] = $image;
+                    } elseif (
+                        !empty($images['image'])
+                        && is_int($images['image'])
+                    ) {
+                        $images[] = $image;
+                    }
+                }
+            }
+        }
+        return array_map('intval', $images);
     }
 }
