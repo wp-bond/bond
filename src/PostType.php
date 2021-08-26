@@ -3,6 +3,7 @@
 namespace Bond;
 
 use Bond\Fields\Acf\FieldGroup;
+use Bond\Settings\Admin;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use Bond\Utils\Query;
@@ -127,5 +128,20 @@ abstract class PostType
     public static function all(array $params = []): Posts
     {
         return Query::all(static::$post_type, $params);
+    }
+
+    protected static function hideTitle()
+    {
+        Admin::hideTitle(static::$post_type);
+    }
+
+    protected static function setColumns(array $columns)
+    {
+        Admin::setColumns(static::$post_type, $columns);
+    }
+
+    protected static function addColumnHandler(string $name, callable $handler)
+    {
+        Admin::addColumnHandler($name, $handler);
     }
 }

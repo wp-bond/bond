@@ -273,7 +273,7 @@ class Admin
         );
     }
 
-    public static function addColumnHandler($name, callable $handler)
+    public static function addColumnHandler(string $name, callable $handler)
     {
         // only needed on admin
         if (!Wp::isAdmin()) {
@@ -368,7 +368,7 @@ class Admin
         );
     }
 
-    public static function addTaxonomyColumnHandler($name, callable $handler)
+    public static function addTaxonomyColumnHandler(string $name, callable $handler)
     {
         // only needed on admin
         if (!Wp::isAdmin()) {
@@ -407,7 +407,7 @@ class Admin
         );
     }
 
-    public static function addUsersColumnHandler($name, callable $handler)
+    public static function addUsersColumnHandler(string $name, callable $handler)
     {
         // only needed on admin
         if (!Wp::isAdmin()) {

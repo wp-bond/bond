@@ -3,6 +3,7 @@
 namespace Bond;
 
 use Bond\Fields\Acf\FieldGroup;
+use Bond\Settings\Admin;
 use Bond\Utils\Link;
 use Bond\Utils\Query;
 use Bond\Utils\Register;
@@ -71,5 +72,16 @@ abstract class Taxonomy
     public static function all(array $params = []): Terms
     {
         return Query::allTerms(static::$taxonomy, $params);
+    }
+
+
+    protected static function setColumns(array $columns)
+    {
+        Admin::setTaxonomyColumns(static::$taxonomy, $columns);
+    }
+
+    protected static function addColumnHandler(string $name, callable $handler)
+    {
+        Admin::addTaxonomyColumnHandler($name, $handler);
     }
 }
