@@ -2,6 +2,7 @@
 
 namespace Bond\Utils;
 
+use Bond\Attachment;
 use Bond\Post;
 use Bond\Posts;
 use Bond\PostType;
@@ -18,7 +19,9 @@ use WP_User;
 class Cast
 {
     protected static bool $has_loaded_classes = false;
-    protected static array $posts = [];
+    protected static array $posts = [
+        'attachment' => Attachment::class,
+    ];
     protected static array $post_types = [];
     protected static array $terms = [];
     protected static array $taxonomies = [];
