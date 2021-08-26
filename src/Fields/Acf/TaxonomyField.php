@@ -7,6 +7,7 @@ class TaxonomyField extends Field
     protected string $type = 'taxonomy';
     public bool $load_terms = true;
     public bool $save_terms = true;
+    public string $return_format = 'id';
 
     public function taxonomy(string $taxonomy): self
     {
