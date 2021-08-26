@@ -5,6 +5,7 @@ namespace Bond\Settings;
 use Bond\Post;
 use Bond\Support\Fluent;
 use Bond\Utils\Cast;
+use Bond\Utils\Image;
 use Bond\Utils\Str;
 
 class Admin
@@ -302,11 +303,50 @@ class Admin
         $val = (array)$item->{$column};
 
         foreach ($val as $v) {
+
+
+            if ($item instanceof Post) {
+
+                // content
+                if ($column === 'content') {
+                    $content = $item->content();
+
+                    $values[] = '<a href="' . get_edit_post_link($item->ID) . '">'
+                        . ($content ? Str::clean($content, 20) : '—')
+                        . '</a>';
+                    continue;
+                }
+
+                // image
+                if ($column === 'image') {
+                    $image_id = $item->imageId();
+
+                    if ($image_id) {
+                        $values[] = '<a href="' . get_edit_post_link($item->ID) . '">'
+                            . Image::imageTag($image_id)
+                            . '</a>';
+                        continue;
+                    }
+                }
+            }
+
+
+            if (
+                $column === 'caption'
+                && method_exists($item, 'caption')
+            ) {
+                $values[] = $item->caption();
+                continue;
+            }
+
+            // urls
             if (Str::isUrl($v)) {
                 $values[] = '<a href="' . $v . '" target="_blank" rel="noopener">' . $v . '</a>';
-            } else {
-                $values[] = $v;
+                continue;
             }
+
+            // else just add the value
+            $values[] = $v === '' ? '—' : $v;
         }
 
         return implode(', ', $values);
