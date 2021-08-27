@@ -84,4 +84,9 @@ abstract class Taxonomy
     {
         Admin::addTaxonomyColumnHandler($name, $handler);
     }
+
+    protected static function setDefaultFields(array $fields)
+    {
+        Admin::setTaxonomyFields(static::$taxonomy, $fields);
+    }
 }
