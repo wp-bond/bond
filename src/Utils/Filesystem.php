@@ -2,6 +2,7 @@
 
 namespace Bond\Utils;
 
+use Exception;
 use FilesystemIterator;
 
 /**
@@ -82,9 +83,13 @@ class Filesystem
                     @unlink($item->getPathname());
                 }
             }
+            unset($items);
 
             // remove the directory itself
-            @rmdir($path);
+            // @rmdir($path);
+            // TODO it is erroring out, shoudld be a race condition
+            // see https://stackoverflow.com/questions/11513488/php-mkdir-not-working-after-rmdir
+
         } else {
             @unlink($path);
         }
