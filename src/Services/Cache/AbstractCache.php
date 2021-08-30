@@ -21,7 +21,7 @@ abstract class AbstractCache implements CacheInterface
         $this->ttl(app()->isDevelopment() ? 0 : 60);
 
         // clear cache on switch theme
-        add_action('switch_theme', [$this, 'clear']);
+        \add_action('switch_theme', [$this, 'clear']);
     }
 
     public function enabled(?bool $value = null): bool

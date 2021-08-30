@@ -310,8 +310,7 @@ class Fluent implements
         return $this->mapKeys([Str::class, 'snake']);
     }
 
-    // TODO, when we are php8 add :static return type
-    public function only(array $keys)
+    public function only(array $keys): static
     {
         return new static(Arr::only($this->all(), $keys));
     }
