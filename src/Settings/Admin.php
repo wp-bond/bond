@@ -299,49 +299,49 @@ class Admin
 
     protected static function defaultColumnOutput(Fluent $item, string $column): string
     {
-        $values = [];
-        $val = (array)$item->{$column};
+        if ($item instanceof Post) {
 
-        foreach ($val as $v) {
+            // content
+            if ($column === 'content') {
+                $content = $item->content();
 
+                return '<a href="' . get_edit_post_link($item->ID) . '">'
+                    . ($content ? Str::clean($content, 20) : '—')
+                    . '</a>';
+            }
 
-            if ($item instanceof Post) {
+            // image
+            if ($column === 'image') {
+                $image_id = $item->imageId();
 
-                // content
-                if ($column === 'content') {
-                    $content = $item->content();
-
-                    $values[] = '<a href="' . get_edit_post_link($item->ID) . '">'
-                        . ($content ? Str::clean($content, 20) : '—')
+                if ($image_id) {
+                    return '<a href="' . get_edit_post_link($item->ID) . '">'
+                        . Image::imageTag($image_id)
                         . '</a>';
-                    continue;
-                }
-
-                // image
-                if ($column === 'image') {
-                    $image_id = $item->imageId();
-
-                    if ($image_id) {
-                        $values[] = '<a href="' . get_edit_post_link($item->ID) . '">'
-                            . Image::imageTag($image_id)
-                            . '</a>';
-                        continue;
-                    }
                 }
             }
+        }
 
+        // boolean
+        if (strpos($column, 'is_') === 0) {
+            return '<div class="bond-boolean-icon ' . ($item[$column] ? 'green' : '') . '"></div>';
+        }
 
-            if (
-                $column === 'caption'
-                && method_exists($item, 'caption')
-            ) {
-                $values[] = $item->caption();
-                continue;
-            }
+        // caption method
+        if (
+            $column === 'caption'
+            && method_exists($item, 'caption')
+        ) {
+            return $item->caption();
+        }
 
+        // handle by value
+        $values = [];
+
+        foreach ((array) $item[$column] as $v) {
             // urls
             if (Str::isUrl($v)) {
-                $values[] = '<a href="' . $v . '" target="_blank" rel="noopener">' . $v . '</a>';
+                $values[] = '<a href="' . $v . '" target="_blank" rel="noopener noreferrer">' . $v . '</a>';
                 continue;
             }
 

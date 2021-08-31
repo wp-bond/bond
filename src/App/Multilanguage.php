@@ -703,7 +703,7 @@ class Multilanguage
                             return;
                         }
 
-                        echo '<a href="' . $link . '" target="_blank" rel="noopener" class="bond-link-arrow">↗</a>';
+                        echo '<a href="' . $link . '" target="_blank" rel="noopener noreferrer" class="bond-link-arrow">↗</a>';
                     }
                 );
             }
