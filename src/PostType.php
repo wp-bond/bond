@@ -130,6 +130,17 @@ abstract class PostType
         return Query::all(static::$post_type, $params);
     }
 
+    public static function terms(
+        string|array $taxonomy,
+        array $params = []
+    ): Terms {
+        return Query::termsOfPostType(
+            $taxonomy,
+            static::$post_type,
+            $params
+        );
+    }
+
     protected static function hideTitle()
     {
         Admin::hideTitle(static::$post_type);
@@ -143,5 +154,10 @@ abstract class PostType
     protected static function addColumnHandler(string $name, callable $handler)
     {
         Admin::addColumnHandler($name, $handler);
+    }
+
+    protected static function setSideMenuParams(array $params)
+    {
+        Admin::setSideMenuParams(static::$post_type, $params);
     }
 }
