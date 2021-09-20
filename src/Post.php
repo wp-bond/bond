@@ -90,7 +90,12 @@ class Post extends Fluent
     protected function init($values)
     {
         if (empty($values)) {
-            return;
+            // auto load if possible
+            if (isset($this->post_name)) {
+                $values = $this->post_name;
+            } else {
+                return;
+            }
         }
 
         // if is numeric we'll fetch the WP_Post and load fields
@@ -157,6 +162,8 @@ class Post extends Fluent
         return Query::postTypeName($this->post_type, $singular, $language);
     }
 
+    // TODO maybe use __call for all methods like this?
+    // for example I have subtitle in my project, and it could be better fit to use a method instead?
     public function title(string $language = null): string
     {
         if ($this->isMultilanguage()) {
