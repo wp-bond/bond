@@ -4,6 +4,7 @@ namespace Bond\Utils;
 
 class OEmbed
 {
+    private static array $tempArgs = [];
 
     public static function html($url, array $args = null): string
     {
@@ -20,23 +21,32 @@ class OEmbed
             return null;
         }
 
-        $fn = function () use ($url, $args) {
-            // seens to not need anymore
-            // require_once ABSPATH . WPINC . '/class-wp-oembed.php';
-
-            $res = \_wp_oembed_get_object()->get_data($url, $args);
-
-            return $res ? get_object_vars($res) : null;
-        };
-
         return cache()->remember(
             'bond/oembed/' . md5($url . Str::kebab($args)),
-            $fn,
-            cache()->ttl() === 0 ? 120 : null
-            // we set a minimun TTL even if disabled
+            function () use ($url, $args) {
+                // seens to not need anymore
+                // require_once ABSPATH . WPINC . '/class-wp-oembed.php';
+
+                add_filter('oembed_fetch_url', [self::class, 'addArgs']);
+                if (!empty($args)) {
+                    self::$tempArgs = $args;
+                }
+
+                $res = \_wp_oembed_get_object()->get_data($url, $args);
+
+                self::$tempArgs = [];
+
+                return $res ? get_object_vars($res) : null;
+            }
         );
     }
 
+    public static function addArgs(string $provider): string
+    {
+        return empty(self::$tempArgs)
+            ? $provider
+            : add_query_arg(self::$tempArgs, $provider);
+    }
 
     public static function downloadImage(string $url, int $post_id = 0): int
     {
