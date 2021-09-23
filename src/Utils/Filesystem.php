@@ -71,14 +71,15 @@ class Filesystem
             foreach ($items as $item) {
 
                 // skip hidden
-                if (strpos($item->getFilename(), '.') === 0) {
-                    continue;
-                }
+                // if (strpos($item->getFilename(), '.') === 0) {
+                //     continue;
+                // }
 
                 // recurse if found another directory
                 // delete if found a file
                 if ($item->isDir() && !$item->isLink()) {
                     static::delete($item->getPathname());
+                    // @rmdir($item->getPathname());
                 } else {
                     @unlink($item->getPathname());
                 }
@@ -89,6 +90,8 @@ class Filesystem
             // @rmdir($path);
             // TODO it is erroring out, shoudld be a race condition
             // see https://stackoverflow.com/questions/11513488/php-mkdir-not-working-after-rmdir
+
+            // also should be an error with ::put LOCK_EX
 
         } else {
             @unlink($path);
