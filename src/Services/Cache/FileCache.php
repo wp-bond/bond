@@ -94,7 +94,8 @@ class FileCache extends AbstractCache
         $value = $this->value($value);
 
         // store
-        return Filesystem::put($path, serialize($value));
+        Filesystem::put($path, serialize($value));
+        return true;
 
         // ttl is not used on file cache
         // other providers may
