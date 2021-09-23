@@ -27,9 +27,8 @@ class Cast
     protected static array $taxonomies = [];
     protected static array $users = [];
 
-    // TODO MAYBE move cast into app() ? to have separate apps, handling differently the casting
-    // at least consider that currently app is hard coded to load App namespace classes, whereas this Cast class is not
-    // maybe move all as App?
+    // TODO allow to choose the default class prefix App
+    // consider the same change on App class
 
     protected static function loadClasses()
     {
@@ -40,11 +39,19 @@ class Cast
 
         foreach (get_declared_classes() as $_class) {
 
+            // allow only classes that starts with App
+            if (!str_starts_with($_class, 'App\\')) {
+                continue;
+            }
+
             // posts
             if (is_subclass_of($_class, Post::class)) {
+
                 $_post = new $_class();
 
                 if (isset($_post->post_type)) {
+
+
                     if (isset($_post->post_name)) {
                         static::$posts[$_post->post_type . '/' . $_post->post_name] = $_class;
                         //
