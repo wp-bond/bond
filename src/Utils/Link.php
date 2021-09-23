@@ -171,15 +171,16 @@ class Link
         // hierarchical (pages)
         if (\is_post_type_hierarchical($post->post_type)) {
 
+            // testing here, this should be disabled:
             // if is not multilanguage, let WP handle
-            if (!Language::isMultilanguage()) {
-                // TODO check a way to get the full URI here, without the need to return
-                return '';
-            }
+            // if (!Language::isMultilanguage()) {
+            //     // TODO check a way to get the full URI here, without the need to return
+            //     return '';
+            // }
 
             // if slug is home, consider front page
             if ($post->post_name === 'home') {
-                return Language::urlPrefix($language_code);
+                return Language::urlPrefix($language_code) ?: '/';
             }
 
             // ACF slugs are considered to be fully qualified
