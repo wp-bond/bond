@@ -82,175 +82,178 @@ trait HasSubFields
     //             });
     //     });
 
-    private function _addField(Field $field)
+    private function _addField(Field $field, string $label = null)
     {
+        if ($label) {
+            $field->label($label);
+        }
         $this->addField($field);
         return $field;
     }
 
-    public function field(string $name): Field
+    public function field(string $name, string $label = null): Field
     {
-        return $this->_addField(new Field($name));
+        return $this->_addField(new Field($name), $label);
     }
 
     // Basic
 
-    public function textField(string $name): TextField
+    public function textField(string $name, string $label = null): TextField
     {
-        return $this->_addField(new TextField($name));
+        return $this->_addField(new TextField($name), $label);
     }
 
-    public function textAreaField($name): TextAreaField
+    public function textAreaField($name, string $label = null): TextAreaField
     {
-        return $this->_addField(new TextAreaField($name));
+        return $this->_addField(new TextAreaField($name), $label);
     }
 
-    public function numberField($name): NumberField
+    public function numberField($name, string $label = null): NumberField
     {
-        return $this->_addField(new NumberField($name));
+        return $this->_addField(new NumberField($name), $label);
     }
 
-    public function emailField($name): EmailField
+    public function emailField($name, string $label = null): EmailField
     {
-        return $this->_addField(new EmailField($name));
+        return $this->_addField(new EmailField($name), $label);
     }
 
-    public function urlField($name): UrlField
+    public function urlField($name, string $label = null): UrlField
     {
-        return $this->_addField(new UrlField($name));
+        return $this->_addField(new UrlField($name), $label);
     }
 
-    public function passwordField($name): PasswordField
+    public function passwordField($name, string $label = null): PasswordField
     {
-        return $this->_addField(new PasswordField($name));
+        return $this->_addField(new PasswordField($name), $label);
     }
 
-    public function messageField($name): MessageField
+    public function messageField($name, string $label = null): MessageField
     {
-        return $this->_addField(new MessageField($name));
+        return $this->_addField(new MessageField($name), $label);
     }
 
-    public function tabField($name): TabField
+    public function tabField($name, string $label = null): TabField
     {
-        return $this->_addField(new TabField($name));
+        return $this->_addField(new TabField($name), $label);
     }
 
-    public function rangeField($name): RangeField
+    public function rangeField($name, string $label = null): RangeField
     {
-        return $this->_addField(new RangeField($name));
+        return $this->_addField(new RangeField($name), $label);
     }
 
 
     // Choice
 
-    public function booleanField($name): BooleanField
+    public function booleanField($name, string $label = null): BooleanField
     {
-        return $this->_addField(new BooleanField($name));
+        return $this->_addField(new BooleanField($name), $label);
     }
 
-    public function radioField($name): RadioField
+    public function radioField($name, string $label = null): RadioField
     {
-        return $this->_addField(new RadioField($name));
+        return $this->_addField(new RadioField($name), $label);
     }
 
-    public function checkboxField($name): CheckboxField
+    public function checkboxField($name, string $label = null): CheckboxField
     {
-        return $this->_addField(new CheckboxField($name));
+        return $this->_addField(new CheckboxField($name), $label);
     }
 
-    public function selectField($name): SelectField
+    public function selectField($name, string $label = null): SelectField
     {
-        return $this->_addField(new SelectField($name));
+        return $this->_addField(new SelectField($name), $label);
     }
 
 
 
     // Content
 
-    public function wysiwygField($name): WysiwygField
+    public function wysiwygField($name, string $label = null): WysiwygField
     {
-        return $this->_addField(new WysiwygField($name));
+        return $this->_addField(new WysiwygField($name), $label);
     }
 
-    public function imageField($name): ImageField
+    public function imageField($name, string $label = null): ImageField
     {
-        return $this->_addField(new ImageField($name));
+        return $this->_addField(new ImageField($name), $label);
     }
 
-    public function fileField($name): FileField
+    public function fileField($name, string $label = null): FileField
     {
-        return $this->_addField(new FileField($name));
+        return $this->_addField(new FileField($name), $label);
     }
 
-    public function galleryField($name): GalleryField
+    public function galleryField($name, string $label = null): GalleryField
     {
-        return $this->_addField(new GalleryField($name));
+        return $this->_addField(new GalleryField($name), $label);
     }
 
-    public function oEmbedField($name): OEmbedField
+    public function oEmbedField($name, string $label = null): OEmbedField
     {
-        return $this->_addField(new OEmbedField($name));
+        return $this->_addField(new OEmbedField($name), $label);
     }
 
     // Relational
 
-    public function postObjectField($name): PostObjectField
+    public function postObjectField($name, string $label = null): PostObjectField
     {
-        return $this->_addField(new PostObjectField($name));
+        return $this->_addField(new PostObjectField($name), $label);
     }
 
-    public function relationshipField($name): RelationshipField
+    public function relationshipField($name, string $label = null): RelationshipField
     {
-        return $this->_addField(new RelationshipField($name));
+        return $this->_addField(new RelationshipField($name), $label);
     }
 
-    public function taxonomyField($name): TaxonomyField
+    public function taxonomyField($name, string $label = null): TaxonomyField
     {
-        return $this->_addField(new TaxonomyField($name));
+        return $this->_addField(new TaxonomyField($name), $label);
     }
 
 
     // Dynamic
 
-    public function dateField($name): DateField
+    public function dateField($name, string $label = null): DateField
     {
-        return $this->_addField(new DateField($name));
+        return $this->_addField(new DateField($name), $label);
     }
 
-    public function dateTimeField($name): DateTimeField
+    public function dateTimeField($name, string $label = null): DateTimeField
     {
-        return $this->_addField(new DateTimeField($name));
+        return $this->_addField(new DateTimeField($name), $label);
     }
 
-    public function timeField($name): TimeField
+    public function timeField($name, string $label = null): TimeField
     {
-        return $this->_addField(new TimeField($name));
+        return $this->_addField(new TimeField($name), $label);
     }
 
-    public function colorField($name): ColorField
+    public function colorField($name, string $label = null): ColorField
     {
-        return $this->_addField(new ColorField($name));
+        return $this->_addField(new ColorField($name), $label);
     }
 
-    public function googleMapField($name): GoogleMapField
+    public function googleMapField($name, string $label = null): GoogleMapField
     {
-        return $this->_addField(new GoogleMapField($name));
+        return $this->_addField(new GoogleMapField($name), $label);
     }
 
     // Layout
 
-    public function groupField($name): GroupField
+    public function groupField($name, string $label = null): GroupField
     {
-        return $this->_addField(new GroupField($name));
+        return $this->_addField(new GroupField($name), $label);
     }
 
-    public function repeaterField($name): RepeaterField
+    public function repeaterField($name, string $label = null): RepeaterField
     {
-        return $this->_addField(new RepeaterField($name));
+        return $this->_addField(new RepeaterField($name), $label);
     }
 
-    public function flexibleContentField($name): FlexibleContentField
+    public function flexibleContentField($name, string $label = null): FlexibleContentField
     {
-        return $this->_addField(new FlexibleContentField($name));
+        return $this->_addField(new FlexibleContentField($name), $label);
     }
 }

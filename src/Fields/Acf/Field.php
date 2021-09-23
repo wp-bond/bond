@@ -21,6 +21,7 @@ use Bond\Utils\Str;
 class Field implements ArrayAccess
 {
     protected string $type;
+    public string $label;
     private bool $is_multilanguage = false;
     private array $multilanguage_options;
 
@@ -95,6 +96,11 @@ class Field implements ArrayAccess
         return $this;
     }
 
+    public function default($value): self
+    {
+        return $this->defaultValue($value);
+    }
+
     public function required(bool $required = true): self
     {
         $this->required = $required;
@@ -120,8 +126,12 @@ class Field implements ArrayAccess
     public function toArray(): array
     {
         $values = Obj::toArray($this, true);
+
         if (isset($this->type)) {
             $values['type'] = $this->type;
+        }
+        if (!isset($values['label'])) {
+            $values['label'] = Str::title($values['name'], true);
         }
 
         // recurse on sub fields
@@ -155,6 +165,7 @@ class Field implements ArrayAccess
         $instructions_only_on_first = !empty($this->multilanguage_options['instructions_only_on_first']);
 
         $fields = [];
+
 
         foreach (Language::codes() as $code) {
 
