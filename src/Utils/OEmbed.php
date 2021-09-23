@@ -34,6 +34,17 @@ class OEmbed
 
                 $res = \_wp_oembed_get_object()->get_data($url, $args);
 
+                if (
+                    !empty($args)
+                    && $res?->provider_name === 'YouTube'
+                ) {
+                    $res->html = str_replace(
+                        '?feature=oembed',
+                        static::addArgs('?feature=oembed'),
+                        $res->html
+                    );
+                }
+
                 self::$tempArgs = [];
 
                 return $res ? get_object_vars($res) : null;
