@@ -84,7 +84,7 @@ trait HasSubFields
 
     private function _addField(Field $field, string $label = null)
     {
-        if ($label) {
+        if ($label !== null) {
             $field->label($label);
         }
         $this->addField($field);
