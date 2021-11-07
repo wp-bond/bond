@@ -295,10 +295,12 @@ class Query
 
 
 
-    public static function pageChildren($page_id, array $params = []): ?Posts
+    // TODO could create a Cast::pageId where we would consider the string as slug, and try to fetch it by Query::id
+    // could update Cast::postId to include a second porameter (post_type)
+    public static function pageChildren($page_id, array $params = []): Posts
     {
         if (empty($page_id)) {
-            return null;
+            return new Posts();
         }
 
         $query_args = [

@@ -13,6 +13,7 @@ use Bond\Utils\Str;
 // TODO change to non static now we can rely on app container
 // it's better as we can use the constructor and it's more flexible
 
+// TODO could allow page_template to make field registration easier, but review the Cast before doing so
 abstract class PostType
 {
     public static string $post_type;
