@@ -294,7 +294,6 @@ class Query
     }
 
 
-
     // TODO could create a Cast::pageId where we would consider the string as slug, and try to fetch it by Query::id
     // could update Cast::postId to include a second porameter (post_type)
     public static function pageChildren($page_id, array $params = []): Posts
@@ -534,6 +533,8 @@ class Query
 
 
 
+
+
     /**
      * Note: Beware when trying to read the post type name before it is registered, usually at the init action.
      */
@@ -669,5 +670,39 @@ class Query
         $key = cache()->keyHash('bond/query/' . $prefix, $params);
 
         return cache()->remember($key, $fn);
+    }
+
+
+    public static function formatTaxQuery($terms, $or = true): array
+    {
+        if (empty($terms)) {
+            return [];
+        }
+        if (!is_iterable($terms)) {
+            $terms = [$terms];
+        }
+
+        $taxonomies = [];
+        foreach ($terms as $term) {
+            $term = Cast::term($term);
+            if (!$term) {
+                continue;
+            }
+            $taxonomies[$term->taxonomy][] = (int)$term->term_id;
+        }
+
+        $query = [];
+        foreach ($taxonomies as $taxonomy => $ids) {
+            $query[] = [
+                'taxonomy' => $taxonomy,
+                'terms' => $ids,
+            ];
+        }
+
+        if (count($query) > 1) {
+            $query['relation'] = $or ? 'OR' : 'AND';
+        }
+
+        return $query;
     }
 }

@@ -131,6 +131,16 @@ abstract class PostType
         return Query::all(static::$post_type, $params);
     }
 
+    public static function allOfTerms($terms, array $params = []): Posts
+    {
+        return self::all(array_merge(
+            $params,
+            [
+                'tax_query' => Query::formatTaxQuery($terms),
+            ]
+        ));
+    }
+
     public static function terms(
         string|array $taxonomy,
         array $params = []
