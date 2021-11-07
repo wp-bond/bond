@@ -229,6 +229,11 @@ class Post extends Fluent
         return Query::postTerms($this->ID, $taxonomy, $args);
     }
 
+    public function termsIds(string $taxonomy = null, array $args = []): array
+    {
+        return $this->terms($taxonomy, $args)->ids();
+    }
+
 
     public function thumbnailId(): int
     {
