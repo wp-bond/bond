@@ -40,7 +40,7 @@ class FluentList implements
         $item = Cast::fluent($item);
 
         if ($index === null) {
-            array_push($this->items, $item);
+            $this->items[] = $item;
         } else {
             array_splice($this->items, $index, 0, [$item]);
         }
@@ -56,6 +56,14 @@ class FluentList implements
                     $index++;
                 }
             }
+        }
+        return $this;
+    }
+
+    public function removeIndex(int $index): self
+    {
+        if ($index >= 0 && $index < count($this->items)) {
+            array_splice($this->items, $index, 1);
         }
         return $this;
     }

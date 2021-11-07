@@ -7,39 +7,10 @@ use Bond\Utils\Cast;
 
 class Posts extends FluentList
 {
-    public function set(array $posts): self
-    {
-        $this->items = [];
-        foreach ($posts as $post) {
-            if ($post = Cast::post($post)) {
-                $this->items[] = $post;
-            }
-        }
-        return $this;
-    }
-
-    public function add($post, $index = -1): self
+    public function add($post, ?int $index = null): self
     {
         if ($post = Cast::post($post)) {
-            array_splice($this->items, $index, 0, [$post]);
-        }
-        return $this;
-    }
-
-    public function addMany($posts, $index = -1): self
-    {
-        if (empty($posts)) {
-            return $this;
-        }
-
-        $all = [];
-        foreach ($posts as $post) {
-            if ($post = Cast::post($post)) {
-                $all[] = $post;
-            }
-        }
-        if (count($all)) {
-            array_splice($this->items, $index, 0, $all);
+            parent::add($post, $index);
         }
         return $this;
     }
@@ -79,5 +50,40 @@ class Posts extends FluentList
             $res[] = $item->slug($language);
         }
         return $res;
+    }
+
+    public function except($posts): self
+    {
+        $to_remove = Cast::postsIds($posts);
+
+        $this->items = array_filter(
+            $this->items,
+            function ($post) use ($to_remove) {
+                return !in_array($post->ID, $to_remove);
+            }
+        );
+        return $this;
+    }
+
+    public function onlyOfTerms(int|iterable $terms): self
+    {
+        $ids = Cast::termsIds($terms);
+
+        if (empty($ids)) {
+            return $this;
+        }
+
+        $this->items = array_filter(
+            $this->items,
+            function ($post) use ($ids) {
+                foreach ($post->termsIds() as $id) {
+                    if (in_array($id, $ids)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        );
+        return $this;
     }
 }
