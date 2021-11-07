@@ -33,7 +33,7 @@ class Html
     }
 
 
-    // add_theme_support( 'html5', array( 'comment-list', 'comment-form', 'search-form', 'gallery', 'caption' ) );
+
 
 
     // removes the <p> tags from the images and iframes

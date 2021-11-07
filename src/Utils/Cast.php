@@ -379,6 +379,21 @@ class Cast
         return (int) $post;
     }
 
+    public static function postsIds($posts): array
+    {
+        $result = [];
+        if (!empty($posts)) {
+            if (!is_iterable($posts)) {
+                $posts = [$posts];
+            }
+            foreach ($posts as $post) {
+                if ($post = self::postId($post)) {
+                    $result[] = $post;
+                }
+            }
+        }
+        return $result;
+    }
 
 
     // Post Types
@@ -514,6 +529,22 @@ class Cast
             return (int) ($term['term_id'] ?? 0);
         }
         return (int) $term;
+    }
+
+    public static function termsIds($terms): array
+    {
+        $result = [];
+        if (!empty($terms)) {
+            if (!is_iterable($terms)) {
+                $terms = [$terms];
+            }
+            foreach ($terms as $term) {
+                if ($term = self::termId($term)) {
+                    $result[] = $term;
+                }
+            }
+        }
+        return $result;
     }
 
 
