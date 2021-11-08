@@ -24,7 +24,7 @@ class Meta
 
     // values
     public array $title = [];
-    public string $description = '';
+    public ?string $description = '';
     public string $url = '';
     public array $images = []; // urls or ids
     public array $alternate = []; // associative by language code
