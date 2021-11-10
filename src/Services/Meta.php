@@ -28,6 +28,7 @@ class Meta
     public string $url = '';
     public array $images = []; // urls or ids
     public array $alternate = []; // associative by language code
+    public string $image_size = 'meta';
 
     // author
     public string $author;
@@ -60,11 +61,6 @@ class Meta
 
     protected function init()
     {
-        // required image size
-        Wp::addImageSizes([
-            'meta' => [2400, 2400],
-        ]);
-
         // add hooks
         \add_action('wp', [$this, 'setDefaults'], 2);
         \add_action('wp_head', [$this, 'printAllTags'], 99);
@@ -72,11 +68,15 @@ class Meta
 
     public function config(Fluent $settings)
     {
-        if (isset($settings['title_separator'])) {
-            $this->title_separator = $settings['title_separator'];
-        }
-        if (isset($settings['search_title'])) {
-            $this->search_title = $settings['search_title'];
+        $allowed = [
+            'title_separator',
+            'search_title',
+            'image_size',
+        ];
+        foreach ($allowed as $key) {
+            if (isset($settings[$key])) {
+                $this->$key = $settings[$key];
+            }
         }
     }
 
@@ -526,7 +526,7 @@ class Meta
     public function getImageInfo($id)
     {
         $id = (int) $id;
-        $img_src = Image::source($id, 'meta');
+        $img_src = Image::source($id, $this->image_size);
 
         if (!empty($img_src[0]) && !empty($img_src[1]) && !empty($img_src[2])) {
 
