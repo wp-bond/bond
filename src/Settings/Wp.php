@@ -65,7 +65,9 @@ class Wp
                 'medium_large',
                 'large',
             ])) {
-                $option_sizes[$size] = $values;
+                if (!empty($values)) {
+                    $option_sizes[$size] = $values;
+                }
                 continue;
             }
 
