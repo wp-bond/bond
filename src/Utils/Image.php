@@ -476,7 +476,7 @@ class Image
 
     public static function source(
         $image_id,
-        $size,
+        $size = null,
         $site_url = true
     ): ?array {
 
@@ -517,7 +517,7 @@ class Image
 
         // without site url
         if ($image && !$site_url) {
-            return str_replace(app()->url(), '', $image);
+            $image[0] = parse_url($image[0], PHP_URL_PATH);
         }
 
         return $image ?: null;
