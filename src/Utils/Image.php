@@ -545,7 +545,6 @@ class Image
     }
 
 
-
     /**
      *
      * @param int $image_id

@@ -4,6 +4,7 @@ namespace Bond;
 
 use Bond\Support\Fluent;
 use Bond\Utils\Image;
+use Bond\Utils\File;
 
 class Attachment extends Post
 {
@@ -23,6 +24,11 @@ class Attachment extends Post
     public function alt(): string
     {
         return Image::alt($this->ID);
+    }
+
+    public function meta(): ?array
+    {
+        return File::meta($this->ID);
     }
 
     public function pictureTag(

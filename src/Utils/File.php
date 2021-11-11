@@ -15,6 +15,15 @@ class File
             : '';
     }
 
+    public static function meta($id): ?array
+    {
+        $id = Cast::postId($id);
+        if (!$id) {
+            return null;
+        }
+        return \wp_get_attachment_metadata($id) ?: null;
+    }
+
     public static function extension($file_id): string
     {
         $local_file = \get_attached_file($file_id, true);
