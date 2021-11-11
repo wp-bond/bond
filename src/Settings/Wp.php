@@ -65,9 +65,6 @@ class Wp
                 'medium_large',
                 'large',
             ])) {
-                if (!empty($values)) {
-                    $option_sizes[$size] = $values;
-                }
                 continue;
             }
 
@@ -79,11 +76,19 @@ class Wp
         if (count($option_sizes)) {
             \add_action('after_setup_theme', function () use ($option_sizes) {
                 foreach ($option_sizes as $size => $values) {
-                    \update_option($size . '_size_w', $values[0]);
-                    \update_option($size . '_size_h', $values[1]);
-
+                    \update_option(
+                        $size . '_size_w',
+                        $values[0] ?? 0
+                    );
+                    \update_option(
+                        $size . '_size_h',
+                        $values[1] ?? 0
+                    );
                     if ($size === 'thumbnail') {
-                        \update_option($size . '_crop', !empty($values[2]) ? $values[2] : false);
+                        \update_option(
+                            $size . '_crop',
+                            !empty($values[2]) ? $values[2] : false
+                        );
                     }
                 }
             });
