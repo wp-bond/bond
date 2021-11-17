@@ -134,7 +134,19 @@ class Query
     }
 
 
-
+    public static function wpPostByPath(
+        string $path,
+        string|array $post_type = 'page'
+    ): ?WP_Post {
+        if (empty($path)) {
+            return null;
+        }
+        return \get_page_by_path(
+            $path,
+            'OBJECT',
+            (array) $post_type
+        );
+    }
 
     public static function count(
         $post_type,
@@ -203,20 +215,19 @@ class Query
         return static::cached($fn, 'ids', $query);
     }
 
-    /**
-     * @param string $page_path
-     * @param string $post_type
-     * @return int
-     */
-    public static function idByPath($page_path, $post_type = 'page'): int
-    {
-        $page = \get_page_by_path(basename(\untrailingslashit($page_path)), 'OBJECT', $post_type);
-
-        if ($page) {
-            return (int) $page->ID;
+    public static function idByPath(
+        string $path,
+        string|array $post_type = 'page'
+    ): int {
+        if (empty($path)) {
+            return 0;
         }
-
-        return 0;
+        $post = \get_page_by_path(
+            $path,
+            'OBJECT',
+            (array)$post_type
+        );
+        return $post ? (int) $post->ID : 0;
     }
 
     /**
