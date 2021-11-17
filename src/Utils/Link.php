@@ -171,10 +171,7 @@ class Link
         // hierarchical (pages)
         if (\is_post_type_hierarchical($post->post_type)) {
 
-            // testing here, this should be disabled:
-            // if is not multilanguage, let WP handle
             if (!Language::isMultilanguage()) {
-                // TODO check a way to get the full URI here, without the need to return
                 $paths = [$post->post_name];
 
                 $p = $post;

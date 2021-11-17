@@ -24,20 +24,16 @@ class OEmbed
         return cache()->remember(
             'bond/oembed/' . md5($url . Str::kebab($args)),
             function () use ($url, $args) {
-                // seens to not need anymore
-                // require_once ABSPATH . WPINC . '/class-wp-oembed.php';
 
                 add_filter('oembed_fetch_url', [self::class, 'addArgs']);
+
                 if (!empty($args)) {
                     self::$tempArgs = $args;
                 }
 
                 $res = \_wp_oembed_get_object()->get_data($url, $args);
 
-                if (
-                    !empty($args)
-                    && $res?->provider_name === 'YouTube'
-                ) {
+                if ($res && $res->provider_name === 'YouTube') {
                     $res->html = str_replace(
                         '?feature=oembed',
                         static::addArgs('?feature=oembed'),
