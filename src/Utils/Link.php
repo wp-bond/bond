@@ -173,10 +173,22 @@ class Link
 
             // testing here, this should be disabled:
             // if is not multilanguage, let WP handle
-            // if (!Language::isMultilanguage()) {
-            //     // TODO check a way to get the full URI here, without the need to return
-            //     return '';
-            // }
+            if (!Language::isMultilanguage()) {
+                // TODO check a way to get the full URI here, without the need to return
+                $paths = [$post->post_name];
+
+                $p = $post;
+                while ($p->post_parent) {
+                    $p = \get_post($p->post_parent);
+                    if ($p) {
+                        $paths[] = $p->post_name;
+                    } else {
+                        break;
+                    }
+                }
+
+                return '/' . implode('/', array_reverse($paths));
+            }
 
             // if slug is home, consider front page
             if ($post->post_name === 'home') {
