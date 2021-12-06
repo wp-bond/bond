@@ -228,48 +228,32 @@ class Field implements ArrayAccess
         return $this;
     }
 
-    /**
-     * @param string $key
-     * @return mixed
-     */
-    public function __get($key)
+    public function __get(string $key): mixed
     {
         return isset($this->{$key}) ? $this->{$key} : null;
     }
 
-    /**
-     * @param string $name
-     * @param mixed $value
-     */
-    public function __set($key, $value)
+    public function __set(string $key, mixed $value): void
     {
         $this->{$key} = $value;
     }
 
-    /**
-     * @param string $key
-     */
-    public function __unset($key)
+
+    public function __unset(string $key): void
     {
         $this->{$key} = null;
     }
 
-    /**
-     * @param string $key
-     * @return mixed
-     */
-    public function offsetGet($key)
+    public function offsetGet(mixed $key): mixed
     {
         return $this->{$key};
     }
 
     /**
-     * @param string $key
-     * @param mixed $value
      *
      * @throws \RuntimeException if trying to set values as indexed arrays at root level, i.e., $item[0] = 'myvalue';
      */
-    public function offsetSet($key, $value)
+    public function offsetSet(mixed $key, mixed $value): void
     {
         if (is_null($key) || is_numeric($key)) {
             throw new \RuntimeException('Indexed arrays not allowed at the root of ' . get_class($this) . ' objects.');
@@ -278,19 +262,12 @@ class Field implements ArrayAccess
         $this->{(string) $key} = $value;
     }
 
-    /**
-     * @param string $key
-     */
-    public function offsetUnset($key)
+    public function offsetUnset(mixed $key): void
     {
         $this->{$key} = null;
     }
 
-    /**
-     * @param string $key
-     * @return boolean
-     */
-    public function offsetExists($key)
+    public function offsetExists(mixed $key): bool
     {
         return isset($this->{$key});
     }

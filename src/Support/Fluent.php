@@ -133,7 +133,7 @@ class Fluent implements
         return $this->getByDot($key, $language_code);
     }
 
-    public function __get($key)
+    public function __get(string $key): mixed
     {
         if (is_null($key)) {
             return null;
@@ -156,7 +156,7 @@ class Fluent implements
         return $this->getByDot($key);
     }
 
-    private function getByDot($key, string $language_code = null)
+    private function getByDot(string $key, string $language_code = null): mixed
     {
         $target = $this;
         $keys = explode('.', $key);
@@ -196,27 +196,27 @@ class Fluent implements
         return Obj::localize($this, Language::getCurrent());
     }
 
-    public function __set($key, $value)
+    public function __set(string $key, mixed $value): void
     {
         $this->{$key} = Cast::fluent($value);
     }
 
-    public function __unset($key)
+    public function __unset(string $key): void
     {
         $this->{$key} = null;
     }
 
-    public function offsetGet($key)
+    public function offsetGet(mixed $key): mixed
     {
         return $this->__get($key);
     }
 
-    public function offsetSet($key, $value)
+    public function offsetSet(mixed $key, $value): void
     {
         $this->__set($key, $value);
     }
 
-    public function offsetUnset($key)
+    public function offsetUnset(mixed $key): void
     {
         unset($this->{$key});
     }
@@ -254,7 +254,7 @@ class Fluent implements
         return $this->all();
     }
 
-    public function __unserialize(array $values)
+    public function __unserialize(array $values): void
     {
         $this->add($values);
     }

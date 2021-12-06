@@ -125,28 +125,17 @@ class FluentList implements
         return new ArrayIterator($this->all());
     }
 
-    /**
-     * @param string $offset
-     * @return mixed
-     */
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
         return $this->items[$offset];
     }
 
-    /**
-     * @param string $offset
-     * @param mixed $value
-     */
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
         $this->items[$offset] = $value;
     }
 
-    /**
-     * @param string $offset
-     */
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset): void
     {
         $this->items[$offset] = null;
     }
@@ -176,7 +165,7 @@ class FluentList implements
         return $this->all();
     }
 
-    public function __unserialize(array $items)
+    public function __unserialize(array $items): void
     {
         $this->set($items);
     }
