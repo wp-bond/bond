@@ -50,22 +50,6 @@ class Meta
     public string $twitter_player_height;
 
 
-    public function __construct()
-    {
-        // do not initialize when it is on WP admin
-        // nor when programatically loading WP
-        if (Wp::isFrontEnd()) {
-            $this->init();
-        }
-    }
-
-    protected function init()
-    {
-        // add hooks
-        \add_action('wp', [$this, 'setDefaults'], 2);
-        \add_action('wp_head', [$this, 'printAllTags'], 99);
-    }
-
     public function config(Fluent $settings)
     {
         $allowed = [
@@ -78,7 +62,27 @@ class Meta
                 $this->$key = $settings[$key];
             }
         }
+        if ($settings->enabled) {
+            $this->enable();
+        }
     }
+
+    public function enable()
+    {
+        // do not enable when it is on WP admin
+        // nor when programatically loading WP
+        if (Wp::isFrontEnd()) {
+            \add_action('wp', [$this, 'setDefaults'], 2);
+            \add_action('wp_head', [$this, 'printAllTags'], 99);
+        }
+    }
+
+    public function disable()
+    {
+        \remove_action('wp', [$this, 'setDefaults'], 2);
+        \remove_action('wp_head', [$this, 'printAllTags'], 99);
+    }
+
 
     private function separator()
     {
