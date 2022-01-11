@@ -63,6 +63,11 @@ class Language
         return self::$languages;
     }
 
+    public static function count(): int
+    {
+        return count(self::$languages);
+    }
+
     public static function codes(): array
     {
         return array_keys(self::$languages);
