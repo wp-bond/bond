@@ -4,6 +4,7 @@ namespace Bond;
 
 use Bond\Support\Fluent;
 use Bond\Utils\Cast;
+use Bond\Utils\Link;
 use WP_User;
 
 class User extends Fluent
@@ -74,9 +75,8 @@ class User extends Fluent
         return null;
     }
 
-    // public function link(string $language_code = null): string
-    // {
-    //  TODO send to search with the slug or something
-    //     return Link::forUsers($this, $language_code);
-    // }
+    public function link(string $language = null): string
+    {
+        return Link::forUsers($this, $language);
+    }
 }

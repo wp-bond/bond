@@ -240,7 +240,6 @@ class Link
     }
 
 
-
     public static function forTerms(
         $term,
         string $language_code = null
@@ -273,5 +272,20 @@ class Link
         }
         return static::search($language_code)
             . '/?taxonomy=' . $taxonomy;
+    }
+
+
+    public static function forUsers(
+        $user,
+        string $language_code = null
+    ): string {
+
+        $user = Cast::user($user);
+        if (!$user) {
+            return '';
+        }
+
+        return static::search($language_code)
+            . '/?user=' . $user->user_nicename;
     }
 }
