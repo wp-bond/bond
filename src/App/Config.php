@@ -6,6 +6,7 @@ use Bond\Settings\Admin;
 use Bond\Settings\Api;
 use Bond\Settings\Html;
 use Bond\Settings\Language;
+use Bond\Settings\Sitemap;
 use Bond\Settings\Wp;
 use Bond\Support\Fluent;
 use Bond\Utils\Image;
@@ -26,6 +27,7 @@ class Config extends Fluent
     public Fluent $admin;
     public Fluent $html;
     public Fluent $api;
+    public Fluent $sitemap;
 
     public function __construct(App $container)
     {
@@ -43,14 +45,13 @@ class Config extends Fluent
                 'large' => [1024, 1024],
             ],
         ]);
-        $this->meta = new Fluent([
-            'enabled' => true,
-        ]);
+        $this->meta = new Fluent();
         $this->wp = new Fluent();
         $this->services = new Fluent();
         $this->admin = new Fluent();
         $this->html = new Fluent();
         $this->api = new Fluent();
+        $this->sitemap = new Fluent();
     }
 
     // Boot
@@ -64,7 +65,7 @@ class Config extends Fluent
             throw new Exception('Check your config path!');
         }
 
-        // Load Locale and Translation first, so the following already have the ability to translate strings
+        // Load Locale and Translation first, so the next ones already have the ability to translate strings
 
         foreach ([
             'language',
@@ -79,6 +80,7 @@ class Config extends Fluent
             'admin',
             'html',
             'api',
+            'sitemap',
         ] as $key) {
             $file = $path . DIRECTORY_SEPARATOR . $key . '.php';
 
@@ -89,8 +91,15 @@ class Config extends Fluent
                 ]);
             }
 
-            // setup
-            $this->{$key . 'Settings'}();
+            // config if not empty
+            if (!empty($this->$key)) {
+                if (method_exists($this, $key . 'Settings')) {
+                    $this->{$key . 'Settings'}();
+                } else {
+                    // auto config from container
+                    $this->container->get($key)->config($this->$key);
+                }
+            }
         }
     }
 
@@ -106,7 +115,7 @@ class Config extends Fluent
 
     protected function translationSettings()
     {
-        $translation = $this->container->get('translation');
+        $translation = $this->container->translation();
 
         if ($this->translation->written_language) {
             $translation->setWrittenLanguage($this->translation->written_language);
@@ -119,7 +128,7 @@ class Config extends Fluent
 
     protected function multilanguageSettings()
     {
-        $multilanguage = $this->container->get('multilanguage');
+        $multilanguage = $this->container->multilanguage();
 
         if ($this->multilanguage->post_types) {
             $multilanguage->postTypes($this->multilanguage->post_types);
@@ -191,7 +200,7 @@ class Config extends Fluent
     {
         // auto initialize Meta, registers WP hooks
         if ($this->meta->enabled && Wp::isFrontEnd()) {
-            $this->container->get('meta')->config($this->meta);
+            $this->container->meta()->config($this->meta);
         }
     }
 

@@ -8,6 +8,7 @@ use Bond\Services\Meta;
 use Bond\Services\Translation;
 use Bond\Services\Cache\CacheInterface;
 use Bond\Services\Cache\FileCache;
+use Bond\Services\Sitemap;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use Bond\Settings\Wp;
@@ -66,6 +67,7 @@ class App extends Container
         $this->addShared('translation', Translation::class);
         $this->addShared('multilanguage', Multilanguage::class);
         $this->addShared('cache', FileCache::class);
+        $this->addShared('sitemap', Sitemap::class);
 
         // Reflection fallback
         $this->delegate(new ReflectionContainer());
@@ -99,6 +101,11 @@ class App extends Container
     public function cache(): CacheInterface
     {
         return $this->get('cache');
+    }
+
+    public function sitemap(): Sitemap
+    {
+        return $this->get('sitemap');
     }
 
     public function bootstrap(string $base_path = null)
