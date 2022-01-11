@@ -157,18 +157,18 @@ abstract class PostType
         Admin::hideTitle(static::$post_type);
     }
 
+    protected static function setSideMenuParams(array $params)
+    {
+        Admin::setSideMenuParams(static::$post_type, $params);
+    }
+
     protected static function setColumns(array $columns)
     {
-        Admin::setColumns(static::$post_type, $columns);
+        app()->adminColumns()->setPostTypeColumns(static::$post_type, $columns);
     }
 
     protected static function addColumnHandler(string $name, callable $handler)
     {
-        Admin::addColumnHandler($name, $handler);
-    }
-
-    protected static function setSideMenuParams(array $params)
-    {
-        Admin::setSideMenuParams(static::$post_type, $params);
+        app()->adminColumns()->addHandler($name, $handler);
     }
 }

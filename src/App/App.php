@@ -3,6 +3,7 @@
 namespace Bond\App;
 
 use Bond\PostType;
+use Bond\Services\AdminColumns;
 use Bond\Taxonomy;
 use Bond\Services\Meta;
 use Bond\Services\Translation;
@@ -68,6 +69,7 @@ class App extends Container
         $this->addShared('multilanguage', Multilanguage::class);
         $this->addShared('cache', FileCache::class);
         $this->addShared('sitemap', Sitemap::class);
+        $this->addShared('admin_columns', AdminColumns::class);
 
         // Reflection fallback
         $this->delegate(new ReflectionContainer());
@@ -106,6 +108,11 @@ class App extends Container
     public function sitemap(): Sitemap
     {
         return $this->get('sitemap');
+    }
+
+    public function adminColumns(): AdminColumns
+    {
+        return $this->get('admin_columns');
     }
 
     public function bootstrap(string $base_path = null)

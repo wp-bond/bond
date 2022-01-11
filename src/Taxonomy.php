@@ -77,12 +77,12 @@ abstract class Taxonomy
 
     protected static function setColumns(array $columns)
     {
-        Admin::setTaxonomyColumns(static::$taxonomy, $columns);
+        app()->adminColumns()->setTaxonomyColumns(static::$taxonomy, $columns);
     }
 
     protected static function addColumnHandler(string $name, callable $handler)
     {
-        Admin::addTaxonomyColumnHandler($name, $handler);
+        app()->adminColumns()->addHandler($name, $handler);
     }
 
     protected static function setDefaultFields(array $fields)

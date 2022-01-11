@@ -27,7 +27,24 @@ class Config extends Fluent
     public Fluent $admin;
     public Fluent $html;
     public Fluent $api;
-    public Fluent $sitemap;
+
+    // leave Language and Translation first, so the next ones already have the ability to translate strings
+    protected array $configs = [
+        'language',
+        'translation',
+        'multilanguage',
+        'app',
+        'cache',
+        'image',
+        'meta',
+        'wp',
+        'services',
+        'admin',
+        'admin_columns',
+        'html',
+        'api',
+        'sitemap',
+    ];
 
     public function __construct(App $container)
     {
@@ -51,7 +68,6 @@ class Config extends Fluent
         $this->admin = new Fluent();
         $this->html = new Fluent();
         $this->api = new Fluent();
-        $this->sitemap = new Fluent();
     }
 
     // Boot
@@ -65,23 +81,8 @@ class Config extends Fluent
             throw new Exception('Check your config path!');
         }
 
-        // Load Locale and Translation first, so the next ones already have the ability to translate strings
-
-        foreach ([
-            'language',
-            'translation',
-            'multilanguage',
-            'app',
-            'cache',
-            'image',
-            'meta',
-            'wp',
-            'services',
-            'admin',
-            'html',
-            'api',
-            'sitemap',
-        ] as $key) {
+        // load config files
+        foreach ($this->configs as $key) {
             $file = $path . DIRECTORY_SEPARATOR . $key . '.php';
 
             // add values
@@ -223,9 +224,6 @@ class Config extends Fluent
 
         if ($this->wp->force_https) {
             Wp::forceHttps();
-        }
-        if ($this->wp->disable_sitemaps) {
-            Wp::disableSitemaps();
         }
     }
 
