@@ -524,7 +524,7 @@ class Multilanguage
         foreach ($codes as $code) {
             $suffix = Language::fieldsSuffix($code);
 
-            $slug = \get_field('slug' . $suffix, $post->ID);
+            $slug = (string)\get_field('slug' . $suffix, $post->ID);
 
             // remove parent pages
             if (strpos($slug, '/') !== false) {
