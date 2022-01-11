@@ -168,7 +168,7 @@ class Wp
 
             // \update_option('date_format', 'd/m/Y');
             \update_option('date_format', 'Y-m-d');
-            \update_option('time_format', 'G:i');
+            \update_option('time_format', 'H:i');
             \update_option('timezone_string', config('app.timezone'));
             \update_option('start_of_week', 1); //monday
 
