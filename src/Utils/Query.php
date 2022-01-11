@@ -276,21 +276,22 @@ class Query
 
 
     /**
-     * Striped out version of WP get_lastpostmodified to query non-public post types.
-     *
-     * @param string|array $post_types
-     * @return string
+     * Allows to query non-public post types.
      */
-    public static function lastModified($post_types): Carbon
+    public static function lastModified(string|array $post_types): Carbon
     {
-        global $wpdb;
+        $fn = function () use ($post_types) {
+            global $wpdb;
 
-        $post_types = "'" . implode("', '", (array) $post_types) . "'";
-        $add_seconds_server = date('Z');
+            $post_types = "'" . implode("', '", (array) $post_types) . "'";
+            $add_seconds_server = date('Z');
 
-        $date = $wpdb->get_var("SELECT DATE_ADD(post_modified_gmt, INTERVAL '$add_seconds_server' SECOND) FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ({$post_types}) ORDER BY post_modified_gmt DESC LIMIT 1");
+            $date = $wpdb->get_var("SELECT DATE_ADD(post_modified_gmt, INTERVAL '$add_seconds_server' SECOND) FROM $wpdb->posts WHERE post_status = 'publish' AND post_type IN ({$post_types}) ORDER BY post_modified_gmt DESC LIMIT 1");
 
-        return new Carbon($date, 'GMT');
+            return new Carbon($date, 'GMT');
+        };
+
+        return static::cached($fn, 'last-modified', $post_types);
     }
 
     /**
@@ -676,7 +677,7 @@ class Query
 
 
 
-    protected static function cached(callable $fn, string $prefix,  $params)
+    protected static function cached(callable $fn, string $prefix, string|array $params)
     {
         $key = cache()->keyHash('bond/query/' . $prefix, $params);
 
