@@ -79,16 +79,37 @@ class Admin
         });
     }
 
+
+    public static function addColorScheme()
+    {
+        // don't even add the hook if not on admin
+        if (!Wp::isAdmin()) {
+            return;
+        }
+
+        \add_action('admin_head', function () {
+            $vite = vite()
+                ->basePath(__DIR__ . '/../../assets')
+                ->port(2342)
+                ->entry('admin-color-scheme.js')
+                ->outDir('dist/admin-color-scheme');
+
+            // allows HMR if Vite is running
+            echo $vite->isRunning() ? $vite : $vite->inline();
+        });
+    }
+
+
     public static function addAdminCss()
     {
-        // only needed on admin
+        // don't even add the hook if not on admin
         if (!Wp::isAdmin()) {
             return;
         }
 
         \add_action('admin_head', function () {
             echo vite()
-                ->port(3001)
+                ->port(3001) // TODO we can allow config later
                 ->entry('wp/admin.js')
                 ->outDir('dist-wp-admin');
         });

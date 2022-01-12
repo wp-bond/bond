@@ -243,6 +243,8 @@ class Config extends Fluent
 
     protected function adminSettings()
     {
+        // TODO, pass all these into a Admin::config method
+
         if ($this->admin->add_login_css) {
             Admin::addLoginCss();
         }
@@ -251,6 +253,9 @@ class Config extends Fluent
         }
         if ($this->admin->add_editor_css) {
             Admin::addEditorCss();
+        }
+        if ($this->admin->add_color_scheme) {
+            Admin::addColorScheme();
         }
         if ($this->admin->disable_admin_color_picker) {
             Admin::disableAdminColorPicker();

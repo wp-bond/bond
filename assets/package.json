@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "scripts": {
+    "dev-color-scheme": "vite --config vite.config.color-scheme.js",
+    "build-color-scheme": "vite build --config vite.config.color-scheme.js",
+    "upgrade": "pnpm dlx npm-check-updates -u && pnpm install"
+  },
+  "devDependencies": {
+    "sass": "^1.47.0",
+    "vite": "^2.7.10",
+    "vite-plugin-live-reload": "^2.1.0"
+  }
+}

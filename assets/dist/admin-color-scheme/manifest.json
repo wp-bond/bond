@@ -1,0 +1,10 @@
+{
+  "admin-color-scheme.js": {
+    "file": "assets/admin-color-scheme.c376a249.js",
+    "src": "admin-color-scheme.js",
+    "isEntry": true,
+    "css": [
+      "assets/admin-color-scheme.49101743.css"
+    ]
+  }
+}
