@@ -23,7 +23,15 @@ class Vite
     protected int $port = 3000;
     protected string $entry = 'main.js';
     protected string $out_dir = 'dist';
+    protected string $base_url = '';
+    protected string $base_path = '';
+    protected bool $server_is_running;
 
+    public function __construct()
+    {
+        $this->base_url = app()->themeDir();
+        $this->base_path = app()->themePath();
+    }
 
     public function __toString(): string
     {
@@ -33,6 +41,23 @@ class Vite
             . $this->cssTag();
     }
 
+    public function inline(): string
+    {
+        return $this->inlineCss()
+            . $this->inlineJs();
+    }
+
+    public function baseUrl(string $url): self
+    {
+        $this->base_url = $url;
+        return $this;
+    }
+
+    public function basePath(string $path): self
+    {
+        $this->base_path = $path;
+        return $this;
+    }
 
     public function entry(string $entry): self
     {
@@ -63,39 +88,72 @@ class Vite
         return $this->assetUrl($this->entry);
     }
 
+    public function jsPath(): string
+    {
+        return $this->assetPath($this->entry);
+    }
+
     public function cssUrls(): array
     {
         return $this->assetsUrls($this->entry, 'css');
     }
 
+    public function cssPaths(): array
+    {
+        return $this->assetsPaths($this->entry, 'css');
+    }
+
     public function assetUrl(string $entry): string
     {
-        $manifest = $this->manifest();
+        $path = $this->asset($entry);
+        return $path
+            ? $this->base_url . '/' . $this->out_dir . '/' . $path
+            : '';
+    }
 
-        if (!isset($manifest[$entry])) {
-            return '';
-        }
-
-        return app()->themeDir()
-            . '/' . $this->out_dir
-            . '/' . ($manifest[$entry]['file']);
+    public function assetPath(string $entry): string
+    {
+        $path = $this->asset($entry);
+        return $path
+            ? $this->base_path . '/' . $this->out_dir . '/' . $path
+            : '';
     }
 
     public function assetsUrls(string $entry, string $path = 'assets'): array
     {
-        $urls = [];
+        $paths = $this->assets($entry, $path);
+        foreach ($paths as &$path) {
+            $path = $this->base_url . '/' . $this->out_dir . '/' . $path;
+        }
+        return $paths;
+    }
+
+    public function assetsPaths(string $entry, string $path = 'assets'): array
+    {
+        $paths = $this->assets($entry, $path);
+        foreach ($paths as &$path) {
+            $path = $this->base_path . '/' . $this->out_dir . '/' . $path;
+        }
+        return $paths;
+    }
+
+    public function asset(string $entry): string
+    {
+        $manifest = $this->manifest();
+        return !isset($manifest[$entry]) ? '' : $manifest[$entry]['file'];
+    }
+
+    public function assets(string $entry, string $path = 'assets'): array
+    {
+        $paths = [];
         $manifest = $this->manifest();
 
         if (!empty($manifest[$entry][$path])) {
             foreach ($manifest[$entry][$path] as $file) {
-
-                $urls[] = app()->themeDir()
-                    . '/' . $this->out_dir
-                    . '/' . $file;
+                $paths[] = $file;
             }
         }
-
-        return $urls;
+        return $paths;
     }
 
     public function importsUrls(string $entry): array
@@ -106,7 +164,7 @@ class Vite
         if (!empty($manifest[$entry]['imports'])) {
             foreach ($manifest[$entry]['imports'] as $imports) {
 
-                $urls[] = app()->themeDir()
+                $urls[] = $this->base_url
                     . '/' . $this->out_dir
                     . '/' . $manifest[$imports]['file'];
             }
@@ -116,11 +174,10 @@ class Vite
     }
 
 
-
     // Helper to output the script tag
-    protected function jsTag(): string
+    public function jsTag(): string
     {
-        $url = $this->isDev()
+        $url = $this->isRunning()
             ? $this->host() . '/' . $this->entry
             : $this->jsUrl();
 
@@ -133,9 +190,24 @@ class Vite
             . '"></script>';
     }
 
-    protected function jsPreloadImports(): string
+    public function inlineJs(): string
     {
-        if ($this->isDev()) {
+        $out = '';
+        $path = $this->jsPath();
+        if (file_exists($path)) {
+            $content = file_get_contents($path);
+            // don't output if empty
+            // empty scripts may have a line break
+            if ($content && $content !== "\n") {
+                $out .= '<script>' . $content . '</script>';
+            }
+        }
+        return $out;
+    }
+
+    public function jsPreloadImports(): string
+    {
+        if ($this->isRunning()) {
             return '';
         }
 
@@ -149,10 +221,11 @@ class Vite
     }
 
     // Helper to output style tag
-    protected function cssTag(): string
+    public function cssTag(): string
     {
+        // todo pass this decision up
         // not needed on dev, it's inject by Vite
-        if ($this->isDev()) {
+        if ($this->isRunning()) {
             return '';
         }
 
@@ -165,9 +238,23 @@ class Vite
         return $tags;
     }
 
-    protected function preloadAssets(string $type): string
+    public function inlineCss(): string
     {
-        if ($this->isDev()) {
+        $out = '';
+        foreach ($this->cssPaths() as $path) {
+            if (file_exists($path)) {
+                $content = file_get_contents($path);
+                if ($content) {
+                    $out .= '<style>' . $content . '</style>';
+                }
+            }
+        }
+        return $out;
+    }
+
+    public function preloadAssets(string $type): string
+    {
+        if ($this->isRunning()) {
             return '';
         }
 
@@ -186,9 +273,54 @@ class Vite
         return $res;
     }
 
+
+    /** Checks wheter Vite server is running. Important, only checks on dev environment. */
+    public function isRunning(): bool
+    {
+        return app()->isDevelopment() && $this->entryExists();
+    }
+
+    public function host(): string
+    {
+        return $this->hostname . ':' . $this->port;
+    }
+
+    public function manifest(): array
+    {
+        $content = Filesystem::get(
+            $this->base_path . '/' . $this->out_dir  . '/manifest.json'
+        );
+
+        return $content
+            ? json_decode($content, true)
+            : [];
+    }
+
+    // This method is very useful for the local server
+    // if we try to access it, and by any means, didn't started Vite yet
+    // it will fallback to load the production files from manifest
+    // so you still navigate your site as you intended
+    protected function entryExists(): bool
+    {
+        if (isset($this->server_is_running)) {
+            return $this->server_is_running;
+        }
+        $handle = curl_init($this->host() . '/' . $this->entry);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($handle, CURLOPT_NOBODY, true);
+
+        curl_exec($handle);
+        $error = curl_errno($handle);
+        // dd(curl_getinfo($handle), $error, $this->host());
+        curl_close($handle);
+
+        return $this->server_is_running = !$error;
+    }
+
+
     public function legacy(): string
     {
-        if ($this->isDev()) {
+        if ($this->isRunning()) {
             return '';
         }
 
@@ -214,50 +346,5 @@ class Vite
         $script .= '<script nomodule id="vite-legacy-entry" data-src="' . $url . '">System.import(document.getElementById(\'vite-legacy-entry\').getAttribute(\'data-src\'))</script>';
 
         return $script;
-    }
-
-    protected function isDev(): bool
-    {
-        return app()->isDevelopment() && $this->entryExists();
-    }
-
-    protected function host(): string
-    {
-        return $this->hostname . ':' . $this->port;
-    }
-
-    protected function manifest(): array
-    {
-        $content = Filesystem::get(
-            app()->themePath()
-                . '/' . $this->out_dir
-                . '/manifest.json'
-        );
-
-        return $content
-            ? json_decode($content, true)
-            : [];
-    }
-
-    // This method is very useful for the local server
-    // if we try to access it, and by any means, didn't started Vite yet
-    // it will fallback to load the production files from manifest
-    // so you still navigate your site as you intended
-    protected function entryExists(): bool
-    {
-        static $exists = null;
-        if ($exists !== null) {
-            return $exists;
-        }
-        $handle = curl_init($this->host() . '/' . $this->entry);
-        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($handle, CURLOPT_NOBODY, true);
-
-        curl_exec($handle);
-        $error = curl_errno($handle);
-        // dd(curl_getinfo($handle), $error, $this->host());
-        curl_close($handle);
-
-        return $exists = !$error;
     }
 }
