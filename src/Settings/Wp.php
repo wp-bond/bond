@@ -97,15 +97,13 @@ class Wp
 
 
 
-
-
     // WP Settings
 
     // Protects WP redirect on multilanguage front pages
     public static function disableFrontPageRedirect()
     {
         \add_filter('redirect_canonical', function ($redirect_url, $requested_url) {
-            return \is_front_page() ? $requested_url : $redirect_url;
+            return \is_front_page() || \is_feed() ? $requested_url : $redirect_url;
         }, 10, 2);
     }
 
