@@ -8,7 +8,7 @@ use Bond\Support\FluentList;
 use Bond\Utils\Arr;
 use Bond\Utils\Query;
 use Bond\Utils\Str;
-
+use WP_Query;
 
 // TODO test WP_USE_THEMES = false to see what happens
 // maybe we just do that as it is cleaner
@@ -25,13 +25,24 @@ use Bond\Utils\Str;
  */
 class View extends Fluent
 {
-
-    protected static array $directories = [];
-    protected array $lookup_order = [];
-
+    protected array $directories = [];
     protected string $templates_dir = 'templates';
     protected string $partials_dir = 'partials';
 
+    protected array $lookup_order = [];
+
+
+    public function addLookupFolder(string $path, ?int $index = null)
+    {
+        $files = $this->scanDir($path);
+
+        if ($index === null) {
+            $this->directories[] = $files;
+        } else {
+            array_splice($this->directories, $index, 0, [$files]);
+        }
+        return $this;
+    }
 
     public function register()
     {
@@ -60,6 +71,16 @@ class View extends Fluent
         \add_action('wp_footer', [$this, 'outputStateTag']);
     }
 
+    public function outputStateTag()
+    {
+        if (!$this->state) {
+            return;
+        }
+        echo '<script>'
+            . '__STATE__ = JSON.parse(' . json_encode(json_encode($this->state)) . ')'
+            . '</script>';
+    }
+
     public function setHooks()
     {
         // handle hooks
@@ -80,16 +101,6 @@ class View extends Fluent
         } else {
             \add_action('template_redirect', [$this, 'triggerRedirectActions'], 20);
         }
-    }
-
-    public function outputStateTag()
-    {
-        if (!$this->state) {
-            return;
-        }
-        echo '<script>'
-            . '__STATE__ = JSON.parse(' . json_encode(json_encode($this->state)) . ')'
-            . '</script>';
     }
 
     /**
@@ -173,22 +184,14 @@ class View extends Fluent
         return in_array($order, $this->lookup_order);
     }
 
-    public function isTemplate($name)
-    {
-        return in_array($name, $this->lookup_order);
-    }
-
     /**
      * Sets the order which the templates will be looked up.
-     *
-     * @param boolean|array|\WP_Query $with
      */
-    public function setOrder($with)
+    public function setOrder(bool|array|WP_Query $with)
     {
         if (!$with) {
             return;
         }
-
         if (is_array($with) || is_string($with)) {
             $this->lookup_order = (array) $with;
         } elseif (is_a($with, 'WP_Query')) {
@@ -206,10 +209,8 @@ class View extends Fluent
     public function autoSetOrder()
     {
         if (\did_action('wp')) {
-
             // set order with global WP_Query
             global $wp_query;
-            // dd($wp_query);
             $this->lookup_order = $this->defineLookupOrder($wp_query);
         } else {
             // set later, when WP is ready
@@ -226,7 +227,7 @@ class View extends Fluent
     }
 
     /**
-     * Set default templates sub-directory, relative to theme or parent theme.
+     * Set default templates sub-directory, relative to lookup folder.
      */
     public function setTemplatesDir(string $dir_name)
     {
@@ -242,7 +243,7 @@ class View extends Fluent
     }
 
     /**
-     * Set default partials sub-directory, relative to theme or parent theme.
+     * Set default partials sub-directory, relative to lookup folder.
      */
     public function setPartialsDir(string $dir_name)
     {
@@ -251,69 +252,80 @@ class View extends Fluent
 
     /**
      * Load a matching file inside the current templates dir.
+     * The provided data is the View itself.
+     * Returns boolean if the template was found.
      */
-    public function template(string $base_name)
+    public function template(string $base_name): bool
     {
-        $this->load(
-            $this->templates_dir,
-            $base_name,
+        return $this->load(
+            $this->templates_dir . '/' . $base_name,
             $this
         );
     }
 
     /**
      * Load a matching file inside the current partials dir.
+     * Data may be provided if needed otherwide it's empty.
+     * Returns boolean if the template was found.
      */
-    public function partial(string $base_name, $data = null)
+    public function partial(string $name, $data = null): bool
     {
-        // cast as Fluent or FluentList
-        if (is_array($data) && array_is_list($data)) {
-            $data = new FluentList($data);
-        } elseif (!($data instanceof Fluent) && !($data instanceof FluentList)) {
-            // TODO if not array or object (i.e. pass string or number)
-            // maybe add as "$content" var?
-            $data = new Fluent($data);
-        }
-
-        $this->load(
-            $this->partials_dir,
-            $base_name,
+        return $this->load(
+            $this->partials_dir . '/' . $name,
             $data
         );
     }
 
     /**
      * Load a template file matching the current lookup order.
+     * Returns boolean if the template was found.
      */
-    protected function load(
-        string $dir_name,
-        string $base_name,
-        $target
-    ) {
-        // sanitize and scan dir, if not already scanned
-        $dir_name = trim($dir_name, '/');
-        $this->scanDir($dir_name);
-
+    public function load(string $template_name, $data = null): bool
+    {
         // find the template file
-        list($found, $template_path) = $this->find($base_name, $dir_name);
+        list($found, $template_path) = $this->find($template_name);
 
         // skip if not found
         if (!$template_path) {
-            return;
+            return false;
         }
 
         // trigger action before render
         // good to inject html before and after
-        \do_action('Bond/load/' . $dir_name . '/' . $found);
+        \do_action('Bond/load/' . $found);
 
-        // run
-        $target->run($template_path);
+        // cast as Fluent/FluentList and run
+        $this->fluent($data)->run($template_path);
 
         // trigger action after render
-        \do_action('Bond/loaded/' . $dir_name . '/' . $found);
+        \do_action('Bond/loaded/' . $found);
+
+        return true;
     }
 
-    private function deviceSuffix()
+
+
+    // helpers
+
+
+    protected function fluent($data): Fluent|FluentList
+    {
+        if ($data === null) {
+            return new Fluent();
+        }
+        if ($data instanceof Fluent || $data instanceof FluentList) {
+            return $data;
+        }
+        if (is_array($data) && array_is_list($data)) {
+            return new FluentList($data);
+        }
+        if (is_array($data) || is_object($data)) {
+            return new Fluent($data);
+        }
+        return new Fluent(['content' => $data]);
+    }
+
+    protected function deviceSuffix()
     {
         static $suffix = null;
 
@@ -332,36 +344,37 @@ class View extends Fluent
     /**
      * Finds a matching template file.
      */
-    protected function find(string $base_name, string $dir_name): ?array
+    protected function find(string $template): ?array
     {
-        if (empty($base_name) || empty($dir_name)) {
+        if (empty($template)) {
             return null;
         }
-
-        // get file list
-        $files = self::$directories[$dir_name];
 
         // look for possible matches
         foreach ($this->lookup_order as $name) {
             $lookup = [
-                $base_name . '-' . $name . $this->deviceSuffix(),
-                $base_name . '-' . $name,
+                $template . '-' . $name . $this->deviceSuffix(),
+                $template . '-' . $name,
             ];
             foreach ($lookup as $file_name) {
-                if (isset($files[$file_name])) {
-                    return [$file_name, $files[$file_name]];
+                foreach ($this->directories as $files) {
+                    if (isset($files[$file_name])) {
+                        return [$file_name, $files[$file_name]];
+                    }
                 }
             }
         }
 
-        // fall back to base_name
+        // fall back to straight template name
         $lookup = [
-            $base_name . $this->deviceSuffix(),
-            $base_name,
+            $template . $this->deviceSuffix(),
+            $template,
         ];
         foreach ($lookup as $file_name) {
-            if (isset($files[$file_name])) {
-                return [$file_name, $files[$file_name]];
+            foreach ($this->directories as $files) {
+                if (isset($files[$file_name])) {
+                    return [$file_name, $files[$file_name]];
+                }
             }
         }
 
@@ -369,28 +382,15 @@ class View extends Fluent
     }
 
     /**
-     * Scan and store all files within the specified directory.
-     *
-     * @param string $dir_name
+     * Scan all files within the specified directory.
      */
-    protected function scanDir(string $dir_name)
+    protected function scanDir(string $path): array
     {
-        if (!$dir_name || isset(self::$directories[$dir_name])) {
-            return;
-        }
+        $files = [];
 
-        self::$directories[$dir_name] = $this->scanDirHelper($dir_name);
-    }
-
-    protected function scanDirHelper(string $dir_name): array
-    {
-        $result = [];
-        $base_path = app()->viewsPath()
-            . DIRECTORY_SEPARATOR . $dir_name;
-
-        if (is_dir($base_path)) {
+        if (is_dir($path)) {
             $dir = new \RecursiveDirectoryIterator(
-                $base_path,
+                $path,
                 \RecursiveDirectoryIterator::SKIP_DOTS
             );
             $iterator = new \RecursiveIteratorIterator($dir);
@@ -398,13 +398,21 @@ class View extends Fluent
             foreach ($iterator as $file) {
                 $extension = $file->getExtension();
                 $file_name = $file->getBasename('.' . $extension);
-                $sub_dirs = trim(str_replace($base_path, '', $file->getPath()), '/');
+
+                // skip .DS_Store
+                if ($file_name[0] === '.') {
+                    continue;
+                }
+
+                // assemble lokup name
+                $sub_dirs = trim(str_replace($path, '', $file->getPath()), '/');
                 $file_name_compound = ($sub_dirs ? $sub_dirs . '/' : '') . $file_name;
 
-                $result[$file_name_compound] = $file->getRealPath();
+                $files[$file_name_compound] = $file->getRealPath();
             }
         }
-        return $result;
+        // dd($files);
+        return $files;
     }
 
     /**
@@ -416,7 +424,7 @@ class View extends Fluent
      * For the default WP hierarchy follow to:
      * http://codex.wordpress.org/Template_Hierarchy
      */
-    protected function defineLookupOrder(\WP_Query $query): array
+    protected function defineLookupOrder(WP_Query $query): array
     {
         $result = [];
 
