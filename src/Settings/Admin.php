@@ -89,7 +89,7 @@ class Admin
 
         \add_action('admin_head', function () {
             $vite = vite()
-                ->basePath(__DIR__ . '/../../assets')
+                ->basePath(__DIR__ . '/../../resources/assets')
                 ->port(2342)
                 ->entry('admin-color-scheme.js')
                 ->outDir('dist/admin-color-scheme');

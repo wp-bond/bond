@@ -7,7 +7,7 @@ export default defineConfig({
 
   plugins: [
     // reloads the page when Bond files change
-    liveReload('../src/**/*.php', {
+    liveReload('../../src/**/*.php', {
       root: __dirname,
     }),
   ],
