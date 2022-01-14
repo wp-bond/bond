@@ -270,6 +270,15 @@ class Language
         return '';
     }
 
+    public static function urlPrefixes(): array
+    {
+        $prefixes = [];
+        foreach (self::codes() as $code) {
+            $prefixes[$code] = self::urlPrefix($code);
+        }
+        return $prefixes;
+    }
+
     public static function fieldsSuffix(string $code = null): string
     {
         if (!$code) {

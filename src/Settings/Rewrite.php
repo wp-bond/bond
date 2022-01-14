@@ -3,6 +3,9 @@
 namespace Bond\Settings;
 
 use Bond\Utils\Link;
+use Bond\Utils\Str;
+
+// TODO review some rules to maybe add ^ at the beginning
 
 class Rewrite
 {
@@ -150,17 +153,30 @@ class Rewrite
 
 
 
-    public static function rss()
-    {
+    public static function rss(
+        string $name = 'rss',
+        string $url = 'rss',
+        bool $multilanguage = false
+    ) {
         // only needed on admin
         if (!Wp::isAdmin()) {
             return;
         }
 
-        foreach (static::languagePrefixes() as $code => $prefix) {
+        $url = trim($url, '/');
+
+        if ($multilanguage) {
+            foreach (static::languagePrefixes() as $code => $prefix) {
+                \add_rewrite_rule(
+                    $prefix . $url . '/?$',
+                    'index.php?feed=' . $name,
+                    'top'
+                );
+            }
+        } else {
             \add_rewrite_rule(
-                $prefix . 'feed/?$',
-                'index.php?feed=feed',
+                $url . '/?$',
+                'index.php?feed=' . $name,
                 'top'
             );
         }

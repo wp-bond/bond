@@ -76,12 +76,6 @@ class Html
         // prev/next urls
         \remove_action('wp_head', 'adjacent_posts_rel_link_wp_head');
 
-        // links to the extra feeds such as category feeds
-        \remove_action('wp_head', 'feed_links_extra', 3);
-
-        // the links to the general feeds: Post and Comment Feed
-        \remove_action('wp_head', 'feed_links', 2);
-
         // EditURI link
         \remove_action('wp_head', 'rsd_link');
 
@@ -139,30 +133,6 @@ class Html
 
                 return $urls;
             }, 10, 2);
-        });
-    }
-
-
-    public static function disableRss()
-    {
-        \remove_action('do_feed_rdf', 'do_feed_rdf', 10, 1);
-        \remove_action('do_feed_rss', 'do_feed_rss', 10, 1);
-        \remove_action('do_feed_rss2', 'do_feed_rss2', 10, 1);
-        \remove_action('do_feed_atom', 'do_feed_atom', 10, 1);
-    }
-
-    public static function enableRss()
-    {
-        self::disableRss();
-
-        // output RSS to html
-        \add_action('wp_head', function () {
-            echo '<link rel="alternate" type="application/rss+xml" href="' . app()->url() . '/feed" title="' . app()->name() . ' RSS">' . "\n";
-        });
-
-        // load custom template
-        add_action('do_feed_rss2', function () {
-            view()->template('feed');
         });
     }
 

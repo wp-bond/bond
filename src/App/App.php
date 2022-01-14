@@ -9,6 +9,7 @@ use Bond\Services\Meta;
 use Bond\Services\Translation;
 use Bond\Services\Cache\CacheInterface;
 use Bond\Services\Cache\FileCache;
+use Bond\Services\Rss;
 use Bond\Services\Sitemap;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
@@ -70,6 +71,7 @@ class App extends Container
         $this->addShared('cache', FileCache::class);
         $this->addShared('sitemap', Sitemap::class);
         $this->addShared('admin_columns', AdminColumns::class);
+        $this->addShared('rss', Rss::class);
 
         // Reflection fallback
         $this->delegate(new ReflectionContainer());
@@ -115,6 +117,11 @@ class App extends Container
         return $this->get('admin_columns');
     }
 
+    public function rss(): Rss
+    {
+        return $this->get('rss');
+    }
+
     public function bootstrap(string $base_path = null)
     {
         if ($base_path) {
@@ -126,6 +133,7 @@ class App extends Container
         if (Wp::isFrontEnd()) {
 
             // auto initialize View, registers WP hooks
+            $this->view()->addLookupFolder($this->viewsPath());
             $this->view()->register();
         }
 
