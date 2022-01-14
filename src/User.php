@@ -79,4 +79,9 @@ class User extends Fluent
     {
         return Link::forUsers($this, $language);
     }
+
+    public function name(): string
+    {
+        return $this->display_name ?? '';
+    }
 }
