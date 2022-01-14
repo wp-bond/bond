@@ -9,6 +9,7 @@ use Bond\Utils\Date;
 use Bond\Utils\Image;
 use Bond\Utils\Query;
 use Bond\Utils\Str;
+use Carbon\Carbon;
 use WP_Post;
 
 class Post extends Fluent
@@ -214,14 +215,30 @@ class Post extends Fluent
         return !empty($this->get('is_disabled', $language));
     }
 
-    public function date()
+    public function date(): Carbon
     {
-        return Date::iso($this->post_date, 'DD/MM/Y');
+        return Date::carbon($this->post_date);
     }
 
-    public function dateLong()
+    public function dateGmt(): Carbon
     {
-        return Date::iso($this->post_date, 'D MMMM Y');
+        return Date::carbon($this->post_date_gmt, 'gmt');
+    }
+
+    public function modified(): Carbon
+    {
+        return Date::carbon($this->post_modified);
+    }
+
+    public function modifiedGmt(): Carbon
+    {
+        return Date::carbon($this->post_modified_gmt, 'gmt');
+    }
+
+    /** Get the post author. IMPORTANT this is the WP Editor that created the post itself so be aware that it may not be the actual content author, depending on your case. */
+    public function author(): ?User
+    {
+        return Cast::user((int)$this->post_author);
     }
 
     public function terms(string $taxonomy = null, array $args = []): Terms
