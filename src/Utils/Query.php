@@ -278,8 +278,12 @@ class Query
     /**
      * Allows to query non-public post types.
      */
-    public static function lastModified(string|array $post_types): Carbon
+    public static function lastModified(string|array $post_types = null): Carbon
     {
+        if (empty($post_types)) {
+            $post_types = \get_post_types(['public' => true]);
+        }
+
         $fn = function () use ($post_types) {
             global $wpdb;
 
