@@ -17,8 +17,6 @@ if (!function_exists('app')) {
     }
 }
 
-// TODO maybe remove these top-level helpers?
-
 if (!function_exists('config')) {
     function config(?string $key = null)
     {

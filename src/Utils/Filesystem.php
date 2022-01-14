@@ -10,9 +10,16 @@ use FilesystemIterator;
  */
 class Filesystem
 {
+    /**
+     * Get contents of a file with shared lock.
+     *
+     * https://www.php.net/manual/en/function.flock.php
+     */
     public static function get(string $path): string
     {
         // code from © Laravel LLC / Taylor Otwell, MIT licence.
+        // Filesystem getShared
+        // https://github.com/laravel/framework/blob/8091f07558ff4a890435ff9d25fa9aca0189ad63/src/Illuminate/Filesystem/Filesystem.php#L66
 
         $contents = '';
 
