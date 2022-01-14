@@ -4,7 +4,6 @@ namespace Bond\Services;
 
 use Bond\Settings\Wp;
 use Bond\Settings\Language;
-use Bond\Support\Fluent;
 use Bond\Utils\Cast;
 use Bond\Utils\Image;
 use Bond\Utils\Link;
@@ -50,7 +49,7 @@ class Meta
     public string $twitter_player_height;
 
 
-    public function config(Fluent $settings)
+    public function config(array $settings)
     {
         $allowed = [
             'title_separator',
@@ -62,7 +61,10 @@ class Meta
                 $this->$key = $settings[$key];
             }
         }
-        if ($settings->enabled) {
+
+        $enable = $settings['enabled'] ?? null;
+
+        if ($enable) {
             $this->enable();
         }
     }

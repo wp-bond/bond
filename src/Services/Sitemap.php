@@ -3,7 +3,6 @@
 namespace Bond\Services;
 
 use Bond\Settings\Language;
-use Bond\Support\Fluent;
 use Bond\Utils\Arr;
 use Bond\Utils\Cast;
 use Bond\Utils\Query;
@@ -17,40 +16,42 @@ class Sitemap
     protected array $skip_singles = [];
     protected array $skip_pages = [];
 
-    public function config(Fluent $settings)
+    public function config(array $settings)
     {
-        if ($settings->enabled) {
+        $enable = $settings['enabled'] ?? null;
+
+        if ($enable) {
             $this->enable();
         }
-        if ($settings->enabled === false) {
+        if ($enable === false) {
             $this->disable();
         }
-        if ($settings->stylesheet === false) {
+        if (($settings['stylesheet'] ?? null) === false) {
             $this->disableStylesheet();
         }
-        if ($settings->post_types === false) {
+        if (($settings['post_types'] ?? null) === false) {
             $this->disablePosts();
         }
-        if ($settings->taxonomies === false) {
+        if (($settings['taxonomies'] ?? null) === false) {
             $this->disableTaxonomies();
         }
-        if ($settings->users === false) {
+        if (($settings['users'] ?? null) === false) {
             $this->disableUsers();
         }
-        if (!empty($settings->post_types)) {
-            $this->postTypes($settings->post_types);
+        if (!empty($settings['post_types'])) {
+            $this->postTypes($settings['post_types']);
         }
-        if (!empty($settings->taxonomies)) {
-            $this->taxonomies($settings->taxonomies);
+        if (!empty($settings['taxonomies'])) {
+            $this->taxonomies($settings['taxonomies']);
         }
-        if ($settings->skip_archives) {
-            $this->skip_archives = $settings->skip_archives;
+        if ($settings['skip_archives'] ?? null) {
+            $this->skip_archives = $settings['skip_archives'];
         }
-        if ($settings->skip_singles) {
-            $this->skip_singles = $settings->skip_singles;
+        if ($settings['skip_singles'] ?? null) {
+            $this->skip_singles = $settings['skip_singles'];
         }
-        if ($settings->skip_pages) {
-            $this->skip_pages = $settings->skip_pages;
+        if ($settings['skip_pages'] ?? null) {
+            $this->skip_pages = $settings['skip_pages'];
         }
     }
 

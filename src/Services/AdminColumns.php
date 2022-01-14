@@ -5,7 +5,6 @@ namespace Bond\Services;
 use Bond\Post;
 use Bond\Settings\Language;
 use Bond\Settings\Wp;
-use Bond\Support\Fluent;
 use Bond\Term;
 use Bond\User;
 use Bond\Utils\Cast;
@@ -17,22 +16,24 @@ class AdminColumns
     private array $columns = [];
 
 
-    public function config(Fluent $settings)
+    public function config(array $settings)
     {
-        if (!Wp::isAdmin()) {
-            return;
-        }
+        $enable = $settings['enabled'] ?? null;
 
-        if ($settings->enabled) {
+        if ($enable) {
             $this->enable();
         }
-        if ($settings->enabled === false) {
+        if ($enable === false) {
             $this->disable();
         }
     }
 
     public function enable()
     {
+        if (!Wp::isAdmin()) {
+            return;
+        }
+
         // adds some handlers
         $this->addMultilanguageLinksHandler();
 

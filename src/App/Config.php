@@ -28,7 +28,7 @@ class Config extends Fluent
     public Fluent $html;
     public Fluent $api;
 
-    // leave Language and Translation first, so the next ones already have the ability to translate strings
+    // we leave Language and Translation first, so the next ones already have the ability to translate strings
     protected array $configs = [
         'language',
         'translation',
@@ -44,6 +44,7 @@ class Config extends Fluent
         'html',
         'api',
         'sitemap',
+        'rss',
     ];
 
     public function __construct(App $container)
@@ -83,22 +84,23 @@ class Config extends Fluent
 
         // load config files
         foreach ($this->configs as $key) {
-            $file = $path . DIRECTORY_SEPARATOR . $key . '.php';
+            $filepath = $path . DIRECTORY_SEPARATOR . $key . '.php';
 
-            // add values
-            if (file_exists($file)) {
+            $data = is_file($filepath) ? require $filepath : null;
+
+            if (!empty($data)) {
+
+                // store config
                 $this->add([
-                    $key => require $file,
+                    $key => $data
                 ]);
-            }
 
-            // config if not empty
-            if (!empty($this->$key)) {
+                // configure
                 if (method_exists($this, $key . 'Settings')) {
                     $this->{$key . 'Settings'}();
                 } else {
                     // auto config from container
-                    $this->container->get($key)->config($this->$key);
+                    $this->container->get($key)->config($data);
                 }
             }
         }
@@ -197,14 +199,6 @@ class Config extends Fluent
         }
     }
 
-    protected function metaSettings()
-    {
-        // auto initialize Meta, registers WP hooks
-        if ($this->meta->enabled && Wp::isFrontEnd()) {
-            $this->container->meta()->config($this->meta);
-        }
-    }
-
     protected function wpSettings()
     {
         // Settings
@@ -282,12 +276,6 @@ class Config extends Fluent
 
     protected function htmlSettings()
     {
-        if ($this->html->disable_rss) {
-            Html::disableRss();
-        }
-        if ($this->html->enable_rss) {
-            Html::enableRss();
-        }
         if ($this->html->reset_body_classes) {
             Html::resetBodyClasses();
         }
