@@ -11,20 +11,18 @@ use Bond\Utils\Cast;
 use Bond\Utils\Image;
 use Bond\Utils\Str;
 
-class AdminColumns
+class AdminColumns implements ServiceInterface
 {
     private array $columns = [];
 
-
-    public function config(array $settings)
+    public function config(?bool $enabled = null)
     {
-        $enable = $settings['enabled'] ?? null;
-
-        if ($enable) {
-            $this->enable();
-        }
-        if ($enable === false) {
-            $this->disable();
+        if (isset($enabled)) {
+            if ($enabled) {
+                $this->enable();
+            } else {
+                $this->disable();
+            }
         }
     }
 
@@ -260,11 +258,6 @@ class AdminColumns
         echo '<style>';
         foreach ($this->columns as $name => $options) {
 
-            // output plain css
-            if (!empty($options['css'])) {
-                echo $options['css'];
-            }
-
             // set column width
             if (!empty($options['width'])) {
                 $width = $options['width'];
@@ -277,6 +270,11 @@ class AdminColumns
                     width: {$width};
                 }
                 CSS;
+            }
+
+            // output plain css
+            if (!empty($options['css'])) {
+                echo $options['css'];
             }
         }
         echo '</style>';

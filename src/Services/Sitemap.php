@@ -9,49 +9,64 @@ use Bond\Utils\Query;
 
 // TODO method to add extra links via config, maybe an addLink method too
 
-class Sitemap
+class Sitemap implements ServiceInterface
 {
     private $wp_renderer = null;
     protected array $skip_archives = [];
     protected array $skip_singles = [];
     protected array $skip_pages = [];
 
-    public function config(array $settings)
-    {
-        $enable = $settings['enabled'] ?? null;
 
-        if ($enable) {
-            $this->enable();
+    public function config(
+        ?bool $enabled = null,
+        ?bool $stylesheet = null,
+        ?array $post_types = null,
+        ?array $taxonomies = null,
+        ?array $users = null,
+        ?array $skip_archives = null,
+        ?array $skip_singles = null,
+        ?array $skip_pages = null,
+    ) {
+        if (isset($enabled)) {
+            if ($enabled) {
+                $this->enable();
+            } else {
+                $this->disable();
+            }
         }
-        if ($enable === false) {
-            $this->disable();
-        }
-        if (($settings['stylesheet'] ?? null) === false) {
+
+        if ($stylesheet === false) {
             $this->disableStylesheet();
         }
-        if (($settings['post_types'] ?? null) === false) {
-            $this->disablePosts();
+
+        if (isset($post_types)) {
+            if ($post_types) {
+                $this->postTypes($post_types);
+            } else {
+                $this->disablePosts();
+            }
         }
-        if (($settings['taxonomies'] ?? null) === false) {
-            $this->disableTaxonomies();
+        if (isset($taxonomies)) {
+            if ($taxonomies) {
+                $this->taxonomies($taxonomies);
+            } else {
+                $this->disableTaxonomies();
+            }
         }
-        if (($settings['users'] ?? null) === false) {
-            $this->disableUsers();
+        if (isset($users)) {
+            if (!$users) {
+                $this->disableUsers();
+            }
         }
-        if (!empty($settings['post_types'])) {
-            $this->postTypes($settings['post_types']);
+
+        if (isset($skip_archives)) {
+            $this->skip_archives = $skip_archives;
         }
-        if (!empty($settings['taxonomies'])) {
-            $this->taxonomies($settings['taxonomies']);
+        if (isset($skip_singles)) {
+            $this->skip_singles = $skip_singles;
         }
-        if ($settings['skip_archives'] ?? null) {
-            $this->skip_archives = $settings['skip_archives'];
-        }
-        if ($settings['skip_singles'] ?? null) {
-            $this->skip_singles = $settings['skip_singles'];
-        }
-        if ($settings['skip_pages'] ?? null) {
-            $this->skip_pages = $settings['skip_pages'];
+        if (isset($skip_pages)) {
+            $this->skip_pages = $skip_pages;
         }
     }
 

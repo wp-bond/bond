@@ -100,7 +100,7 @@ class Config extends Fluent
                     $this->{$key . 'Settings'}();
                 } else {
                     // auto config from container
-                    $this->container->get($key)->config($data);
+                    $this->container->get($key)->config(...$data);
                 }
             }
         }
@@ -116,18 +116,6 @@ class Config extends Fluent
         Language::setCurrentFromRequest();
     }
 
-    protected function translationSettings()
-    {
-        $translation = $this->container->translation();
-
-        if ($this->translation->written_language) {
-            $translation->setWrittenLanguage($this->translation->written_language);
-        }
-
-        if ($this->translation->service) {
-            $translation->setService($this->translation->service);
-        }
-    }
 
     protected function multilanguageSettings()
     {

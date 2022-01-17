@@ -9,49 +9,60 @@ use Bond\Settings\Wp;
 use Bond\Utils\Link;
 use Bond\Utils\Query;
 
-class Rss
+class Rss implements ServiceInterface
 {
+    protected bool $enabled = false;
     protected array $feeds = [];
 
 
-    public function config(array $settings)
-    {
-        $enable = $settings['enabled'] ?? null;
-
-        foreach ($settings['feeds'] ?? [] as $key => $feed) {
-            $this->addFeed($key, $feed);
+    public function config(
+        ?bool $enabled = null,
+        ?array $feeds = null,
+        ?bool $disable_wp_rss = false
+    ) {
+        if (isset($feeds)) {
+            foreach ($feeds as $key => $feed) {
+                $this->addFeed($key, $feed);
+            }
         }
-
-        if ($enable) {
-            $this->enable();
+        if (isset($enabled)) {
+            if ($enabled) {
+                $this->enable();
+            } else {
+                $this->disable();
+            }
         }
-        if ($enable === false) {
-            $this->disable();
-        }
-
-        if ($settings['disable_wp_rss'] ?? null) {
+        if ($disable_wp_rss === false) {
             $this->disableWpRss();
         }
     }
 
     public function enable()
     {
-        // add query filter
-        \add_filter('pre_get_posts', [$this, 'queryFilter']);
-        \add_filter('posts_where', [$this, 'whereFilter']);
+        if (!$this->enabled) {
+            $this->enabled = true;
 
-        // output RSS links to html head
-        \add_action('wp_head', [$this, 'outputLinkTags']);
+            // add query filter
+            \add_filter('pre_get_posts', [$this, 'queryFilter']);
+            \add_filter('posts_where', [$this, 'whereFilter']);
+
+            // output RSS links to html head
+            \add_action('wp_head', [$this, 'outputLinkTags']);
+        }
     }
 
     public function disable()
     {
-        // add query filter
-        \remove_filter('pre_get_posts', [$this, 'queryFilter']);
-        \remove_filter('posts_where', [$this, 'whereFilter']);
+        if ($this->enabled) {
+            $this->enabled = false;
 
-        // output RSS links to html head
-        \remove_action('wp_head', [$this, 'outputLinkTags']);
+            // add query filter
+            \remove_filter('pre_get_posts', [$this, 'queryFilter']);
+            \remove_filter('posts_where', [$this, 'whereFilter']);
+
+            // output RSS links to html head
+            \remove_action('wp_head', [$this, 'outputLinkTags']);
+        }
     }
 
     public function disableWpRss()
@@ -99,37 +110,65 @@ class Rss
         );
 
         // add template
-        \add_action('do_feed_' . $key, function () use ($key, $options) {
-
-            // create a View handler
-            $view = new View();
-
-            // add the lookup folders, first the theme, then Bond's default
-            $view->addLookupFolder(app()->viewsPath());
-            $view->addLookupFolder(dirname(dirname(__DIR__)) . '/resources/views');
-
-            // set the lookup order
-            $view->setOrder([
-                $key,
-            ]);
-
-            // add our feed values
-            $view->add($this->feedValues($options));
-
-            // load the template
-            $view->template('feed');
-
-            // templating will look in this order:
-            // templates/feed-{feed_key} (at theme view folder)
-            // templates/feed-{feed_key} (at bond source)
-            // templates/feed (at theme view folder)
-            // templates/feed (at bond source)
-        });
+        \add_action('do_feed_' . $key, [$this, 'renderFeed'], 10, 2);
 
         // store
         $this->feeds[$key] = $options;
     }
 
+    public function removeFeed(string $key)
+    {
+        // TODO remove rewrite rule
+        // flush_rewrite_rules()
+
+        // remove action
+        \remove_action('do_feed_' . $key, [$this, 'renderFeed'], 10, 2);
+
+        // remove feed
+        unset($this->feeds[$key]);
+    }
+
+
+    public function renderFeed(bool $is_comment, string $key)
+    {
+        // no comment feed support
+        if ($is_comment) {
+            return;
+        }
+
+        // get config
+        $feed = $this->feeds[$key] ?? null;
+        if (!$feed) {
+            return;
+        }
+
+        // TODO render differently if is disabled
+
+        // create a View handler
+        $view = new View();
+
+        // add the lookup folders, first the theme, then Bond's default
+        $view->addLookupFolder(app()->viewsPath());
+        $view->addLookupFolder(dirname(dirname(__DIR__)) . '/resources/views');
+
+        // set the lookup order
+        $view->setOrder([
+            $key,
+        ]);
+
+        // add our feed values
+        $view->add($this->feedValues($feed));
+
+        // load the template
+        $view->template('feed');
+
+        // templating will look in this order:
+        // templates/feed-{feed_key} (at theme view folder)
+        // templates/feed-{feed_key} (at bond source)
+        // templates/feed (at theme view folder)
+        // templates/feed (at bond source)
+
+    }
 
     protected function feedValues(array $feed): array
     {

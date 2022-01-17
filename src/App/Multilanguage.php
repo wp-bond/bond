@@ -176,7 +176,7 @@ class Multilanguage
     public function translateAllFields($post_id)
     {
         if (
-            !app()->translation()->hasService()
+            !app()->translation()->hasTranslationApi()
             || !app()->hasAcf()
         ) {
             return;

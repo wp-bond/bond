@@ -15,7 +15,7 @@ use Bond\Utils\Str;
 // TODO needs upgrade
 
 // TODO remove the config usage for a constructor based settings
-class Meta
+class Meta implements ServiceInterface
 {
     // settings
     protected string $title_separator = '-';
@@ -48,24 +48,29 @@ class Meta
     public string $twitter_player_width;
     public string $twitter_player_height;
 
+    public function config(
+        ?bool $enabled = null,
+        ?string $image_size = null,
+        ?string $title_separator = null,
+        ?string $search_title = null,
+    ) {
 
-    public function config(array $settings)
-    {
-        $allowed = [
-            'title_separator',
-            'search_title',
-            'image_size',
-        ];
-        foreach ($allowed as $key) {
-            if (isset($settings[$key])) {
-                $this->$key = $settings[$key];
-            }
+        if (isset($image_size)) {
+            $this->image_size = $image_size;
+        }
+        if (isset($title_separator)) {
+            $this->title_separator = $title_separator;
+        }
+        if (isset($search_title)) {
+            $this->search_title = $search_title;
         }
 
-        $enable = $settings['enabled'] ?? null;
-
-        if ($enable) {
-            $this->enable();
+        if (isset($enabled)) {
+            if ($enabled) {
+                $this->enable();
+            } else {
+                $this->disable();
+            }
         }
     }
 

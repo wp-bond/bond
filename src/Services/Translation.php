@@ -11,22 +11,51 @@ use Exception;
 // https://docs.aws.amazon.com/translate/latest/dg/what-is.html#language-pairs
 
 // Google Translate
-// https://googleapis.github.io/google-cloud-php/#/docs/google-cloud/v0.130.0/translate/v2/translateclient
+// https://cloud.google.com/translate/docs/languages
 
-// TODO remove the config usage for a constructor based settings
-class Translation
+class Translation implements ServiceInterface
 {
+    protected bool $enabled = false;
+    protected string $service = 'wp';
+    protected string $written_language = 'en';
+    protected array $credentials = [];
+
     protected array $glossaries = [];
-
-    protected string $service = '';
-
     protected string $storage_path;
 
-    protected string $written_language;
 
-    public function __construct()
+    public function config(
+        ?bool $enabled = null,
+        ?string $written_language = null,
+        ?string $service = null,
+        ?array $credentials = null,
+    ) {
+        if (isset($enabled)) {
+            if ($enabled) {
+                $this->enable();
+            } else {
+                $this->disable();
+            }
+        }
+        if (isset($written_language)) {
+            $this->written_language = $written_language;
+        }
+        if (isset($service)) {
+            $this->service = $service;
+        }
+        if (isset($credentials)) {
+            $this->credentials = $credentials;
+        }
+    }
+
+    public function enable()
     {
-        $this->setWrittenLanguage(Language::defaultCode());
+        $this->enabled = true;
+    }
+
+    public function disable()
+    {
+        $this->enabled = false;
     }
 
     public function getWrittenLanguage(): string
@@ -34,17 +63,7 @@ class Translation
         return $this->written_language;
     }
 
-    public function setWrittenLanguage(string $code)
-    {
-        $this->written_language = $code;
-    }
-
-    public function setService(string $service)
-    {
-        $this->service = $service;
-    }
-
-    public function hasService(): bool
+    public function hasTranslationApi(): bool
     {
         return $this->service === 'google' || $this->service === 'aws';
     }
@@ -123,7 +142,7 @@ class Translation
             return $string;
         }
         // Fallback to gettext
-        if (!$this->hasService()) {
+        if (!$this->hasTranslationApi()) {
             if ($context) {
                 return _x($string, $context, app()->id());
             }
@@ -136,7 +155,7 @@ class Translation
 
         // defaults
         if (!$written_language) {
-            $written_language = $this->getWrittenLanguage();
+            $written_language = $this->written_language;
         }
 
         // if is dev translate all languages
@@ -267,7 +286,7 @@ class Translation
 
     protected function translate($text, array $options = []): string
     {
-        if (empty($text) || !$this->hasService()) {
+        if (empty($text) || !$this->hasTranslationApi()) {
             return '';
         }
         if ($this->service === 'google') {
@@ -300,7 +319,7 @@ class Translation
         static $client = null;
         if (!$client) {
             $client = new \Google\Cloud\Translate\V2\TranslateClient([
-                'key' => config('translation.credentials.google.key'),
+                'key' => $this->credentials['google']['key'] ?? null,
             ]);
         }
         return $client;
@@ -353,13 +372,10 @@ class Translation
         static $client = null;
         if (!$client) {
             $client = new \Aws\Translate\TranslateClient([
-                'region' => config('translation.credentials.aws.region'),
+                'region' => $this->credentials['aws']['region'] ?? 'us-east-1',
                 'version' => 'latest',
                 'use_aws_shared_config_files' => false,
-                'credentials' => [
-                    'key' => config('translation.credentials.aws.key'),
-                    'secret' => config('translation.credentials.aws.secret'),
-                ],
+                'credentials' => $this->credentials['aws'],
             ]);
         }
         return $client;
