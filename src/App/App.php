@@ -456,8 +456,8 @@ class App extends Container
         $this->removeSavePostHook();
 
         // turn off cache
-        $original_state = cache()->enabled();
-        cache()->enabled(false);
+        $original_state = $this->cache()->enabled();
+        $this->cache()->enabled(false);
 
         // in case it's attachment, it misses the post object
         if (!$post) {
@@ -465,10 +465,10 @@ class App extends Container
         }
 
         // clear cache
-        cache()->delete('bond/posts');
-        cache()->delete('bond/query');
-        cache()->delete('global');
-        cache()->delete($post->post_type);
+        $this->cache()->delete('bond/posts');
+        $this->cache()->delete('bond/query');
+        $this->cache()->delete('global');
+        $this->cache()->delete($post->post_type);
 
         // Translate before
         \do_action('Bond/translate_post', $post->post_type, $post_id);
@@ -487,7 +487,7 @@ class App extends Container
         // deleted, when deleted
 
         // turn on posts cache
-        cache()->enabled($original_state);
+        $this->cache()->enabled($original_state);
 
         // re-add action
         $this->addSavePostHook();
@@ -515,8 +515,8 @@ class App extends Container
         $this->removeDeletePostHook();
 
         // turn off cache
-        $original_state = cache()->enabled();
-        cache()->enabled(false);
+        $original_state = $this->cache()->enabled();
+        $this->cache()->enabled(false);
 
         // in case it's attachment, it misses the post object
         if (!$post) {
@@ -524,10 +524,10 @@ class App extends Container
         }
 
         // clear cache
-        cache()->delete($post->post_type);
-        cache()->delete('bond/posts');
-        cache()->delete('bond/query');
-        cache()->delete('global');
+        $this->cache()->delete($post->post_type);
+        $this->cache()->delete('bond/posts');
+        $this->cache()->delete('bond/query');
+        $this->cache()->delete('global');
 
         // emit actions
         if (\has_action('Bond/delete_post')) {
@@ -537,7 +537,7 @@ class App extends Container
             \do_action('Bond/delete_post/' . $post->post_type, Cast::post($post));
         }
         // turn on posts cache
-        cache()->enabled($original_state);
+        $this->cache()->enabled($original_state);
 
         // re-add action
         $this->addDeletePostHook();
@@ -552,13 +552,13 @@ class App extends Container
         }
 
         // turn off cache
-        $original_state = cache()->enabled();
-        cache()->enabled(false);
+        $original_state = $this->cache()->enabled();
+        $this->cache()->enabled(false);
 
         // clear cache
-        cache()->delete('options');
-        cache()->delete('bond/query');
-        cache()->delete('global');
+        $this->cache()->delete('options');
+        $this->cache()->delete('bond/query');
+        $this->cache()->delete('global');
 
         // Translate before
         \do_action('Bond/translate_options');
@@ -569,7 +569,7 @@ class App extends Container
         }
 
         // turn on posts cache
-        cache()->enabled($original_state);
+        $this->cache()->enabled($original_state);
     }
 
 
@@ -590,14 +590,14 @@ class App extends Container
         $this->removeSaveTermHook();
 
         // turn off cache
-        $original_state = cache()->enabled();
-        cache()->enabled(false);
+        $original_state = $this->cache()->enabled();
+        $this->cache()->enabled(false);
 
         // clear cache
-        cache()->delete($taxonomy);
-        cache()->delete('bond/terms');
-        cache()->delete('bond/query');
-        cache()->delete('global');
+        $this->cache()->delete($taxonomy);
+        $this->cache()->delete('bond/terms');
+        $this->cache()->delete('bond/query');
+        $this->cache()->delete('global');
 
         // Translate before
         \do_action('Bond/translate_term', $taxonomy, $term_id);
@@ -613,7 +613,7 @@ class App extends Container
         // TODO save_term doesn't get the delete right?
 
         // turn on posts cache
-        cache()->enabled($original_state);
+        $this->cache()->enabled($original_state);
 
         // re-add action
         $this->addSaveTermHook();
@@ -643,12 +643,12 @@ class App extends Container
         $this->removeSaveUserHook();
 
         // turn off cache
-        $original_state = cache()->enabled();
-        cache()->enabled(false);
+        $original_state = $this->cache()->enabled();
+        $this->cache()->enabled(false);
 
         // clear cache
-        cache()->delete('bond/query');
-        cache()->delete('global');
+        $this->cache()->delete('bond/query');
+        $this->cache()->delete('global');
 
         // do action
         if (\has_action('Bond/save_user')) {
@@ -660,7 +660,7 @@ class App extends Container
         }
 
         // turn on posts cache
-        cache()->enabled($original_state);
+        $this->cache()->enabled($original_state);
 
         // re-add action
         $this->addSaveUserHook();
@@ -669,8 +669,8 @@ class App extends Container
     public function deletedUserHook($user_id)
     {
         // clear cache
-        cache()->delete('bond/query');
-        cache()->delete('global');
+        $this->cache()->delete('bond/query');
+        $this->cache()->delete('global');
 
         // do action
         \do_action('Bond/deleted_user', $user_id);
