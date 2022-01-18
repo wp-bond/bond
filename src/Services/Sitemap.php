@@ -11,6 +11,7 @@ use Bond\Utils\Query;
 
 class Sitemap implements ServiceInterface
 {
+    protected bool $enabled = false;
     private $wp_renderer = null;
     protected array $skip_archives = [];
     protected array $skip_singles = [];
@@ -72,27 +73,35 @@ class Sitemap implements ServiceInterface
 
     public function enable()
     {
-        \add_filter('wp_sitemaps_posts_pre_url_list', [$this, 'postsUrls'], 10, 3);
+        if (!$this->enabled) {
+            $this->enabled = true;
 
-        \add_action('wp_sitemaps_init', [$this, 'swapRenderer']);
+            \add_filter('wp_sitemaps_posts_pre_url_list', [$this, 'postsUrls'], 10, 3);
 
-        \add_filter('wp_sitemaps_enabled', '__return_true');
-        \add_action('init', function () {
-            wp_sitemaps_get_server();
-        });
+            \add_action('wp_sitemaps_init', [$this, 'swapRenderer']);
+
+            \add_filter('wp_sitemaps_enabled', '__return_true');
+            \add_action('init', function () {
+                wp_sitemaps_get_server();
+            });
+        }
     }
 
     public function disable(bool $including_wp_sitemaps = true)
     {
-        \remove_filter('wp_sitemaps_posts_pre_url_list', [$this, 'postsUrls'], 10, 3);
+        if ($this->enabled) {
+            $this->enabled = false;
 
-        \remove_action('wp_sitemaps_init', [$this, 'revertRenderer'], 11);
+            \remove_filter('wp_sitemaps_posts_pre_url_list', [$this, 'postsUrls'], 10, 3);
 
-        if ($including_wp_sitemaps) {
-            \add_filter('wp_sitemaps_enabled', '__return_false');
-            \add_action('init', function () {
-                \remove_action('init', 'wp_sitemaps_get_server');
-            }, 5);
+            \remove_action('wp_sitemaps_init', [$this, 'revertRenderer'], 11);
+
+            if ($including_wp_sitemaps) {
+                \add_filter('wp_sitemaps_enabled', '__return_false');
+                \add_action('init', function () {
+                    \remove_action('init', 'wp_sitemaps_get_server');
+                }, 5);
+            }
         }
     }
 
