@@ -1,9 +1,9 @@
 <?php
 
 use Bond\App\App;
-use Bond\App\View;
 use Bond\Services\Cache\CacheInterface;
 use Bond\Services\Meta;
+use Bond\Services\View;
 use Bond\Tooling\Vite;
 use Bond\Utils\Str;
 

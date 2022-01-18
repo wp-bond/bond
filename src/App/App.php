@@ -9,8 +9,10 @@ use Bond\Services\Meta;
 use Bond\Services\Translation;
 use Bond\Services\Cache\CacheInterface;
 use Bond\Services\Cache\FileCache;
+use Bond\Services\Multilanguage;
 use Bond\Services\Rss;
 use Bond\Services\Sitemap;
+use Bond\Services\View;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
 use Bond\Settings\Wp;
@@ -129,13 +131,6 @@ class App extends Container
         }
 
         $this->config()->load($this->configPath());
-
-        if (Wp::isFrontEnd()) {
-
-            // auto initialize View, registers WP hooks
-            $this->view()->addLookupFolder($this->viewsPath());
-            $this->view()->register();
-        }
 
         // Save post/terms hook
         $this->addSavePostHook();

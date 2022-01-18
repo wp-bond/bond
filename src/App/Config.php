@@ -6,7 +6,6 @@ use Bond\Settings\Admin;
 use Bond\Settings\Api;
 use Bond\Settings\Html;
 use Bond\Settings\Language;
-use Bond\Settings\Sitemap;
 use Bond\Settings\Wp;
 use Bond\Support\Fluent;
 use Bond\Utils\Image;
@@ -18,8 +17,6 @@ class Config extends Fluent
     public Fluent $app;
     public Fluent $cache;
     public Fluent $language;
-    public Fluent $translation;
-    public Fluent $multilanguage;
     public Fluent $image;
     public Fluent $meta;
     public Fluent $wp;
@@ -45,6 +42,7 @@ class Config extends Fluent
         'api',
         'sitemap',
         'rss',
+        'view',
     ];
 
     public function __construct(App $container)
@@ -53,8 +51,6 @@ class Config extends Fluent
         $this->app = new Fluent();
         $this->cache = new Fluent();
         $this->language = new Fluent();
-        $this->translation = new Fluent();
-        $this->multilanguage = new Fluent();
         $this->image = new Fluent([
             'sizes' => [
                 'thumbnail' => [150, 150, true],
@@ -114,20 +110,6 @@ class Config extends Fluent
             }
         }
         Language::setCurrentFromRequest();
-    }
-
-
-    protected function multilanguageSettings()
-    {
-        $multilanguage = $this->container->multilanguage();
-
-        if ($this->multilanguage->post_types) {
-            $multilanguage->postTypes($this->multilanguage->post_types);
-        }
-
-        if ($this->multilanguage->taxonomies) {
-            $multilanguage->taxonomies($this->multilanguage->taxonomies);
-        }
     }
 
     protected function appSettings()

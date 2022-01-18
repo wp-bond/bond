@@ -2,7 +2,7 @@
 
 namespace Bond\Services;
 
-use Bond\App\View;
+use Bond\Services\View;
 use Bond\Settings\Language;
 use Bond\Settings\Rewrite;
 use Bond\Settings\Wp;
@@ -193,7 +193,6 @@ class Rss implements ServiceInterface
         $update_frequency = $feed['update_frequency'] ?? 1;
         $last_build_date = Query::lastModified($feed['post_types'] ?? null)
             ->toRssString();
-
 
         return compact(
             'title',

@@ -1,106 +1,150 @@
 <?php
 
-namespace Bond\App;
+namespace Bond\Services;
 
-use Bond\Settings\Language;
 use Bond\Support\Fluent;
 use Bond\Support\FluentList;
-use Bond\Utils\Arr;
 use Bond\Utils\Query;
 use Bond\Utils\Str;
 use WP_Query;
 
-// TODO test WP_USE_THEMES = false to see what happens
-// maybe we just do that as it is cleaner
-// could still leave the template_redirect action below anyway
-
-
 /**
  * Template loader utility that builds upon the WP template hierarchy, allowing a logical and compartmentalised folder/file organization.
  *
- * Besides loading template files, it offers the same approach to provide data to the templates, through the WP action & filter hooks, allowing a separation of data logic and the template files.
+ * Besides loading template files, it offers the same approach to filter data to the templates through the WP action & filter hooks, allowing a separation of data logic and the template files.
  *
- * This class does not override the default WordPress template loader, so you can safely mix and match both approaches any time.
+ * This class does not override the default WordPress template loader, so you can safely mix and match both approaches.
  *
  */
-class View extends Fluent
+class View extends Fluent implements ServiceInterface
 {
     protected array $directories = [];
     protected string $templates_dir = 'templates';
     protected string $partials_dir = 'partials';
 
     protected array $lookup_order = [];
+    protected bool $do_actions = false;
 
+
+    public function config(
+        ?bool $enabled = null,
+        ?bool $use_theme = null,
+        ?array $lookup_folders = null,
+        ?bool $auto_set_order = null,
+        ?bool $do_actions = null,
+        ?string $templates_dir = null,
+        ?string $partials_dir = null,
+        ?array $data = null,
+    ) {
+
+        if ($use_theme) {
+            if (!isset($lookup_folders)) {
+                $lookup_folders = [app()->viewsPath()];
+            }
+            if (!isset($auto_set_order)) {
+                $auto_set_order = true;
+            }
+            if (!isset($do_actions)) {
+                $do_actions = true;
+            }
+        }
+
+        if (isset($lookup_folders)) {
+            foreach ($lookup_folders as $folder) {
+                $this->addLookupFolder($folder);
+            }
+        }
+
+        if (isset($templates_dir)) {
+            $this->setTemplatesDir($templates_dir);
+        }
+        if (isset($partials_dir)) {
+            $this->setPartialsDir($partials_dir);
+        }
+
+        if ($auto_set_order) {
+            $this->autoSetOrder();
+        }
+
+        if (isset($do_actions)) {
+            $this->do_actions = $do_actions;
+        }
+
+        // add any arbitrary values into the View
+        if (isset($data)) {
+            $this->add($data);
+        }
+
+        // enable
+        if (isset($enabled)) {
+            if ($enabled) {
+                $this->enable();
+            } else {
+                $this->disable();
+            }
+        }
+    }
+
+    public function enable()
+    {
+        if (!$this->enabled) {
+            $this->enabled = true;
+
+            // actions
+            if ($this->do_actions) {
+                $this->addActions();
+            }
+        }
+    }
+
+    public function disable()
+    {
+        if ($this->enabled) {
+            $this->enabled = false;
+
+            // actions
+            $this->removeActions();
+        }
+    }
 
     public function addLookupFolder(string $path, ?int $index = null)
     {
         $files = $this->scanDir($path);
+        if (empty($files)) {
+            return;
+        }
 
         if ($index === null) {
             $this->directories[] = $files;
         } else {
             array_splice($this->directories, $index, 0, [$files]);
         }
-        return $this;
     }
 
-    public function register()
+    protected function addActions()
     {
-        $this->autoSetOrder();
-        $this->setState();
-        $this->setHooks();
-    }
-
-    public function setState()
-    {
-        // add default app state
-        $this->state = [
-            'app' => [
-                'isProduction' => app()->isProduction(),
-                'isMobile' => app()->isMobile(),
-                'isTablet' => app()->isTablet(),
-                'isDesktop' => app()->isDesktop(),
-            ],
-            'language' => [
-                'code' => Language::code(),
-                'shortCode' => Language::shortCode(),
-            ],
-        ];
-
-        // add wp footer output for JS
-        \add_action('wp_footer', [$this, 'outputStateTag']);
-    }
-
-    public function outputStateTag()
-    {
-        if (!$this->state) {
-            return;
-        }
-        echo '<script>'
-            . '__STATE__ = JSON.parse(' . json_encode(json_encode($this->state)) . ')'
-            . '</script>';
-    }
-
-    public function setHooks()
-    {
-        // handle hooks
         if (\did_action('init')) {
             $this->triggerInitActions();
         } else {
             \add_action('init', [$this, 'triggerInitActions'], 20);
         }
-
         if (\did_action('wp')) {
             $this->triggerReadyActions();
         } else {
             \add_action('wp', [$this, 'triggerReadyActions'], 20);
         }
-
         if (\did_action('template_redirect')) {
             $this->triggerRedirectActions();
         } else {
             \add_action('template_redirect', [$this, 'triggerRedirectActions'], 20);
         }
+    }
+
+    protected function removeActions()
+    {
+        \remove_action('init', [$this, 'triggerInitActions'], 20);
+        \remove_action('wp', [$this, 'triggerReadyActions'], 20);
+        \remove_action('template_redirect', [$this, 'triggerRedirectActions'], 20);
     }
 
     /**
@@ -141,15 +185,7 @@ class View extends Fluent
         \do_action('Bond/' . $action);
         \do_action('Bond/' . $action . $this->deviceSuffix());
 
-        $order = $this->lookup_order;
-
         foreach (array_reverse($this->lookup_order) as $name) {
-
-            // if the order changed at runtime, cancel it
-            // if ($order !== $this->lookup_order) {
-            //     break;
-            // }
-
             \do_action('Bond/' . $action . '/' . $name);
             \do_action('Bond/' . $action . '/' . $name . $this->deviceSuffix());
         }
@@ -291,14 +327,17 @@ class View extends Fluent
         }
 
         // trigger action before render
-        // good to inject html before and after
-        \do_action('Bond/load/' . $found);
+        if ($this->do_actions) {
+            \do_action('Bond/load/' . $found);
+        }
 
         // cast as Fluent/FluentList and run
         $this->fluent($data)->run($template_path);
 
         // trigger action after render
-        \do_action('Bond/loaded/' . $found);
+        if ($this->do_actions) {
+            \do_action('Bond/loaded/' . $found);
+        }
 
         return true;
     }
@@ -386,6 +425,10 @@ class View extends Fluent
      */
     protected function scanDir(string $path): array
     {
+        // TODO should we cache this? Test the performance
+        // Maybe only if not isDevelopment()
+        // How to invalidate when a template is added? Maybe never, and require the user to manually clear the cache?
+
         $files = [];
 
         if (is_dir($path)) {
@@ -706,7 +749,9 @@ class View extends Fluent
         }
 
         // everything is handled, allow a filter and go
-        $result = \apply_filters('Bond/lookup_order', $result);
+        if ($this->do_actions) {
+            $result = \apply_filters('Bond/lookup_order', $result);
+        }
 
         return $result;
     }
