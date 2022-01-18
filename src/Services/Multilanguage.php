@@ -1,6 +1,6 @@
 <?php
 
-namespace Bond\App;
+namespace Bond\Services;
 
 use Bond\Fields\Acf\FieldGroup;
 use Bond\Post;
@@ -13,35 +13,103 @@ use Bond\Utils\Str;
 use WP_Post;
 use WP_Term;
 
-class Multilanguage
+class Multilanguage implements ServiceInterface
 {
-    // TODO we need to move here the pre_get_posts handling
-
+    protected bool $enabled = false;
     protected array $post_types = [];
     protected array $taxonomies = [];
-    protected bool $added_post_hook = false;
-    protected bool $added_term_hook = false;
 
-    public function is($obj): bool
-    {
-        if ($obj instanceof Post || $obj instanceof WP_Post) {
-            return in_array($obj->post_type, $this->post_types);
+    public function config(
+        ?bool $enabled = null,
+        ?array $post_types = null,
+        ?array $taxonomies = null,
+    ) {
+
+        if (isset($enabled)) {
+            if ($enabled) {
+                $this->enable();
+            } else {
+                $this->disable();
+            }
         }
-
-        if ($obj instanceof Term || $obj instanceof WP_Term) {
-            return in_array($obj->taxonomy, $this->taxonomies);
+        if ($post_types) {
+            $this->postTypes($post_types);
         }
-
-        return false;
+        if ($taxonomies) {
+            $this->taxonomies($taxonomies);
+        }
     }
 
-    // TODO MAYBE LEAVE ON AFTER ALL
-    // but maybe consider an option "enabled" on config
-    // and an method enable() disable() here
-    public function __construct()
+    public function enable()
     {
-        $this->addTranslatePostHook();
-        $this->addTranslateTermHook();
+        if (!$this->enabled) {
+            $this->enabled = true;
+
+            // query
+            \add_filter('pre_get_posts', [$this, 'queryFilter']);
+
+            // posts
+
+            // TODO VERY IMPORTANT this is not being triggered on WP AJAX
+            // WILL RUN twice.. maybe just add a global to protect
+            \add_action('acf/save_post', [$this, 'translateAcfFields']);
+
+            // for posts we translate in sync with Bond save post hook
+            \add_action('Bond/translate_post', [$this, 'translatePostHook'], 1, 2);
+
+            // for ACF options
+            \add_action('Bond/translate_options', [$this, 'translateOptionsHook']);
+
+            // post titles
+            \add_filter('the_title', [$this, 'filterPostTitle'], 10, 2);
+
+            // terms
+
+            // we translate in sync with Bond save term hook
+            \add_action('Bond/translate_term', [$this, 'translateTermHook'], 1, 2);
+
+            // term names
+            \add_filter('term_name', [$this, 'filterTermName'], 10, 2);
+            // TODO NOT sticking to typeRadio
+            // MUST FIRST look for another wordpress hooks besides the term_name
+            \add_filter('acf/fields/taxonomy/result', [$this, 'filterTermName'], 10, 2);
+
+
+            // Temp hack till I undestand the changes on WP 5.5
+            // TODO testing
+            // \add_filter('pre_handle_404', function () {
+            //     global $wp_query, $bond_unset_404;
+
+            //     if ($bond_unset_404) {
+            //         $wp_query->is_404 = false;
+            //         $wp_query->is_page = true;
+            //         $wp_query->is_singular = true;
+            //         return true;
+            //     }
+            //     // dd($wp_query);
+            // });
+        }
+    }
+
+    public function disable()
+    {
+        if ($this->enabled) {
+            $this->enabled = false;
+
+            // query
+            \remove_filter('pre_get_posts', [$this, 'queryFilter']);
+
+            // posts
+            \remove_action('acf/save_post', [$this, 'translateAcfFields']);
+            \remove_action('Bond/translate_post', [$this, 'translatePostHook'], 1, 2);
+            \remove_action('Bond/translate_options', [$this, 'translateOptionsHook']);
+            \remove_filter('the_title', [$this, 'filterPostTitle'], 10, 2);
+
+            // terms
+            \remove_action('Bond/translate_term', [$this, 'translateTermHook'], 1, 2);
+            \remove_filter('term_name', [$this, 'filterTermName'], 10, 2);
+            \remove_filter('acf/fields/taxonomy/result', [$this, 'filterTermName'], 10, 2);
+        }
     }
 
     public function postTypes(array $post_types = null): array
@@ -52,14 +120,8 @@ class Multilanguage
 
         $this->post_types = array_merge($this->post_types, $post_types);
 
-        // Translate
-        $this->addTranslatePostHook();
-
         // TODO allow more configuration....
         // some attachments we need titles, others don't
-
-        // Filter the post title
-        $this->filterPostTitle();
 
         // Fields
         $this->addFieldsForPosts($post_types);
@@ -79,57 +141,128 @@ class Multilanguage
 
         $this->taxonomies = array_merge($this->taxonomies, $taxonomies);
 
-        // Translate
-        $this->addTranslateTermHook();
-
-        // filter the post title
-        $this->filterTaxonomyName();
-
         // Fields
         $this->addFieldsForTaxonomies($taxonomies);
 
         return $this->taxonomies;
     }
 
+    public function is($obj): bool
+    {
+        if ($obj instanceof Post || $obj instanceof WP_Post) {
+            return in_array($obj->post_type, $this->post_types);
+        }
+
+        if ($obj instanceof Term || $obj instanceof WP_Term) {
+            return in_array($obj->taxonomy, $this->taxonomies);
+        }
+
+        return false;
+    }
+
+    public function queryFilter($query)
+    {
+        // only the main query
+        if (\is_admin() || !$query->is_main_query()) {
+            return;
+        }
+        // dd($query, $query->is_singular, $query->is_page);
+        // nothing needs to be handled for the default language
+        if (Language::isDefault()) {
+            return;
+        }
+
+        // sanitize is_page
+        if ($query->get('page')) {
+            $query->is_page = true;
+            $query->is_singular = true;
+            // $query->is_home = false;
+        }
+
+        // we only translate singles and pages
+        if (!$query->is_singular) {
+            return;
+        }
+
+        // singles
+        if ($query->is_single) {
+            $post_type = $query->get('post_type');
+
+            // nothing to do
+            if (!$post_type) {
+                return;
+            }
+
+            // get post by meta to find its actual slug
+            $found = Query::wpPostBySlug(
+                slug: $query->get('name'),
+                post_type: $post_type,
+                params: [
+                    'post_status' => is_user_logged_in() ? 'any' : 'publish',
+                ]
+            );
+
+            if ($found) {
+                // set the actual slug
+                $query->set($post_type, $found->post_name);
+            }
+            // that's all, WP will take from here
+            return;
+        }
+
+        // pages
+        if ($query->is_page) {
+            $path = $query->get('page');
+            // dd($path);
+
+            // nothing to do
+            if (!$path) {
+                return;
+            }
+
+            // get post by meta to find its actual slug
+            $found = Query::wpPostBySlug(
+                slug: $path,
+                post_type: 'page',
+                params: [
+                    'post_status' => is_user_logged_in() ? 'any' : 'publish',
+                ]
+            );
+
+            if ($found) {
+                global $bond_unset_404;
+                // $bond_unset_404 = true;
+
+                // reparse query
+                $query->parse_query([
+                    'page_id' => $found->ID,
+                ]);
+                // unset($query->query['page']);
+                // unset($query->query_vars['page']);
+                // $query->query['pagename'] = $found->post_name;
+                // $query->set('pagename', $found->post_name);
+                // $query->set('page_id', '');
+
+                // dd($found, $query);
+            } else {
+                // $query->is_404 = true;
+            }
+        }
+    }
+
 
     // Posts
 
-    protected function filterPostTitle()
+    public function filterPostTitle($title, $id)
     {
-        static $enabled = null;
-        if ($enabled) {
-            return;
+        $post = Cast::post($id);
+
+        // handles only the post_types added here
+        if ($post && in_array($post->post_type, $this->post_types)) {
+            return $post->title();
         }
-        $enabled = true;
 
-        \add_filter('the_title', function ($title, $id) {
-            $post = Cast::post($id);
-
-            // handles only the post_types added here
-            if ($post && in_array($post->post_type, $this->post_types)) {
-                return $post->title ?: $post->post_title;
-            }
-
-            return $title;
-        }, 10, 2);
-    }
-
-    public function addTranslatePostHook()
-    {
-        if ($this->added_post_hook) {
-            return;
-        }
-        $this->added_post_hook = true;
-
-        // TODO VERY IMPORTANT this is not being triggered on WP AJAX
-        // WILL RUN twice.. maybe just add a global to protect
-        \add_action('acf/save_post', [$this, 'translateAcfFields']);
-
-        // for posts we translate in sync with Bond save post hook
-        \add_action('Bond/translate_post', [$this, 'translatePostHook'], 1, 2);
-
-        // for ACF options
-        \add_action('Bond/translate_options', [$this, 'translateOptionsHook']);
+        return $title;
     }
 
     public function translateAcfFields($id)
@@ -139,18 +272,6 @@ class Multilanguage
             $this->translatePostHook($post->post_type, $post->ID);
         }
     }
-
-    public function removeTranslatePostHook()
-    {
-        $this->added_post_hook = false;
-
-        \remove_action('acf/save_post', [$this, 'translateAcfFields']);
-
-        \remove_action('Bond/translate_post', [$this, 'translatePostHook'], 1, 2);
-
-        \remove_action('Bond/translate_options', [$this, 'translateOptionsHook']);
-    }
-
 
     public function translateOptionsHook()
     {
@@ -714,43 +835,16 @@ class Multilanguage
 
     // Taxonomy
 
-    protected function filterTaxonomyName()
+    public function filterTermName($name, $term)
     {
-        static $enabled = null;
-        if ($enabled) {
-            return;
+        $term = Cast::term($term);
+
+        // handles only the taxonomy added here
+        if ($term && in_array($term->taxonomy, $this->taxonomies)) {
+            return $term->name();
         }
-        $enabled = true;
 
-
-        // \add_filter('term_name', function ($pad_tag_name, $term) {
-
-        //     $term = Cast::term($term);
-
-        //     // handles only the taxonomy added here
-        //     if ($term && in_array($term->taxonomy, $this->taxonomies)) {
-        //         return $term->get('name', Language::code()) ?: $term->name;
-        //     }
-
-        //     return $term->name ?? '';
-        // }, 10, 2);
-
-
-        // // TODO NOT Sticking to typeRadio
-        // // MUST FIRST look for another wordpress hooks besides the term_name
-
-        // \add_filter('acf/fields/taxonomy/result', function ($title, $term) {
-
-        //     $term = Cast::term($term);
-
-        //     // handles only the taxonomy added here
-        //     if ($term && in_array($term->taxonomy, $this->taxonomies)) {
-        //         return $term->get('name', Language::code())
-        //             ?: $term->name ?: $title;
-        //     }
-        //     //    TODO teste the limite stirng, and remove
-        //     return $term->name ?: $title;
-        // }, 10, 2);
+        return $name;
     }
 
 
@@ -775,7 +869,7 @@ class Multilanguage
 
         foreach (Language::codes() as $code) {
 
-            // we must to use WP fields for the default language
+            // we must use WP fields for the default language
             if (Language::isDefault($code)) {
                 continue;
             }
@@ -789,24 +883,6 @@ class Multilanguage
             $group->textField('slug' . $suffix)
                 ->label('Slug ' . $label, 'en');
         }
-    }
-
-    public function addTranslateTermHook()
-    {
-        if ($this->added_term_hook) {
-            return;
-        }
-        $this->added_term_hook = true;
-
-        // we translate in sync with Bond save term hook
-        \add_action('Bond/translate_term', [$this, 'translateTermHook'], 1, 2);
-    }
-
-    public function removeTranslateTermHook()
-    {
-        $this->added_term_hook = false;
-
-        \remove_action('Bond/translate_term', [$this, 'translateTermHook'], 1, 2);
     }
 
     public function translateTermHook(string $taxonomy, int $term_id)
