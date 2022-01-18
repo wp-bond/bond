@@ -23,6 +23,8 @@ class Translation implements ServiceInterface
     protected array $glossaries = [];
     protected string $storage_path;
 
+    private ?string $last_gettext_locale = null;
+
 
     public function config(
         ?bool $enabled = null,
@@ -50,12 +52,22 @@ class Translation implements ServiceInterface
 
     public function enable()
     {
-        $this->enabled = true;
+        if (!$this->enabled) {
+            $this->enabled = true;
+
+            // load WP GetText if needed
+            $this->loadThemeGetText();
+        }
     }
 
     public function disable()
     {
-        $this->enabled = false;
+        if ($this->enabled) {
+            $this->enabled = false;
+
+            // unload WP GetText
+            $this->unloadThemeGetText();
+        }
     }
 
     public function getWrittenLanguage(): string
@@ -87,6 +99,35 @@ class Translation implements ServiceInterface
             . DIRECTORY_SEPARATOR . $language_code . '.json';
     }
 
+    /**
+     * Only loads if the translation service is 'wp' and if is enabled. So nothing will be loaded if the translation is being handled by Google or AWS.
+     *
+     * @see https://developer.wordpress.org/reference/functions/load_theme_textdomain/
+     */
+    public function loadThemeGetText()
+    {
+        global $locale;
+        if ($locale !== $this->last_gettext_locale) {
+
+            // unload WP GetText
+            $this->unloadThemeGetText();
+
+            // load WP gettext, if not handling translations automatically
+            if ($this->enabled && $this->service === 'wp') {
+                $this->last_gettext_locale = $locale;
+                \load_theme_textdomain(app()->id(), app()->languagesPath());
+            }
+        }
+    }
+
+    public function unloadThemeGetText()
+    {
+        global $l10n;
+        unset($l10n[app()->id()]);
+        $this->last_gettext_locale = null;
+    }
+
+
     // API
 
     public function get(
@@ -95,11 +136,23 @@ class Translation implements ServiceInterface
         string $written_language = null,
         string $context = null
     ) {
+        if (!$this->enabled) {
+            return $input;
+        }
 
+        // skip if empty or numeric
+        if (empty($input) || is_numeric($input)) {
+            return $input;
+        }
+
+        // recurse if array|Fluent|FluentList
         if (
             is_array($input)
             || $input instanceof Fluent
+            || $input instanceof FluentList
         ) {
+
+            // create a new object to ouput
             if (is_array($input)) {
                 $out = [];
             } elseif (
@@ -109,8 +162,9 @@ class Translation implements ServiceInterface
                 $class = get_class($input);
                 $out = new $class;
             }
+
+            // translate each value recursively
             foreach ($input as $k => $in) {
-                // recursive
                 $out[$k] = $this->get(
                     $in,
                     $language_code,
@@ -121,6 +175,7 @@ class Translation implements ServiceInterface
             return $out;
         }
 
+        // translate string
         return $this->_get(
             (string) $input,
             $language_code,
@@ -137,16 +192,22 @@ class Translation implements ServiceInterface
 
     ): string {
 
-        // we won't translate empty strings
-        if (empty($string)) {
+        // we won't translate empty or numeric strings
+        if (empty($string) || is_numeric($string)) {
             return $string;
         }
-        // Fallback to gettext
-        if (!$this->hasTranslationApi()) {
+
+        // Fallback to WP gettext
+        if ($this->service === 'wp') {
             if ($context) {
                 return _x($string, $context, app()->id());
             }
             return __($string, app()->id());
+        }
+
+        // skip if no service is available
+        if (!$this->hasTranslationApi()) {
+            return $string;
         }
 
         // ensures it's a language code

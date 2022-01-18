@@ -190,13 +190,8 @@ class Language
         // change WP locale
         $locale = $to;
 
-        // clear WP i18n
-        unset($l10n[app()->id()]);
-
-        // load WP gettext, if not handling translations automatically
-        if (!app()->translation()->hasTranslationApi()) {
-            \load_theme_textdomain(app()->id(), app()->languagesPath());
-        }
+        // load theme's GetText if needed
+        app()->translation()->loadThemeGetText();
     }
 
     public static function resetLocale()
