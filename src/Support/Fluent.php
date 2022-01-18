@@ -25,34 +25,33 @@ class Fluent implements
     protected array $exclude;
 
 
-    public function __construct($values = null)
+    public function __construct($data = null)
     {
-        $this->add($values);
+        $this->add($data);
     }
 
-    public function add($values): self
+    public function add($data): self
     {
-        if (!empty($values)) {
+        if (!empty($data)) {
 
-            if (is_object($values)) {
-                $values = Obj::vars($values);
+            if (is_object($data)) {
+                $data = Obj::vars($data);
             }
 
-            if (!is_array($values)) {
+            if (!is_array($data)) {
                 throw new InvalidArgumentException('Only add arrays or objects to Fluent');
             }
 
-            // don't let unwanted values in
+            // don't let unwanted data in
             if (isset($this->exclude)) {
-                $values = array_diff_key(
-                    $values,
+                $data = array_diff_key(
+                    $data,
                     array_flip($this->exclude)
                 );
             }
 
             // transfer in
-
-            foreach ($values as $key => $value) {
+            foreach ($data as $key => $value) {
                 if (isset($this->{$key}) && $this->{$key} instanceof Fluent) {
                     $this->{$key}->add($value);
                 } else {
@@ -254,9 +253,9 @@ class Fluent implements
         return $this->all();
     }
 
-    public function __unserialize(array $values): void
+    public function __unserialize(array $data): void
     {
-        $this->add($values);
+        $this->add($data);
     }
 
     /**
@@ -267,6 +266,13 @@ class Fluent implements
     public function __toString(): string
     {
         return '';
+    }
+
+    public function jsTag(string $js_var_name): string
+    {
+        return '<script>'
+            . $js_var_name . ' = JSON.parse(' . json_encode(json_encode($this)) . ')'
+            . '</script>';
     }
 
     /**
