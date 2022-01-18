@@ -131,9 +131,8 @@ class Field implements ArrayAccess
             $values['type'] = $this->type;
         }
         if (!isset($values['label'])) {
-            $values['label'] = Str::title($values['name'], true);
+            $values['label'] = tx(Str::title($values['name'], true), 'fields');
         }
-
         // recurse on sub fields
         foreach (['sub_fields', 'layouts'] as $subs) {
             if (isset($this->{$subs})) {
