@@ -113,7 +113,7 @@ class Rewrite
         }
 
         if (!$path) {
-            $path = Link::search();
+            $path = Link::search(Language::defaultCode());
         }
 
         if (!is_array($path)) {
