@@ -12,7 +12,7 @@ class Wp
 {
     public static function isFrontEnd(): bool
     {
-        return !\is_admin() && \wp_using_themes() && !static::isCli();
+        return !\is_admin() && c('WP_USE_THEMES') && !static::isCli();
     }
 
     public static function isAdmin(): bool
