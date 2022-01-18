@@ -13,8 +13,8 @@ use Bond\Utils\Str;
 // The Meta class, basically a storage and meta tag printer
 
 // TODO needs upgrade
+// is there advantage to extend Fluent?
 
-// TODO remove the config usage for a constructor based settings
 class Meta implements ServiceInterface
 {
     // settings
@@ -27,7 +27,7 @@ class Meta implements ServiceInterface
     public string $url = '';
     public array $images = []; // urls or ids
     public array $alternate = []; // associative by language code
-    public string $image_size = 'meta';
+    public string $image_size = 'large';
 
     // author
     public string $author;
@@ -48,6 +48,7 @@ class Meta implements ServiceInterface
     public string $twitter_player_width;
     public string $twitter_player_height;
 
+    // TODO upgrade to handle facebook/twitter etc
     public function config(
         ?bool $enabled = null,
         ?string $image_size = null,
