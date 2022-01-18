@@ -153,7 +153,6 @@ class FluentList implements
      * Serialize the array to JSON.
      *
      * @see http://php.net/jsonserializable.jsonserialize
-     * @return array
      */
     public function jsonSerialize(): array
     {
