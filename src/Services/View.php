@@ -37,7 +37,7 @@ class View extends Fluent implements ServiceInterface
         ?array $data = null,
     ) {
 
-        if ($use_theme) {
+        if ($use_theme && $enabled) {
             if (!isset($lookup_folders)) {
                 $lookup_folders = [app()->viewsPath()];
             }
