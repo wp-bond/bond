@@ -41,21 +41,25 @@ class Sitemap implements ServiceInterface
         }
 
         if (isset($post_types)) {
-            if ($post_types) {
+            if (count($post_types)) {
                 $this->postTypes($post_types);
             } else {
                 $this->disablePosts();
             }
         }
         if (isset($taxonomies)) {
-            if ($taxonomies) {
+            if (count($taxonomies)) {
                 $this->taxonomies($taxonomies);
             } else {
                 $this->disableTaxonomies();
             }
         }
         if (isset($users)) {
-            if (!$users) {
+            if (count($users)) {
+                // TODO how to add only specific user to sitemap?
+                // or even a method to allow all of specific roles, but still hide some users?
+                // $this->users($users);
+            } else {
                 $this->disableUsers();
             }
         }
