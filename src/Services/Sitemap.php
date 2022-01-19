@@ -27,14 +27,8 @@ class Sitemap implements ServiceInterface
         ?array $skip_archives = null,
         ?array $skip_singles = null,
         ?array $skip_pages = null,
+        ?bool $disable_wp_sitemap = false
     ) {
-        if (isset($enabled)) {
-            if ($enabled) {
-                $this->enable();
-            } else {
-                $this->disable();
-            }
-        }
 
         if ($stylesheet === false) {
             $this->disableStylesheet();
@@ -73,6 +67,19 @@ class Sitemap implements ServiceInterface
         if (isset($skip_pages)) {
             $this->skip_pages = $skip_pages;
         }
+
+        if ($disable_wp_sitemap) {
+            $this->disableWpSitemap();
+            $enabled = false;
+        }
+
+        if (isset($enabled)) {
+            if ($enabled) {
+                $this->enable();
+            } else {
+                $this->disable();
+            }
+        }
     }
 
     public function enable()
@@ -91,7 +98,7 @@ class Sitemap implements ServiceInterface
         }
     }
 
-    public function disable(bool $including_wp_sitemaps = true)
+    public function disable()
     {
         if ($this->enabled) {
             $this->enabled = false;
@@ -99,14 +106,15 @@ class Sitemap implements ServiceInterface
             \remove_filter('wp_sitemaps_posts_pre_url_list', [$this, 'postsUrls'], 10, 3);
 
             \remove_action('wp_sitemaps_init', [$this, 'revertRenderer'], 11);
-
-            if ($including_wp_sitemaps) {
-                \add_filter('wp_sitemaps_enabled', '__return_false');
-                \add_action('init', function () {
-                    \remove_action('init', 'wp_sitemaps_get_server');
-                }, 5);
-            }
         }
+    }
+
+    public function disableWpSitemap()
+    {
+        \add_filter('wp_sitemaps_enabled', '__return_false');
+        \add_action('init', function () {
+            \remove_action('init', 'wp_sitemaps_get_server');
+        }, 5);
     }
 
     public function disableStylesheet()
