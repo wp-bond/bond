@@ -2,8 +2,10 @@
 
 namespace Bond\Services\Cache;
 
-use Bond\Settings\Wp;
 use Bond\Utils\Str;
+
+// TODO implement Service interface too and update the enabled and config methods
+// clean Config.php afterwards
 
 abstract class AbstractCache implements CacheInterface
 {
@@ -13,7 +15,7 @@ abstract class AbstractCache implements CacheInterface
     public function __construct()
     {
         // disable initially if WP CLI
-        if (Wp::isCli()) {
+        if (app()->isCli()) {
             $this->enabled(false);
         }
 

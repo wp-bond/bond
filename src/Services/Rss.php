@@ -5,7 +5,6 @@ namespace Bond\Services;
 use Bond\Services\View;
 use Bond\Settings\Language;
 use Bond\Settings\Rewrite;
-use Bond\Settings\Wp;
 use Bond\Utils\Link;
 use Bond\Utils\Query;
 
@@ -80,7 +79,7 @@ class Rss implements ServiceInterface
         \remove_action('wp_head', 'feed_links', 2);
 
         // rewrite rules
-        if (Wp::isAdmin()) {
+        if (app()->isAdmin()) {
             \add_filter('rewrite_rules_array', function (array $rules) {
 
                 foreach ($rules as $regex => $match) {

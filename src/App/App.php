@@ -15,7 +15,6 @@ use Bond\Services\Sitemap;
 use Bond\Services\View;
 use Bond\Utils\Cast;
 use Bond\Utils\Link;
-use Bond\Settings\Wp;
 use League\Container\Container;
 use League\Container\ReflectionContainer;
 use Mobile_Detect;
@@ -218,7 +217,7 @@ class App extends Container
             }
 
             // admin too
-            if (Wp::isAdmin() && method_exists($classname, 'bootAdmin')) {
+            if (app()->isAdmin() && method_exists($classname, 'bootAdmin')) {
                 call_user_func($classname . '::bootAdmin');
             }
         }
@@ -237,6 +236,21 @@ class App extends Container
     public function url(): string
     {
         return $this->config()->app->url ??= \untrailingslashit(c('WP_HOME') ?: \get_site_url());
+    }
+
+    public function isFrontEnd(): bool
+    {
+        return !\is_admin() && c('WP_USE_THEMES') && !$this->isCli();
+    }
+
+    public function isAdmin(): bool
+    {
+        return \is_admin() && \is_user_logged_in();
+    }
+
+    public function isCli(): bool
+    {
+        return (bool) c('WP_CLI');
     }
 
     public function isProduction(): bool
@@ -277,6 +291,8 @@ class App extends Container
         }
         return $this->is_desktop;
     }
+
+
 
     public function basePath(): string
     {

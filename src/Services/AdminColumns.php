@@ -4,7 +4,6 @@ namespace Bond\Services;
 
 use Bond\Post;
 use Bond\Settings\Language;
-use Bond\Settings\Wp;
 use Bond\Term;
 use Bond\User;
 use Bond\Utils\Cast;
@@ -28,7 +27,7 @@ class AdminColumns implements ServiceInterface
 
     public function enable()
     {
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -146,7 +145,7 @@ class AdminColumns implements ServiceInterface
         string $css = null
     ) {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
         $this->columns[$name] = compact('handler', 'width', 'css');
@@ -186,7 +185,7 @@ class AdminColumns implements ServiceInterface
     public function setPostTypeColumns(string $post_type, array $columns)
     {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -207,7 +206,7 @@ class AdminColumns implements ServiceInterface
     public function setTaxonomyColumns(string $taxonomy, array $columns)
     {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
         \add_filter(
@@ -221,7 +220,7 @@ class AdminColumns implements ServiceInterface
     public function setUsersColumns(array $columns)
     {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 

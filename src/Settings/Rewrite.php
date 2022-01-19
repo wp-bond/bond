@@ -12,7 +12,7 @@ class Rewrite
     public static function reset()
     {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -61,7 +61,7 @@ class Rewrite
     public static function pages()
     {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -108,7 +108,7 @@ class Rewrite
         array $extra_params = []
     ) {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -160,7 +160,7 @@ class Rewrite
         bool $multilanguage = false
     ) {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -214,7 +214,7 @@ class Rewrite
         array $extra_params = []
     ) {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -282,7 +282,7 @@ class Rewrite
         array $extra_params = []
     ) {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -323,7 +323,7 @@ class Rewrite
         array $params = []
     ) {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -355,7 +355,7 @@ class Rewrite
         array $extra_params = []
     ) {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 

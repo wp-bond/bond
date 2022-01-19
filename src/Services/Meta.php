@@ -2,7 +2,6 @@
 
 namespace Bond\Services;
 
-use Bond\Settings\Wp;
 use Bond\Settings\Language;
 use Bond\Utils\Cast;
 use Bond\Utils\Image;
@@ -79,7 +78,7 @@ class Meta implements ServiceInterface
     {
         // do not enable when it is on WP admin
         // nor when programatically loading WP
-        if (Wp::isFrontEnd()) {
+        if (app()->isFrontEnd()) {
             \add_action('wp', [$this, 'setDefaults'], 2);
             \add_action('wp_head', [$this, 'printAllTags'], 99);
         }

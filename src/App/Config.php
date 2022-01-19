@@ -130,10 +130,6 @@ class Config extends Fluent
 
     protected function cacheSettings()
     {
-        if (Wp::isCli()) {
-            $this->cache->enabled = false;
-        }
-
         if ($this->cache->class) {
             $this->container->addShared('cache', $this->cache->class);
         }

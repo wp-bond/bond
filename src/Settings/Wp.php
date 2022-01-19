@@ -8,28 +8,12 @@ use Bond\Utils\Str;
 // Ideas for later:
 // Wp::disableComments, for now using plugin disable-comments
 
-// TODO IDEA, migrate to App and remove wp.php config entirelly
+// TODO IDEA, migrate everything to App and remove wp.php config entirelly
 // 'Wp' naming is not being autofilled by VS Code
-// looks like the image may become a service
+// looks like the image may become a service too, maybe Uploads or Media...
 
 class Wp
 {
-    public static function isFrontEnd(): bool
-    {
-        return !\is_admin() && c('WP_USE_THEMES') && !static::isCli();
-    }
-
-    public static function isAdmin(): bool
-    {
-        return \is_admin() && \is_user_logged_in();
-    }
-
-    public static function isCli(): bool
-    {
-        return (bool) c('WP_CLI');
-    }
-
-
     // Images
 
     public static function sanitizeFilenames()

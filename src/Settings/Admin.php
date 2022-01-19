@@ -10,7 +10,7 @@ class Admin
     public static function setEditorImageSizes(array $sizes)
     {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -28,7 +28,7 @@ class Admin
     public static function removeUpdateNag()
     {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -45,7 +45,7 @@ class Admin
     public static function addEditorCss()
     {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -83,7 +83,7 @@ class Admin
     public static function addColorScheme()
     {
         // don't even add the hook if not on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -103,7 +103,7 @@ class Admin
     public static function addAdminCss()
     {
         // don't even add the hook if not on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -157,13 +157,13 @@ class Admin
 
     public static function hidePosts()
     {
-        if (Wp::isAdmin() || config('html.admin_bar') !== false) {
+        if (app()->isAdmin() || config('html.admin_bar') !== false) {
             \add_action('wp_before_admin_bar_render', function () {
                 global $wp_admin_bar;
                 $wp_admin_bar->remove_menu('new-post');
             });
         }
-        if (Wp::isAdmin()) {
+        if (app()->isAdmin()) {
             \add_action('admin_menu', function () {
                 \remove_menu_page('edit.php');
             }, 999);
@@ -174,7 +174,7 @@ class Admin
     public static function addFooterCredits()
     {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -186,7 +186,7 @@ class Admin
     public static function removeWpVersion()
     {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -212,7 +212,7 @@ class Admin
     public static function replaceDashboard()
     {
         // only needed on admin
-        if (!Wp::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -276,7 +276,7 @@ class Admin
 
     public static function hideTitle($post_types)
     {
-        if (empty($post_types) || !Wp::isAdmin()) {
+        if (empty($post_types) || !app()->isAdmin()) {
             return;
         }
 

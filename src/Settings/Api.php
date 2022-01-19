@@ -38,7 +38,7 @@ class Api
     public static function disableDefaultRoutes()
     {
         // do not disable if is on admin
-        if (Wp::isAdmin()) {
+        if (app()->isAdmin()) {
             return;
         }
 
@@ -50,7 +50,7 @@ class Api
     public static function disableRootRoute()
     {
         // does not disable if is on admin
-        if (Wp::isAdmin()) {
+        if (app()->isAdmin()) {
             return;
         }
 
