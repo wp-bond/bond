@@ -5,7 +5,6 @@ use Bond\Services\Cache\CacheInterface;
 use Bond\Services\Meta;
 use Bond\Services\View;
 use Bond\Tooling\Vite;
-use Bond\Utils\Str;
 
 if (!function_exists('app')) {
     /**
@@ -57,7 +56,6 @@ if (!function_exists('c')) {
 }
 
 if (!function_exists('t')) {
-
     function t(
         $input,
         string $language_code = null,
@@ -69,7 +67,6 @@ if (!function_exists('t')) {
 }
 
 if (!function_exists('tx')) {
-
     function tx(
         $input,
         string $context,
@@ -78,13 +75,6 @@ if (!function_exists('tx')) {
     ) {
         return app()->translation()
             ->get($input, $language_code, $written_language, $context);
-    }
-}
-
-if (!function_exists('esc_json')) {
-    function esc_json($data): string
-    {
-        return Str::escJson($data);
     }
 }
 

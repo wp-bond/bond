@@ -8,6 +8,10 @@ use Bond\Utils\Str;
 // Ideas for later:
 // Wp::disableComments, for now using plugin disable-comments
 
+// TODO IDEA, migrate to App and remove wp.php config entirelly
+// 'Wp' naming is not being autofilled by VS Code
+// looks like the image may become a service
+
 class Wp
 {
     public static function isFrontEnd(): bool
@@ -137,17 +141,6 @@ class Wp
             \update_option('users_can_register', false);
         });
     }
-
-
-    public static function disableSitemaps()
-    {
-        \add_filter('wp_sitemaps_enabled', '__return_false');
-
-        \add_action('init', function () {
-            \remove_action('init', 'wp_sitemaps_get_server');
-        }, 5);
-    }
-
 
     public static function updateSettings()
     {

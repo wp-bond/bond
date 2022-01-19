@@ -192,6 +192,11 @@ class Post extends Fluent
         return Str::filterContent($this->post_content);
     }
 
+    // TODO consider adding url() as a shortcut to app()->url()+link
+    // if so, add to PostType and Tax as well
+
+    // TODO review again the external_link, as it is a url, not a link, therefore should not even be returned at the link method. And redirectLink would need to be renamed to redirectUrl
+
     public function link(string $language = null): string
     {
         // if disabled honor external links, but do not fallback
@@ -210,6 +215,11 @@ class Post extends Fluent
         return '';
     }
 
+    /**
+     * Checks if the post is disabled for the current language.
+     *
+     * This is a common feature for multilanguage projects as it allows to publish a post in one language and disable in others.
+     */
     public function isDisabled(string $language = null): bool
     {
         return !empty($this->get('is_disabled', $language));

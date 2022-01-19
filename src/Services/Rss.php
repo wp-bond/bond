@@ -32,7 +32,7 @@ class Rss implements ServiceInterface
                 $this->disable();
             }
         }
-        if ($disable_wp_rss === false) {
+        if ($disable_wp_rss) {
             $this->disableWpRss();
         }
     }

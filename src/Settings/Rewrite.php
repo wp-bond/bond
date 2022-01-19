@@ -113,6 +113,7 @@ class Rewrite
         }
 
         if (!$path) {
+            // TODO maybe if the rewrite is upgraded to a service, set the search_path here, and make Language read from here
             $path = Link::search(Language::defaultCode());
         }
 

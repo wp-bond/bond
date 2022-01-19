@@ -8,12 +8,6 @@ use Bond\Utils\Query;
 
 class Link
 {
-    // protected $app;
-    // public function __construct(App $app)
-    // {
-    //     $this->app = $app;
-    // }
-
 
     public static function url(string $url): string
     {
