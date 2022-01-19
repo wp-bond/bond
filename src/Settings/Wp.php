@@ -112,7 +112,7 @@ class Wp
     public static function disableUserRegistration()
     {
         // only on admin
-        if (!static::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
@@ -129,7 +129,7 @@ class Wp
     public static function updateSettings()
     {
         // only on admin
-        if (!static::isAdmin()) {
+        if (!app()->isAdmin()) {
             return;
         }
 
