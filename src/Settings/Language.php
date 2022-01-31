@@ -73,6 +73,15 @@ class Language
         return array_keys(self::$languages);
     }
 
+    public static function shortCodes(): array
+    {
+        $short_codes = [];
+        foreach (self::codes() as $code) {
+            $short_codes[] = self::shortCode($code);
+        }
+        return $short_codes;
+    }
+
     public static function defaultCode(): string
     {
         return self::$default;
@@ -111,7 +120,7 @@ class Language
 
     public static function isDefault(string $code = null): bool
     {
-        return self::defaultCode() === ($code ?: self::code());
+        return self::defaultCode() === self::code($code);
     }
 
     public static function getCurrent(): string
@@ -209,6 +218,7 @@ class Language
         return self::usesDefaultInUrl() || !self::isDefault($code);
     }
 
+    // TODO clean this up, create a config method
     public static function usesDefaultInUrl(): bool
     {
         return self::$default_in_url;

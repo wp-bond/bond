@@ -163,6 +163,7 @@ class Post extends Fluent
         return Query::postTypeName($this->post_type, $singular, $language);
     }
 
+
     // TODO maybe use __call for all methods like this?
     // for example I have subtitle in my project, and it could be better fit to use a method instead?
     public function title(string $language = null): string

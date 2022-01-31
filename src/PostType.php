@@ -14,6 +14,12 @@ use Bond\Utils\Str;
 // it's better as we can use the constructor and it's more flexible
 
 // TODO could allow page_template to make field registration easier, but review the Cast before doing so
+
+// TODO MAYBE when it's non-static, consider adding a config/register method similar to Services, that way we could configure from simple arrays, and even create classes in runtime... would be a config post-types.php ... the main drawback now is to know where it's best to register all fields
+// IDEA, if the post types are in the container, maybe:
+// app()->postType('products')->fieldGroup(...);
+
+
 abstract class PostType
 {
     public static string $post_type;
@@ -25,9 +31,9 @@ abstract class PostType
     // we may elect some more props here
 
 
-    public static function link(string $language_code = null): string
+    public static function link(string $language = null): string
     {
-        return Link::forPostTypes(static::$post_type, $language_code);
+        return Link::forPostTypes(static::$post_type, $language);
     }
 
     public static function register()
@@ -86,6 +92,7 @@ abstract class PostType
 
     // TODO IDEA, we could automatically provide directly in View
     // just the posts actually, since we don't need to rely on global $post / $posts;
+    // MAYBE even the post itself is sent to the view, just like the RSS item
     public static function archive()
     {
         global $posts;
