@@ -2,6 +2,8 @@
 
 namespace Bond\Settings;
 
+use Bond\Services\View;
+
 class Admin
 {
     private static $tax_hide_fields = [];
@@ -218,13 +220,17 @@ class Admin
 
         \add_action('wp_loaded', function () {
             if (isset($_GET['dashboard-html'])) {
-                view()->template('dashboard');
+
+                $view = new View();
+                $view->addLookupFolder(app()->viewsPath());
+                $view->template('dashboard');
                 exit;
             }
         });
 
         \add_action('admin_head', function () {
             global $current_screen;
+
             if ($current_screen->id === 'dashboard') :
 ?>
                 <script>
