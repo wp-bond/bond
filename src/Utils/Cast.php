@@ -128,6 +128,11 @@ class Cast
     // TODO maybe remove the convertion of post types
     // if needed users do it directly
 
+    public static function page($post): ?Post
+    {
+        return static::post($post, 'page');
+    }
+
     public static function post($post, string $post_type = null): ?Post
     {
         if (empty($post)) {
@@ -191,10 +196,18 @@ class Cast
 
                     function () use ($slug, $post_type) {
 
-                        $post = Query::wpPostBySlug(
-                            $slug,
-                            $post_type
-                        );
+                        if (strpos($slug, '/') !== false) {
+                            $post = Query::wpPostByPath(
+                                $slug,
+                                $post_type
+                            );
+                        } else {
+                            $post = Query::wpPostBySlug(
+                                $slug,
+                                $post_type
+                            );
+                        }
+
                         if (!$post) {
                             return null;
                         }
