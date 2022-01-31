@@ -58,11 +58,11 @@ if (!function_exists('c')) {
 if (!function_exists('t')) {
     function t(
         $input,
-        string $language_code = null,
+        string $language = null,
         string $written_language = null
     ) {
         return app()->translation()
-            ->get($input, $language_code, $written_language);
+            ->get($input, $language, $written_language);
     }
 }
 
@@ -70,11 +70,11 @@ if (!function_exists('tx')) {
     function tx(
         $input,
         string $context,
-        string $language_code = null,
+        string $language = null,
         string $written_language = null
     ) {
         return app()->translation()
-            ->get($input, $language_code, $written_language, $context);
+            ->get($input, $language, $written_language, $context);
     }
 }
 

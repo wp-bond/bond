@@ -132,7 +132,7 @@ class Translation implements ServiceInterface
 
     public function get(
         $input,
-        string $language_code = null,
+        string $language = null,
         string $written_language = null,
         string $context = null
     ) {
@@ -167,7 +167,7 @@ class Translation implements ServiceInterface
             foreach ($input as $k => $in) {
                 $out[$k] = $this->get(
                     $in,
-                    $language_code,
+                    $language,
                     $written_language,
                     $context
                 );
@@ -178,7 +178,7 @@ class Translation implements ServiceInterface
         // translate string
         return $this->_get(
             (string) $input,
-            $language_code,
+            $language,
             $written_language,
             $context
         );
@@ -186,7 +186,7 @@ class Translation implements ServiceInterface
 
     private function _get(
         string $string,
-        string $language_code = null,
+        string $language = null,
         string $written_language = null,
         string $context = null
 
@@ -212,7 +212,7 @@ class Translation implements ServiceInterface
 
         // ensures it's a language code
         // fallbacks to current language if invalid
-        $language_code = Language::code($language_code);
+        $language_code = Language::code($language);
 
         // defaults
         if (!$written_language) {

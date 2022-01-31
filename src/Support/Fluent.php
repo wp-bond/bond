@@ -114,9 +114,9 @@ class Fluent implements
         return json_encode($this, $options, $depth);
     }
 
-    public function get($key, string $language_code = null)
+    public function get($key, string $language = null)
     {
-        if (!$language_code) {
+        if (!$language) {
             return $this->__get($key);
         }
 
@@ -125,11 +125,11 @@ class Fluent implements
         }
 
         if (strpos($key, '.') === false) {
-            $key .= Language::fieldsSuffix($language_code);
+            $key .= Language::fieldsSuffix($language);
             return isset($this->{$key}) ? $this->{$key} : null;
         }
 
-        return $this->getByDot($key, $language_code);
+        return $this->getByDot($key, $language);
     }
 
     public function __get(string $key): mixed
@@ -155,7 +155,7 @@ class Fluent implements
         return $this->getByDot($key);
     }
 
-    private function getByDot(string $key, string $language_code = null): mixed
+    private function getByDot(string $key, string $language = null): mixed
     {
         $target = $this;
         $keys = explode('.', $key);
@@ -171,7 +171,7 @@ class Fluent implements
                 if ($target instanceof Fluent && $i + 1 < $n) {
                     return $target->get(
                         implode('.', array_slice($keys, $i + 1)),
-                        $language_code
+                        $language
                     );
                 }
             } else {

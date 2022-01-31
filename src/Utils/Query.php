@@ -16,6 +16,7 @@ class Query
 {
     // Query post by id not needed, use Cast::post
     // Query term by id not needed, use Cast::term
+    // TODO maybe turn this class fully cached, and migrate Cast::post/term here? at least how to choose one or the other?
 
     // TODO
     // termByMeta()
@@ -58,16 +59,17 @@ class Query
     }
 
 
+    // TODO maybe upgrade this method to only post, and allow int, string, WP_Post, etc
     public static function postBySlug(
         string $slug,
         string|array|null $post_type = null,
-        string $language_code = null,
+        string $language = null,
         array $params = []
     ): ?Post {
         return Cast::post(static::wpPostBySlug(
             $slug,
             $post_type,
-            $language_code,
+            $language,
             $params
         ));
     }
@@ -75,9 +77,13 @@ class Query
     public static function wpPostBySlug(
         string $slug,
         string|array|null $post_type = null,
-        string $language_code = null,
+        string $language = null,
         array $params = []
     ): ?WP_Post {
+
+        if (empty($slug)) {
+            return null;
+        }
 
         if (Language::isMultilanguage()) {
             $query_args = [
@@ -90,7 +96,7 @@ class Query
                 'update_post_term_cache' => false,
                 'meta_query' => [
                     [
-                        'key' => 'slug' . Language::fieldsSuffix($language_code),
+                        'key' => 'slug' . Language::fieldsSuffix($language),
                         'value' => $slug,
                         'compare' => '==',
                     ],
@@ -136,11 +142,24 @@ class Query
 
     public static function wpPostByPath(
         string $path,
-        string|array $post_type = 'page'
+        string|array $post_type = 'page',
+        string $language = null,
+        array $params = []
     ): ?WP_Post {
+
         if (empty($path)) {
             return null;
         }
+
+        if (Language::isMultilanguage()) {
+            return static::wpPostBySlug(
+                $path,
+                $post_type,
+                $language,
+                $params
+            );
+        }
+
         return \get_page_by_path(
             $path,
             'OBJECT',

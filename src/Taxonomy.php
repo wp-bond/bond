@@ -17,9 +17,9 @@ abstract class Taxonomy
     public static string $singular_name;
     public static array $register_options = [];
 
-    public static function link(string $language_code = null): string
+    public static function link(string $language = null): string
     {
-        return Link::forTaxonomies(static::$taxonomy, $language_code);
+        return Link::forTaxonomies(static::$taxonomy, $language);
     }
 
     public static function register()
