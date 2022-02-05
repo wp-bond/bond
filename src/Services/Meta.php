@@ -3,6 +3,7 @@
 namespace Bond\Services;
 
 use Bond\Settings\Language;
+use Bond\Support\Fluent;
 use Bond\Utils\Cast;
 use Bond\Utils\Image;
 use Bond\Utils\Link;
@@ -12,9 +13,8 @@ use Bond\Utils\Str;
 // The Meta class, basically a storage and meta tag printer
 
 // TODO needs upgrade
-// is there advantage to extend Fluent?
 
-class Meta implements ServiceInterface
+class Meta extends Fluent implements ServiceInterface
 {
     // settings
     protected string $title_separator = '-';
@@ -31,7 +31,15 @@ class Meta implements ServiceInterface
     // author
     public string $author;
 
-    // og
+    //
+    public Fluent $og;
+    public Fluent $article;
+    public Fluent $facebook;
+    public Fluent $twitter;
+    public Fluent $instagram;
+    public Fluent $pinterest;
+
+    // TODO migrate all to the new Fluents above
     public string $og_type = 'website';
     public string $og_title = '';
     public string $og_description = '';
@@ -47,23 +55,22 @@ class Meta implements ServiceInterface
     public string $twitter_player_width;
     public string $twitter_player_height;
 
-    // TODO upgrade to handle facebook/twitter etc
+    public function __construct($data = null)
+    {
+        $this->og = new Fluent();
+        $this->article = new Fluent();
+        $this->facebook = new Fluent();
+        $this->twitter = new Fluent();
+        $this->instagram = new Fluent();
+        $this->pinterest = new Fluent();
+        parent::__construct($data);
+    }
+
     public function config(
         ?bool $enabled = null,
-        ?string $image_size = null,
-        ?string $title_separator = null,
-        ?string $search_title = null,
+        ...$args
     ) {
-
-        if (isset($image_size)) {
-            $this->image_size = $image_size;
-        }
-        if (isset($title_separator)) {
-            $this->title_separator = $title_separator;
-        }
-        if (isset($search_title)) {
-            $this->search_title = $search_title;
-        }
+        $this->add($args);
 
         if (isset($enabled)) {
             if ($enabled) {
@@ -360,7 +367,7 @@ class Meta implements ServiceInterface
             }
         }
 
-        if ($this->og_type === 'article') {
+        if ($this->og->type === 'article') {
             global $post;
             if (!empty($post)) {
                 $time = strtotime($post->post_date);
@@ -372,28 +379,28 @@ class Meta implements ServiceInterface
                 // https://developers.facebook.com/docs/reference/opengraph/object-type/article
             }
 
-            if (!empty($this->article_section)) {
-                echo '<meta property="article:section" content="' . $this->article_section . '">' . "\n";
+            if ($this->article->section) {
+                echo '<meta property="article:section" content="' . $this->article->section . '">' . "\n";
             }
 
-            if (config('meta.facebook.url')) {
-                echo '<meta property="article:publisher" content="' . config('meta.facebook.url') . '">' . "\n";
+            $publisher = $this->article->publisher ?: $this->facebook->url ?: null;
+            if ($publisher) {
+                echo '<meta property="article:publisher" content="' . $publisher . '">' . "\n";
             }
 
-            if (config('meta.facebook.pages')) {
-                echo '<meta property="fb:pages" content="' . config('meta.facebook.pages') . '">' . "\n";
+            if ($this->facebook->pages) {
+                echo '<meta property="fb:pages" content="' . $this->facebook->pages . '">' . "\n";
             }
         }
     }
 
     public function printFacebookTags()
     {
-        if (config('meta.facebook.app_id')) {
-            echo '<meta property="fb:app_id" content="' . config('meta.facebook.app_id') . '">' . "\n";
+        if ($this->facebook->app_id) {
+            echo '<meta property="fb:app_id" content="' . $this->facebook->app_id . '">' . "\n";
         }
-
-        if (config('meta.facebook.admins')) {
-            echo '<meta property="fb:admins" content="' . config('meta.facebook.admins') . '">' . "\n";
+        if ($this->facebook->admins) {
+            echo '<meta property="fb:admins" content="' . $this->facebook->admins . '">' . "\n";
         }
     }
 
@@ -401,8 +408,8 @@ class Meta implements ServiceInterface
     {
         echo '<meta name="twitter:card" content="' . $this->twitter_card . '">' . "\n";
 
-        if (config('meta.twitter.user')) {
-            echo '<meta name="twitter:site" content="@' . config('meta.twitter.user') . '">' . "\n";
+        if ($this->twitter->user) {
+            echo '<meta name="twitter:site" content="@' . $this->twitter->user . '">' . "\n";
         }
 
         echo '<meta name="twitter:domain" content="' . Str::domain(app()->url()) . '">' . "\n";
