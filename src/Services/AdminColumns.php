@@ -255,6 +255,21 @@ class AdminColumns implements ServiceInterface
     public function outputStyles()
     {
         echo '<style>';
+
+        // default styles
+        echo <<<CSS
+        .column-image {
+            width: 120px;
+        }
+        .column-image img {
+            max-height: 90px;
+            max-width: 100px;
+            width: auto;
+            height: auto;
+        }
+        CSS;
+
+        // column widths
         foreach ($this->columns as $name => $options) {
 
             // set column width
