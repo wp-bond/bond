@@ -31,9 +31,9 @@ class App extends Container
     protected string $theme_id;
     protected string $base_path;
     protected string $env;
-    protected bool $is_mobile;
-    protected bool $is_tablet;
-    protected bool $is_desktop;
+    protected bool $is_mobile = false;
+    protected bool $is_tablet = false;
+    protected bool $is_desktop = false;
 
     public function __construct()
     {
@@ -45,6 +45,9 @@ class App extends Container
 
         // set local vars
         $this->env = c('APP_ENV') ?: 'production';
+
+        // device detect
+        $this->deviceDetect();
 
         // register itself as the main App
         static::current($this);
@@ -270,25 +273,16 @@ class App extends Container
 
     public function isMobile(): bool
     {
-        if (!isset($this->is_mobile)) {
-            $this->deviceDetect();
-        }
         return $this->is_mobile;
     }
 
     public function isTablet(): bool
     {
-        if (!isset($this->is_tablet)) {
-            $this->deviceDetect();
-        }
         return $this->is_tablet;
     }
 
     public function isDesktop(): bool
     {
-        if (!isset($this->is_desktop)) {
-            $this->deviceDetect();
-        }
         return $this->is_desktop;
     }
 
@@ -373,6 +367,11 @@ class App extends Container
 
     protected function deviceDetect()
     {
+        // skip if is WP CLI
+        if ($this->isCli()) {
+            return;
+        }
+
         // first honor Cloudfront
         $header = 'HTTP_CLOUDFRONT_IS_MOBILE_VIEWER';
         if (isset($_SERVER[$header])) {
