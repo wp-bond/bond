@@ -116,4 +116,20 @@ class Arr
     {
         return array_intersect_key($array, array_flip((array) $keys));
     }
+
+    public static function sortKeys(
+        array $array,
+        int $flags = SORT_NATURAL | SORT_FLAG_CASE
+    ): array {
+
+        ksort($array, $flags);
+
+        foreach ($array as &$value) {
+            if (is_array($value) && $value) {
+                $value = static::sortKeys($value, $flags);
+            }
+        }
+
+        return $array;
+    }
 }
