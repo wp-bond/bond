@@ -32,6 +32,7 @@ use Bond\Fields\Acf\TextField;
 use Bond\Fields\Acf\TimeField;
 use Bond\Fields\Acf\UrlField;
 use Bond\Fields\Acf\WysiwygField;
+use Bond\Utils\Str;
 use Closure;
 
 /**
@@ -133,8 +134,10 @@ trait HasSubFields
         return $this->_addField(new MessageField($name), $label);
     }
 
-    public function tabField($name, string $label = null): TabField
+    public function tabField(string $label): TabField
     {
+        $name = 'tab_' . Str::snake($label) . '_' . uniqid();
+
         return $this->_addField(new TabField($name), $label);
     }
 
