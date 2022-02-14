@@ -88,6 +88,12 @@ class Multilanguage implements ServiceInterface
             //     }
             //     // dd($wp_query);
             // });
+
+            // Styles
+            \add_action(
+                'admin_head',
+                [$this, 'outputStyles']
+            );
         }
     }
 
@@ -109,6 +115,12 @@ class Multilanguage implements ServiceInterface
             \remove_action('Bond/translate_term', [$this, 'translateTermHook'], 1, 2);
             \remove_filter('term_name', [$this, 'filterTermName'], 10, 2);
             \remove_filter('acf/fields/taxonomy/result', [$this, 'filterTermName'], 10, 2);
+
+            // Styles
+            \remove_action(
+                'admin_head',
+                [$this, 'outputStyles']
+            );
         }
     }
 
@@ -785,19 +797,22 @@ class Multilanguage implements ServiceInterface
 
         foreach (Language::codes() as $code) {
             $suffix = Language::fieldsSuffix($code);
-            $label = Language::fieldsLabel($code);
+            $lang_label = ' ' . Language::fieldsLabel($code);
 
             $group->textField('title' . $suffix)
-                ->label('Title ' . $label, 'en')
-                ->wrapWidth(60);
+                ->label('Title', 'en')
+                ->wrapWidth(60)
+                ->label .=  $lang_label;
 
             $group->textField('slug' . $suffix)
-                ->label('Slug ' . $label, 'en')
-                ->wrapWidth(30);
+                ->label('Slug', 'en')
+                ->wrapWidth(30)
+                ->label .=  $lang_label;
 
             $group->messageField('bond_link_message_icon' . $suffix)
-                ->label('Link ' . $label, 'en')
-                ->wrapWidth(10);
+                ->label('Link', 'en')
+                ->wrapWidth(10)
+                ->label .=  $lang_label;
         }
 
 
@@ -805,6 +820,8 @@ class Multilanguage implements ServiceInterface
         static $already = null;
         if (!$already) {
             $already = true;
+
+
 
             foreach (Language::codes() as $code) {
                 $suffix = Language::fieldsSuffix($code);
@@ -937,5 +954,20 @@ class Multilanguage implements ServiceInterface
                 }
             }
         }
+    }
+
+
+    public function outputStyles()
+    {
+        echo '<style>';
+        echo <<<CSS
+        .bond-link-arrow {
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: 200;
+            color: inherit;
+        }
+        CSS;
+        echo '</style>';
     }
 }
