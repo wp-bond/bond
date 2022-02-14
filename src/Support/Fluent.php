@@ -190,9 +190,10 @@ class Fluent implements
         return $t;
     }
 
+    // TODO supoort language?
     public function localized(): self
     {
-        return Obj::localize($this, Language::getCurrent());
+        return Obj::localize($this);
     }
 
     public function __set(string $key, mixed $value): void
@@ -316,8 +317,8 @@ class Fluent implements
         return $this->mapKeys([Str::class, 'snake']);
     }
 
-    public function only(array $keys): static
+    public function only(array $keys): Fluent
     {
-        return new static(Arr::only($this->all(), $keys));
+        return new Fluent(Arr::only($this->all(), $keys));
     }
 }

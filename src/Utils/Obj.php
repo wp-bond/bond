@@ -10,8 +10,8 @@ use ReflectionClass;
 class Obj
 {
     public static function localize(
-        object $target,
-        string $language,
+        object $target, // TODO needs better typing, Fluent|FluentList only??
+        string $language = null,
         bool $create_new = true
     ) {
 
@@ -48,7 +48,7 @@ class Obj
                 $value instanceof Fluent
                 || $value instanceof FluentList
             ) {
-                $target[$key] = $value->localized();
+                $target[$key] = $value->localized(); // TODO should bring the create_new parameter?
                 continue;
             }
 
