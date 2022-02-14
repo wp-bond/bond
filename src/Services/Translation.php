@@ -5,6 +5,7 @@ namespace Bond\Services;
 use Bond\Settings\Language;
 use Bond\Support\Fluent;
 use Bond\Support\FluentList;
+use Bond\Utils\Arr;
 use Exception;
 
 // AWS Translate
@@ -321,8 +322,10 @@ class Translation implements ServiceInterface
         // save to disk
         if ($updated) {
 
-            ksort($this->glossaries[$language_code], SORT_NATURAL);
+            // sort keys
+            $this->glossaries[$language_code] = Arr::sortKeys($this->glossaries[$language_code]);
 
+            // save as pretty JSON for easier editing
             file_put_contents(
                 $this->languagePath($language_code),
                 json_encode($this->glossaries[$language_code], JSON_PRETTY_PRINT)
