@@ -373,25 +373,17 @@ class App extends Container
         }
 
         // first honor Cloudfront
-        $header = 'HTTP_CLOUDFRONT_IS_MOBILE_VIEWER';
-        if (isset($_SERVER[$header])) {
-            $this->is_mobile = (string) $_SERVER[$header] === 'true';
-        }
-        $header = 'HTTP_CLOUDFRONT_IS_TABLET_VIEWER';
-        if (isset($_SERVER[$header])) {
-            $this->is_tablet = (string) $_SERVER[$header] === 'true';
-        }
+        $aws_mobile_header = 'HTTP_CLOUDFRONT_IS_MOBILE_VIEWER';
+        $aws_tablet_header = 'HTTP_CLOUDFRONT_IS_TABLET_VIEWER';
 
-        // else fallback to Mobile Detect lib
-        if (!isset($this->is_mobile) || !isset($this->is_tablet)) {
+        if (isset($_SERVER[$aws_mobile_header]) && isset($_SERVER[$aws_tablet_header])) {
+            $this->is_mobile = (string) $_SERVER[$aws_mobile_header] === 'true';
+            $this->is_tablet = (string) $_SERVER[$aws_tablet_header] === 'true';
+        } else {
+            // fallback to Mobile Detect lib
             $detect = new Mobile_Detect();
-
-            if (!isset($this->is_tablet)) {
-                $this->is_tablet = $detect->isTablet();
-            }
-            if (!isset($this->is_mobile)) {
-                $this->is_mobile = $detect->isMobile() && !$this->is_tablet;
-            }
+            $this->is_tablet = $detect->isTablet();
+            $this->is_mobile = $detect->isMobile() && !$this->is_tablet;
         }
 
         // we consider all others as Desktop
