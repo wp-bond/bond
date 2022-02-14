@@ -41,7 +41,7 @@ class FileCache extends AbstractCache
     public function remember(
         string $key,
         $value,
-        null|int|DateInterval|DateTimeInterface $ttl = null
+        null|int|string|DateInterval|DateTimeInterface $ttl = null
     ) {
 
         if (!$this->enabled) {
@@ -208,7 +208,7 @@ class FileCache extends AbstractCache
 
     protected function expired(
         string $path,
-        int|DateInterval|DateTimeInterface $ttl
+        int|string|DateInterval|DateTimeInterface $ttl
     ): bool {
         // clear file status cache
         clearstatcache(true, $path);

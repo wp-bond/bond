@@ -109,10 +109,14 @@ class Date
     }
 
     // determine a ttl in seconds
-    public static function ttl(int|DateInterval|DateTimeInterface $ttl): int
+    public static function ttl(int|string|DateInterval|DateTimeInterface $ttl): int
     {
         if (is_numeric($ttl)) {
             return (int) $ttl;
+        }
+
+        if (is_string($ttl)) {
+            $ttl = static::carbon($ttl);
         }
 
         if ($ttl instanceof DateInterval) {
