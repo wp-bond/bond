@@ -45,6 +45,12 @@ class Filesystem
 
     public static function put(string $path, string $contents): bool
     {
+        // auto create dir if needed
+        $dir = pathinfo($path, PATHINFO_DIRNAME);
+        if (!file_exists($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
         return file_put_contents($path, $contents, LOCK_EX) > 0;
     }
 
