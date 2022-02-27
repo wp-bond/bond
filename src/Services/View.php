@@ -2,6 +2,7 @@
 
 namespace Bond\Services;
 
+use Bond\Settings\Language;
 use Bond\Support\Fluent;
 use Bond\Support\FluentList;
 use Bond\Utils\Query;
@@ -31,6 +32,7 @@ class View extends Fluent implements ServiceInterface
         ?bool $use_theme = null,
         ?array $lookup_folders = null,
         ?bool $auto_set_order = null,
+        ?bool $set_body_classes = null,
         ?bool $do_actions = null,
         ?string $templates_dir = null,
         ?string $partials_dir = null,
@@ -43,6 +45,9 @@ class View extends Fluent implements ServiceInterface
             }
             if (!isset($auto_set_order)) {
                 $auto_set_order = true;
+            }
+            if (!isset($set_body_classes)) {
+                $set_body_classes = true;
             }
             if (!isset($do_actions)) {
                 $do_actions = true;
@@ -64,6 +69,10 @@ class View extends Fluent implements ServiceInterface
 
         if ($auto_set_order) {
             $this->autoSetOrder();
+        }
+
+        if ($set_body_classes) {
+            $this->setBodyClasses();
         }
 
         if (isset($do_actions)) {
@@ -252,6 +261,31 @@ class View extends Fluent implements ServiceInterface
             // set later, when WP is ready
             add_action('wp', [$this, __FUNCTION__], 1);
         }
+    }
+
+    public function setBodyClasses()
+    {
+        \add_filter('body_class', function ($classes) {
+            $result = $this->getOrder();
+
+            // add lang
+            $result[] = 'lang-' . Language::shortCode();
+
+            // devices
+            if (app()->isMobile()) {
+                $result[] = 'is-mobile';
+            }
+            if (app()->isTablet()) {
+                $result[] = 'is-tablet';
+            }
+            if (app()->isDesktop()) {
+                $result[] = 'is-desktop';
+            }
+
+            $result = array_map([Str::class, 'kebab'], $result);
+
+            return $result;
+        });
     }
 
     /**

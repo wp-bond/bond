@@ -10,31 +10,9 @@ class Html
     public static function resetBodyClasses()
     {
         \add_filter('body_class', function ($classes) {
-            $result = \view()->getOrder();
-
-            // add lang
-            $result[] = 'lang-' . Language::shortCode();
-
-            // devices
-            if (app()->isMobile()) {
-                $result[] = 'is-mobile';
-            }
-            if (app()->isTablet()) {
-                $result[] = 'is-tablet';
-            }
-            if (app()->isDesktop()) {
-                $result[] = 'is-desktop';
-            }
-
-            $result = array_map([Str::class, 'slug'], $result);
-
-            return $result;
+            return [];
         });
     }
-
-
-
-
 
     // removes the <p> tags from the images and iframes
     public static function unwrapParagraphs()
