@@ -29,7 +29,8 @@ class Meta extends Fluent implements ServiceInterface
     public string $image_size = 'large';
 
     // author
-    public string $author;
+    public string $me = '';
+    public string $author = '';
 
     //
     public Fluent $og;
@@ -327,6 +328,9 @@ class Meta extends Fluent implements ServiceInterface
     {
         if (!empty($this->author)) {
             echo '<link rel="author" href="' . $this->author . '">' . "\n";
+        }
+        if (!empty($this->me)) {
+            echo '<link rel="me" href="' . $this->me . '">' . "\n";
         }
     }
 
