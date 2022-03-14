@@ -190,7 +190,7 @@ class Post extends Fluent
         if ($this->isMultilanguage()) {
             return $this->get('content', $language) ?: '';
         }
-        return Str::filterContent($this->post_content);
+        return Str::filterContent($this->content ?: $this->post_content);
     }
 
     // TODO consider adding url() as a shortcut to app()->url()+link
