@@ -185,6 +185,15 @@ class Vite
             return '';
         }
 
+        if ($this->isRunning()) {
+            return '<script type="module" crossorigin src="'
+                . $this->host()
+                . '/@vite/client"></script><script type="module" crossorigin src="'
+                . $url
+                . '"></script>';
+        }
+
+
         return '<script type="module" crossorigin src="'
             . $url
             . '"></script>';
@@ -282,7 +291,7 @@ class Vite
 
     public function host(): string
     {
-        return $this->hostname . ':' . $this->port;
+        return $this->hostname . ($this->port ? ':' . $this->port : '');
     }
 
     public function manifest(): array
@@ -314,7 +323,7 @@ class Vite
         // dd(curl_getinfo($handle), $error, $this->host());
         curl_close($handle);
 
-        return $this->server_is_running = !$error;
+        return $this->server_is_running = !$error || $error === 60;
     }
 
 
