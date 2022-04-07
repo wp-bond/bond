@@ -262,6 +262,40 @@ class Str
 
 
 
+
+
+    public static function join(
+        array $values,
+        string $separator,
+        string $last_separator = null
+    ): string {
+        if (empty($values)) {
+            return '';
+        }
+
+        if ($last_separator === null) {
+            $last_separator = $separator;
+        }
+
+        $clean = [];
+        foreach ($values as $string) {
+            $string = (string) $string;
+            if ($string !== '') {
+                $clean[] = $string;
+            }
+        }
+
+        $res = '';
+        for ($i = 0; $i < count($clean); $i++) {
+            if ($i) {
+                $res .= $i === count($clean) - 1 ? $last_separator : $separator;
+            }
+            $res .= $clean[$i];
+        }
+        return $res;
+    }
+
+
     public static function append(
         &$target,
         $value,
