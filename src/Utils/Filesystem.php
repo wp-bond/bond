@@ -111,5 +111,34 @@ class Filesystem
         }
 
         return true;
+
+        // TODO see this, might just be the best solution!!!
+        // https://github.com/spatie/temporary-directory/blob/main/src/TemporaryDirectory.php#L147
+
+        // if (is_link($path)) {
+        //     return unlink($path);
+        // }
+
+        // if (! file_exists($path)) {
+        //     return true;
+        // }
+
+        // if (! is_dir($path)) {
+        //     return unlink($path);
+        // }
+
+        // foreach (new FilesystemIterator($path) as $item) {
+        //     if (! static::delete($item)) {
+        //         return false;
+        //     }
+        // }
+
+        // /*
+        //  * By forcing a php garbage collection cycle using gc_collect_cycles() we can ensure
+        //  * that the rmdir does not fail due to files still being reserved in memory.
+        //  */
+        // gc_collect_cycles();
+
+        // return rmdir($path);
     }
 }
