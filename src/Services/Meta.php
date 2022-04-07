@@ -19,6 +19,7 @@ class Meta extends Fluent implements ServiceInterface
     // settings
     protected string $title_separator = '-';
     protected string $search_title = 'Search';
+    protected array $tags = [];
 
     // values
     public array $title = [];
@@ -232,6 +233,10 @@ class Meta extends Fluent implements ServiceInterface
 
         $this->printFacebookTags();
         $this->printTwitterTags();
+
+        foreach ($this->tags as $tag) {
+            echo $tag;
+        }
 
         // Reference:
         // Facebook Validator: https://developers.facebook.com/tools/debug
@@ -469,6 +474,30 @@ class Meta extends Fluent implements ServiceInterface
         //     echo '<meta name="twitter:player:width" content="'.$this->twitter_player_width.'">';
         // if (!empty($this->twitter_player_height))
         //     echo '<meta name="twitter:player:height" content="'.$this->twitter_player_height.'">';
+    }
+
+    public function addPreload(
+        ?string $href = null,
+        ?string $as = null,
+        ?string $type = null,
+        ?string $crossorigin = null,
+        ?string $imagesrcset = null,
+        ?string $media = null,
+        ?string $sizes = null,
+    ) {
+
+        $attrs = array_merge(
+            ['rel' => 'preload'],
+            array_filter(get_defined_vars())
+        );
+
+        $data = str_replace(
+            "=",
+            '="',
+            urldecode(http_build_query($attrs, '', '" ', PHP_QUERY_RFC3986))
+        ) . '"';
+
+        $this->tags[] = ' <link ' . $data . '>';
     }
 
     public function addImages()
