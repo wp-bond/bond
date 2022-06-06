@@ -161,7 +161,7 @@ class Meta extends Fluent implements ServiceInterface
 
             $p = Cast::post($post);
 
-            $this->title[] = $p->title ?: $p->post_title;
+            $this->title[] = $p->title() ?: $p->post_title;
 
             if ($post_type === 'page') {
                 $post_parent_id = (int) $post->post_parent;
@@ -169,7 +169,7 @@ class Meta extends Fluent implements ServiceInterface
                 if ($post_parent_id) {
                     $p = Cast::post($post_parent_id);
                     if ($p) {
-                        $this->title[] = $p->title ?: $p->post_title;
+                        $this->title[] = $p->title() ?: $p->post_title;
                     }
 
 
