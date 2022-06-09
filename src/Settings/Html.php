@@ -75,13 +75,20 @@ class Html
 
     public static function disableEmojis()
     {
-        \remove_filter('the_content', 'convert_smilies');
+        \add_action('admin_init', function () {
+            \remove_action('admin_print_scripts', 'print_emoji_detection_script');
+            \remove_action('admin_print_styles', 'print_emoji_styles');
+        });
 
         \add_action('init', function () {
+            /*
+			 * @credits
+             * https://wordpress.org/plugins/disable-emojis/
+             * https://wordpress.org/plugins/emoji-settings/
+			 */
             \remove_action('wp_head', 'print_emoji_detection_script', 7);
-            \remove_action('admin_print_scripts', 'print_emoji_detection_script');
+            \remove_action('embed_head', 'print_emoji_detection_script');
             \remove_action('wp_print_styles', 'print_emoji_styles');
-            \remove_action('admin_print_styles', 'print_emoji_styles');
             \remove_filter('the_content_feed', 'wp_staticize_emoji');
             \remove_filter('comment_text_rss', 'wp_staticize_emoji');
             \remove_filter('wp_mail', 'wp_staticize_emoji_for_email');
@@ -89,28 +96,35 @@ class Html
             // Remove the tinymce emoji plugin.
             \add_filter('tiny_mce_plugins', function ($plugins) {
                 if (is_array($plugins)) {
-                    return array_diff($plugins, array('wpemoji'));
+                    return array_diff($plugins, ['wpemoji']);
                 }
-
-                return array();
+                return [];
             });
 
+            // This removes the ascii to smiley convertion
+            \remove_filter('the_content', 'convert_smilies');
+            \remove_action('init', 'smilies_init', 5);
+
+            // Remove DNS prefetch s.w.org (used for emojis, since WP 4.7)
+            \add_filter('emoji_svg_url', '__return_false');
+
+            // TODO Looks like this is not needed anymore, wait for confirmation
             // Remove emoji CDN hostname from DNS prefetching hints.
-            \add_filter('wp_resource_hints', function ($urls, $relation_type) {
+            // \add_filter('wp_resource_hints', function ($urls, $relation_type) {
 
-                if ('dns-prefetch' == $relation_type) {
+            //     if ('dns-prefetch' == $relation_type) {
 
-                    // Strip out any URLs referencing the WordPress.org emoji location
-                    $emoji_svg_url_bit = 'https://s.w.org/images/core/emoji/';
-                    foreach ($urls as $key => $url) {
-                        if (strpos($url, $emoji_svg_url_bit) !== false) {
-                            unset($urls[$key]);
-                        }
-                    }
-                }
+            //         // Strip out any URLs referencing the WordPress.org emoji location
+            //         $emoji_svg_url_bit = 'https://s.w.org/images/core/emoji/';
+            //         foreach ($urls as $key => $url) {
+            //             if (strpos($url, $emoji_svg_url_bit) !== false) {
+            //                 unset($urls[$key]);
+            //             }
+            //         }
+            //     }
 
-                return $urls;
-            }, 10, 2);
+            //     return $urls;
+            // }, 10, 2);
         });
     }
 
