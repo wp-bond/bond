@@ -140,7 +140,7 @@ class AdminColumns implements ServiceInterface
 
     public function addHandler(
         string $name,
-        callable $handler,
+        callable $handler = null,
         string|int $width = 0,
         string $css = null
     ) {
@@ -173,7 +173,7 @@ class AdminColumns implements ServiceInterface
         if (!$item) {
             return '';
         }
-        if (!isset($this->columns[$name])) {
+        if (empty($this->columns[$name]['handler'])) {
             return $this->defaultColumnOutput($item, $name);
         }
 
