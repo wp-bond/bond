@@ -53,6 +53,7 @@ class Wp
                 'medium_large',
                 'large',
             ])) {
+                $option_sizes[$size] = $values;
                 continue;
             }
 
