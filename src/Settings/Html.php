@@ -163,7 +163,8 @@ class Html
         \add_action('wp_enqueue_scripts', function () {
             \wp_dequeue_style('wp-block-library');
             \wp_dequeue_style('wp-block-library-theme');
-            \wp_dequeue_style('global-styles'); // remove theme.json
+            \wp_dequeue_style('global-styles'); // removes theme.json
+            \wp_dequeue_style('classic-theme-styles'); // classic-themes.min.css
         }, 100);
     }
 
