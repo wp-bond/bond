@@ -58,8 +58,10 @@ class FileCache extends AbstractCache
 
             $value = $this->value($value);
 
-            // store
-            Filesystem::put($path, serialize($value));
+            // store only if not null
+            if ($value !== null) {
+                Filesystem::put($path, serialize($value));
+            }
 
             return $value;
         }
@@ -93,9 +95,12 @@ class FileCache extends AbstractCache
         $path = $this->keyPath((string) $key, true);
         $value = $this->value($value);
 
-        // store
-        Filesystem::put($path, serialize($value));
-        return true;
+        // store only if not null
+        if ($value !== null) {
+            Filesystem::put($path, serialize($value));
+            return true;
+        }
+        return false;
 
         // ttl is not used on file cache
         // other providers may
