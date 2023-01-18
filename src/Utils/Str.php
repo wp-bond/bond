@@ -304,6 +304,8 @@ class Str
         $append_after = '',
         $fallback = ''
     ) {
+        $append_to_target = (string) $append_to_target;
+
         foreach ((array) $value as $string) {
             $string = self::returnIf(
                 $string,
@@ -312,8 +314,9 @@ class Str
                 $fallback
             );
             if ($string) {
-                if ($target) {
+                if ($target && $append_to_target !== '') {
                     $target .= $append_to_target;
+                    $append_to_target = ''; // only on first
                 }
                 $target .= $string;
             }
@@ -328,6 +331,8 @@ class Str
         $append_after = '',
         $fallback = ''
     ) {
+        $prepend_to_target = (string) $prepend_to_target;
+
         foreach ((array) $value as $string) {
             $string = self::returnIf(
                 $string,
@@ -336,8 +341,9 @@ class Str
                 $fallback
             );
             if ($string) {
-                if ($target) {
+                if ($target && $prepend_to_target !== '') {
                     $target = $prepend_to_target . $target;
+                    $prepend_to_target = ''; // only on first
                 }
                 $target = $string . $target;
             }
