@@ -50,9 +50,7 @@ class Meta extends Fluent implements ServiceInterface
     // twitter
     public string $twitter_card = 'summary'; //summary_large_image
     public string $twitter_creator;
-    public string $twitter_image_src;
-    public string $twitter_image_width;
-    public string $twitter_image_height;
+    public string $twitter_image;
     public string $twitter_player;
     public string $twitter_player_width;
     public string $twitter_player_height;
@@ -427,45 +425,17 @@ class Meta extends Fluent implements ServiceInterface
             echo '<meta name="twitter:creator" content="@' . (strpos($this->twitter_creator, '@') === 0 ? substr($this->twitter_creator, 1) : $this->twitter_creator) . '">' . "\n";
         }
 
-        if ($this->twitter_card === 'gallery') {
-            if (!empty($this->images)) {
-                $i = 0;
-                foreach ($this->images as $image) {
+        if (!empty($this->twitter_image)) {
+            echo '<meta name="twitter:image" content="' . $this->twitter_image . '">' . "\n";
+        } elseif (!empty($this->images)) {
 
-                    if (is_array($image)) {
-                        $url = $image['url'];
-                    } else {
-                        $url = $image;
-                    }
-                    echo '<meta name="twitter:image' . $i . ':src" content="' . $url . '">' . "\n";
-
-                    if (++$i >= 4) {
-                        break;
-                    }
-                }
-            }
-        } else {
-            if (!empty($this->twitter_image_src)) {
-                echo '<meta name="twitter:image:src" content="' . $this->twitter_image_src . '">' . "\n";
-            } elseif (!empty($this->images)) {
-
-                if (is_array($this->images[0])) {
-                    $url = $this->images[0]['url'];
-                } else {
-                    $url = $this->images[0];
-                }
-
-                echo '<meta name="twitter:image:src" content="' . $url . '">' . "\n";
+            if (is_array($this->images[0])) {
+                $url = $this->images[0]['url'];
+            } else {
+                $url = $this->images[0];
             }
 
-            //this should be auto anyway no? or maybe just remove it at all
-            if (!empty($this->twitter_image_width)) {
-                echo '<meta name="twitter:image:width" content="' . $this->twitter_image_width . '">' . "\n";
-            }
-
-            if (!empty($this->twitter_image_height)) {
-                echo '<meta name="twitter:image:height" content="' . $this->twitter_image_height . '">' . "\n";
-            }
+            echo '<meta name="twitter:image" content="' . $url . '">' . "\n";
         }
 
         // if (!empty($this->twitter_player))
