@@ -92,7 +92,6 @@ class App extends Container
     {
         // register default helpers
         $this->addShared('app', $this);
-        $this->addShared('config', new Config($this));
         $this->addShared('view', View::class);
         $this->addShared('meta', Meta::class);
         $this->addShared('translation', Translation::class);
