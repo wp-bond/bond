@@ -24,74 +24,12 @@ class View extends Fluent implements ServiceInterface
     protected string $partials_dir = 'partials';
 
     protected array $lookup_order = [];
-    protected bool $do_actions = false;
 
+    protected bool $enabled = false;
 
-    public function config(
-        ?bool $enabled = null,
-        ?bool $use_theme = null,
-        ?array $lookup_folders = null,
-        ?bool $auto_set_order = null,
-        ?bool $set_body_classes = null,
-        ?bool $do_actions = null,
-        ?string $templates_dir = null,
-        ?string $partials_dir = null,
-        ?array $data = null,
-    ) {
-
-        if ($use_theme && $enabled) {
-            if (!isset($lookup_folders)) {
-                $lookup_folders = [app()->viewsPath()];
-            }
-            if (!isset($auto_set_order)) {
-                $auto_set_order = true;
-            }
-            if (!isset($set_body_classes)) {
-                $set_body_classes = true;
-            }
-            if (!isset($do_actions)) {
-                $do_actions = true;
-            }
-        }
-
-        if (isset($lookup_folders)) {
-            foreach ($lookup_folders as $folder) {
-                $this->addLookupFolder($folder);
-            }
-        }
-
-        if (isset($templates_dir)) {
-            $this->setTemplatesDir($templates_dir);
-        }
-        if (isset($partials_dir)) {
-            $this->setPartialsDir($partials_dir);
-        }
-
-        if ($auto_set_order) {
-            $this->autoSetOrder();
-        }
-
-        if ($set_body_classes) {
-            $this->setBodyClasses();
-        }
-
-        if (isset($do_actions)) {
-            $this->do_actions = $do_actions;
-        }
-
-        // add any arbitrary values into the View
-        if (isset($data)) {
-            $this->add($data);
-        }
-
-        // enable
-        if (isset($enabled)) {
-            if ($enabled) {
-                $this->enable();
-            } else {
-                $this->disable();
-            }
-        }
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
     }
 
     public function enable()
@@ -100,9 +38,7 @@ class View extends Fluent implements ServiceInterface
             $this->enabled = true;
 
             // actions
-            if ($this->do_actions) {
-                $this->addActions();
-            }
+            $this->addActions();
         }
     }
 
@@ -361,17 +297,15 @@ class View extends Fluent implements ServiceInterface
         }
 
         // trigger action before render
-        if ($this->do_actions) {
-            \do_action('Bond/load/' . $found);
-        }
+        \do_action('Bond/load/' . $found);
+
 
         // cast as Fluent/FluentList and run
         $this->fluent($data)->run($template_path);
 
         // trigger action after render
-        if ($this->do_actions) {
-            \do_action('Bond/loaded/' . $found);
-        }
+        \do_action('Bond/loaded/' . $found);
+
 
         return true;
     }
@@ -780,11 +714,6 @@ class View extends Fluent implements ServiceInterface
             $result[] = $post_type;
             $result[] = 'single';
             $result[] = 'singular';
-        }
-
-        // everything is handled, allow a filter and go
-        if ($this->do_actions) {
-            $result = \apply_filters('Bond/lookup_order', $result);
         }
 
         return $result;

@@ -16,6 +16,7 @@ class Wp
 {
     // Images
 
+    // TODO better name
     public static function sanitizeFilenames()
     {
         \add_filter('sanitize_file_name', [Str::class, 'filename']);
@@ -129,7 +130,7 @@ class Wp
 
     public static function updateSettings()
     {
-        // only on admin
+        // only on admin to avoid overhead
         if (!app()->isAdmin()) {
             return;
         }
@@ -140,12 +141,13 @@ class Wp
             //general
             \update_option('blogname', app()->name());
             \update_option('blogdescription', '');
-            \update_option('admin_email', config('app.developer_email'));
+            \update_option('admin_email', '');
+            // TODO allow a developer_email setting?
 
             // \update_option('date_format', 'd/m/Y');
             \update_option('date_format', 'Y-m-d');
             \update_option('time_format', 'H:i');
-            \update_option('timezone_string', config('app.timezone'));
+            \update_option('timezone_string', app()->timezone());
             \update_option('start_of_week', 1); //monday
 
             \update_option('show_avatars', false);

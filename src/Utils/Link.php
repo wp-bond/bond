@@ -3,6 +3,7 @@
 namespace Bond\Utils;
 
 use Bond\Settings\Language;
+use Bond\Settings\Rewrite;
 use Bond\Utils\Cast;
 use Bond\Utils\Query;
 
@@ -83,7 +84,7 @@ class Link
     public static function search(string $language = null): string
     {
         return static::path(
-            config('app.search_path') ?? 'search',
+            Rewrite::$search_path ?? 'search',
             $language
         );
     }

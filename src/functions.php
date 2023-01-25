@@ -16,15 +16,6 @@ if (!function_exists('app')) {
     }
 }
 
-if (!function_exists('config')) {
-    function config(?string $key = null)
-    {
-        return $key
-            ? app()->config()->{$key}
-            : app()->config();
-    }
-}
-
 if (!function_exists('view')) {
     function view(): View
     {

@@ -19,25 +19,9 @@ class Multilanguage implements ServiceInterface
     protected array $post_types = [];
     protected array $taxonomies = [];
 
-    public function config(
-        ?bool $enabled = null,
-        ?array $post_types = null,
-        ?array $taxonomies = null,
-    ) {
-
-        if (isset($enabled)) {
-            if ($enabled) {
-                $this->enable();
-            } else {
-                $this->disable();
-            }
-        }
-        if ($post_types) {
-            $this->postTypes($post_types);
-        }
-        if ($taxonomies) {
-            $this->taxonomies($taxonomies);
-        }
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
     }
 
     public function enable()

@@ -17,69 +17,9 @@ class Sitemap implements ServiceInterface
     protected array $skip_singles = [];
     protected array $skip_pages = [];
 
-
-    public function config(
-        ?bool $enabled = null,
-        ?bool $stylesheet = null,
-        ?array $post_types = null,
-        ?array $taxonomies = null,
-        ?array $users = null,
-        ?array $skip_archives = null,
-        ?array $skip_singles = null,
-        ?array $skip_pages = null,
-        ?bool $disable_wp_sitemap = false
-    ) {
-
-        if ($stylesheet === false) {
-            $this->disableStylesheet();
-        }
-
-        if (isset($post_types)) {
-            if (count($post_types)) {
-                $this->postTypes($post_types);
-            } else {
-                $this->disablePosts();
-            }
-        }
-        if (isset($taxonomies)) {
-            if (count($taxonomies)) {
-                $this->taxonomies($taxonomies);
-            } else {
-                $this->disableTaxonomies();
-            }
-        }
-        if (isset($users)) {
-            if (count($users)) {
-                // TODO how to add only specific user to sitemap?
-                // or even a method to allow all of specific roles, but still hide some users?
-                // $this->users($users);
-            } else {
-                $this->disableUsers();
-            }
-        }
-
-        if (isset($skip_archives)) {
-            $this->skip_archives = $skip_archives;
-        }
-        if (isset($skip_singles)) {
-            $this->skip_singles = $skip_singles;
-        }
-        if (isset($skip_pages)) {
-            $this->skip_pages = $skip_pages;
-        }
-
-        if ($disable_wp_sitemap) {
-            $this->disableWpSitemap();
-            $enabled = false;
-        }
-
-        if (isset($enabled)) {
-            if ($enabled) {
-                $this->enable();
-            } else {
-                $this->disable();
-            }
-        }
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
     }
 
     public function enable()
@@ -150,6 +90,21 @@ class Sitemap implements ServiceInterface
     public function disableUsers()
     {
         $this->disableProvider('users');
+    }
+
+    public function skipArchives(array $post_types)
+    {
+        $this->skip_archives = $post_types;
+    }
+
+    public function skipSingles(array $post_types)
+    {
+        $this->skip_singles = $post_types;
+    }
+
+    public function skipPages(array $page_names)
+    {
+        $this->skip_pages = $page_names;
     }
 
     public function disableProvider(string $provider_name)

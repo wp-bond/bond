@@ -2,14 +2,13 @@
 
 namespace Bond\Services\Cache;
 
+use Bond\Services\ServiceInterface;
 use DateInterval;
 use DateTimeInterface;
 use Psr\SimpleCache\CacheInterface as PsrInterface;
 
-interface CacheInterface extends PsrInterface
+interface CacheInterface extends PsrInterface, ServiceInterface
 {
-    public function enabled(?bool $value = null): bool;
-
     /** The default TTL in seconds */
     public function ttl(?int $seconds = null): int;
 

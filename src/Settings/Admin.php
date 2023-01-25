@@ -159,7 +159,7 @@ class Admin
 
     public static function hidePosts()
     {
-        if (app()->isAdmin() || config('html.admin_bar') !== false) {
+        if (app()->isAdmin()) {
             \add_action('wp_before_admin_bar_render', function () {
                 global $wp_admin_bar;
                 $wp_admin_bar->remove_menu('new-post');
@@ -173,15 +173,15 @@ class Admin
     }
 
 
-    public static function addFooterCredits()
+    public static function setFooterCredits(string $text)
     {
         // only needed on admin
         if (!app()->isAdmin()) {
             return;
         }
 
-        \add_filter('admin_footer_text', function () {
-            echo config('admin.footer_credits');
+        \add_filter('admin_footer_text', function () use ($text) {
+            echo $text;
         });
     }
 

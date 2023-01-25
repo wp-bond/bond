@@ -13,127 +13,127 @@ use Bond\Utils\Str;
 class AdminColumns implements ServiceInterface
 {
     private array $columns = [];
+    protected bool $enabled = false;
 
-    public function config(?bool $enabled = null)
+
+    public function isEnabled(): bool
     {
-        if (isset($enabled)) {
-            if ($enabled) {
-                $this->enable();
-            } else {
-                $this->disable();
-            }
-        }
+        return $this->enabled;
     }
 
     public function enable()
     {
-        if (!app()->isAdmin()) {
-            return;
+        if (!$this->enabled) {
+            $this->enabled = true;
+
+            // adds some handlers
+            $this->addMultilanguageLinksHandler();
+
+            // Styles
+            \add_action(
+                'admin_head',
+                [$this, 'outputStyles']
+            );
+
+            // Posts
+            \add_action(
+                'manage_pages_custom_column',
+                [$this, 'handlePostColumn'],
+                10,
+                2
+            );
+            \add_action(
+                'manage_posts_custom_column',
+                [$this, 'handlePostColumn'],
+                10,
+                2
+            );
+            \add_action(
+                'manage_media_custom_column',
+                [$this, 'handlePostColumn'],
+                10,
+                2
+            );
+
+            // Users
+            \add_action(
+                'manage_users_custom_column',
+                [$this, 'handleUserColumn'],
+                10,
+                3
+            );
+
+            // Taxonomies
+            // wait until taxonomies are registered
+            \add_action('wp_loaded', function () {
+                global $wp_taxonomies;
+
+                foreach (array_keys($wp_taxonomies) as $taxonomy) {
+                    \add_filter(
+                        'manage_' . $taxonomy . '_custom_column',
+                        [$this, 'handleTaxonomyColumn'],
+                        10,
+                        3
+                    );
+                }
+            });
         }
-
-        // adds some handlers
-        $this->addMultilanguageLinksHandler();
-
-        // Styles
-        \add_action(
-            'admin_head',
-            [$this, 'outputStyles']
-        );
-
-        // Posts
-        \add_action(
-            'manage_pages_custom_column',
-            [$this, 'handlePostColumn'],
-            10,
-            2
-        );
-        \add_action(
-            'manage_posts_custom_column',
-            [$this, 'handlePostColumn'],
-            10,
-            2
-        );
-        \add_action(
-            'manage_media_custom_column',
-            [$this, 'handlePostColumn'],
-            10,
-            2
-        );
-
-        // Users
-        \add_action(
-            'manage_users_custom_column',
-            [$this, 'handleUserColumn'],
-            10,
-            3
-        );
-
-        // Taxonomies
-        // wait until taxonomies are registered
-        \add_action('wp_loaded', function () {
-            global $wp_taxonomies;
-
-            foreach (array_keys($wp_taxonomies) as $taxonomy) {
-                \add_filter(
-                    'manage_' . $taxonomy . '_custom_column',
-                    [$this, 'handleTaxonomyColumn'],
-                    10,
-                    3
-                );
-            }
-        });
     }
 
     public function disable()
     {
-        // Styles
-        \remove_action(
-            'admin_head',
-            [$this, 'outputStyles']
-        );
+        if ($this->enabled) {
+            $this->enabled = false;
 
-        // Posts
-        \remove_action(
-            'manage_pages_custom_column',
-            [$this, 'handlePostColumn'],
-            10,
-            2
-        );
-        \remove_action(
-            'manage_posts_custom_column',
-            [$this, 'handlePostColumn'],
-            10,
-            2
-        );
-        \remove_action(
-            'manage_media_custom_column',
-            [$this, 'handlePostColumn'],
-            10,
-            2
-        );
+            // Styles
+            \remove_action(
+                'admin_head',
+                [$this, 'outputStyles']
+            );
 
-        // Users
-        \remove_action(
-            'manage_users_custom_column',
-            [$this, 'handleUserColumn'],
-            10,
-            3
-        );
+            // Posts
+            \remove_action(
+                'manage_pages_custom_column',
+                [$this, 'handlePostColumn'],
+                10,
+                2
+            );
+            \remove_action(
+                'manage_posts_custom_column',
+                [$this, 'handlePostColumn'],
+                10,
+                2
+            );
+            \remove_action(
+                'manage_media_custom_column',
+                [$this, 'handlePostColumn'],
+                10,
+                2
+            );
 
-        // Taxonomies
-        // wait until taxonomies are registered
-        \remove_action('wp_loaded', function () {
-            global $wp_taxonomies;
+            // Users
+            \remove_action(
+                'manage_users_custom_column',
+                [$this, 'handleUserColumn'],
+                10,
+                3
+            );
 
-            foreach (array_keys($wp_taxonomies) as $taxonomy) {
-                \remove_filter(
-                    'manage_' . $taxonomy . '_custom_column',
-                    [$this, 'handleTaxonomyColumn'],
-                    10,
-                    3
-                );
-            }
-        });
+            // Taxonomies
+            // wait until taxonomies are registered
+            \remove_action('wp_loaded', function () {
+                global $wp_taxonomies;
+
+                foreach (array_keys($wp_taxonomies) as $taxonomy) {
+                    \remove_filter(
+                        'manage_' . $taxonomy . '_custom_column',
+                        [$this, 'handleTaxonomyColumn'],
+                        10,
+                        3
+                    );
+                }
+            });
+        }
     }
 
 

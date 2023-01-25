@@ -13,27 +13,9 @@ class Rss implements ServiceInterface
     protected bool $enabled = false;
     protected array $feeds = [];
 
-
-    public function config(
-        ?bool $enabled = null,
-        ?array $feeds = null,
-        ?bool $disable_wp_rss = false
-    ) {
-        if (isset($feeds)) {
-            foreach ($feeds as $key => $feed) {
-                $this->addFeed($key, $feed);
-            }
-        }
-        if (isset($enabled)) {
-            if ($enabled) {
-                $this->enable();
-            } else {
-                $this->disable();
-            }
-        }
-        if ($disable_wp_rss) {
-            $this->disableWpRss();
-        }
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
     }
 
     public function enable()

@@ -33,7 +33,7 @@ class Date
 
         if ($date) {
             if ($from_timezone && !$to_timezone) {
-                $to_timezone = config()->app->timezone;
+                $to_timezone = app()->timezone();
             }
             if ($to_timezone) {
                 $date->setTimezone($to_timezone);
@@ -80,7 +80,7 @@ class Date
 
         return new Carbon(
             $date === true ? null : $date,
-            $timezone ?: config()->app->timezone
+            $timezone ?: app()->timezone()
         );
     }
 

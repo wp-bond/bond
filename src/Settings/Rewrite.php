@@ -9,6 +9,8 @@ use Bond\Utils\Str;
 
 class Rewrite
 {
+    public static string $search_path;
+
     public static function reset()
     {
         // only needed on admin
@@ -113,7 +115,7 @@ class Rewrite
         }
 
         if (!$path) {
-            // TODO maybe if the rewrite is upgraded to a service, set the search_path here, and make Language read from here
+            // TODO review here if we should use Link, or if we can read directly
             $path = Link::search(Language::defaultCode());
         }
 

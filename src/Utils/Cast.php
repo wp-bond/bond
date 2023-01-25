@@ -150,7 +150,7 @@ class Cast
         }
 
         //
-        if (cache()->enabled() && empty($_GET['preview'])) {
+        if (cache()->isEnabled() && empty($_GET['preview'])) {
 
             // 1
             if (is_numeric($post)) {

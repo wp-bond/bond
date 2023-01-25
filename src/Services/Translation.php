@@ -27,28 +27,9 @@ class Translation implements ServiceInterface
     private ?string $last_gettext_locale = null;
 
 
-    public function config(
-        ?bool $enabled = null,
-        ?string $written_language = null,
-        ?string $service = null,
-        ?array $credentials = null,
-    ) {
-        if (isset($enabled)) {
-            if ($enabled) {
-                $this->enable();
-            } else {
-                $this->disable();
-            }
-        }
-        if (isset($written_language)) {
-            $this->written_language = $written_language;
-        }
-        if (isset($service)) {
-            $this->service = $service;
-        }
-        if (isset($credentials)) {
-            $this->credentials = $credentials;
-        }
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
     }
 
     public function enable()
@@ -71,9 +52,29 @@ class Translation implements ServiceInterface
         }
     }
 
-    public function getWrittenLanguage(): string
+    public function writtenLanguage(string $code = null): string
     {
+        if ($code) {
+            $this->written_language = $code;
+        }
         return $this->written_language;
+    }
+
+    // google/aws/wp
+    public function service(string $name = null): string
+    {
+        if ($name) {
+            $this->service = $name;
+        }
+        return $this->service;
+    }
+
+    public function credentials(array $credentials = null): array
+    {
+        if ($credentials) {
+            $this->credentials = $credentials;
+        }
+        return $this->credentials;
     }
 
     public function hasTranslationApi(): bool

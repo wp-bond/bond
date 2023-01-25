@@ -35,6 +35,31 @@ class App extends Container
     protected bool $is_tablet = false;
     protected bool $is_desktop = false;
 
+    protected string $id;
+    protected string $name;
+    protected string $url;
+    protected string $timezone;
+
+    protected array $configs = [
+        'language',
+        'translation',
+        'multilanguage',
+        'app',
+        'cache',
+        'image',
+        'meta',
+        'wp',
+        'admin',
+        'admin_columns',
+        'html',
+        'api',
+        'sitemap',
+        'rss',
+        'view',
+    ];
+    // we leave Language and Translation first, so the next ones already have the ability to translate strings
+
+
     public function __construct()
     {
         // initialize the Container itself
@@ -79,11 +104,6 @@ class App extends Container
 
         // Reflection fallback
         $this->delegate(new ReflectionContainer());
-    }
-
-    public function config(): Config
-    {
-        return $this->get('config');
     }
 
     public function view(): View
@@ -132,8 +152,6 @@ class App extends Container
             $this->setBasePath($base_path);
         }
 
-        $this->config()->load($this->configPath());
-
         // Save post/terms hook
         $this->addSavePostHook();
         $this->addDeletePostHook();
@@ -143,8 +161,29 @@ class App extends Container
         // Map Links
         $this->mapLinks();
 
+        // Config
+        $this->loadConfig();
+
         // Calls the boot/bootAdmin method on all classes at the App folder
         $this->bootAppFolder();
+    }
+
+    protected function loadConfig()
+    {
+        $path = app()->configPath();
+
+        if (!file_exists($path) || !is_dir($path)) {
+            return;
+        }
+
+        // load config files
+        foreach ($this->configs as $key) {
+            $filepath = $path . DIRECTORY_SEPARATOR . $key . '.php';
+
+            if (is_file($filepath)) {
+                require_once $filepath;
+            }
+        }
     }
 
     protected function bootAppFolder()
@@ -226,19 +265,48 @@ class App extends Container
         }
     }
 
-    public function id(): string
+    public function id(string $id = null): string
     {
-        return $this->config()->app->id ??= $this->themeId();
+        if ($id) {
+            $this->$id = $id;
+        }
+        return $this->id ??= $this->themeId();
     }
 
-    public function name(): string
+    public function name(string $name = null): string
     {
-        return $this->config()->app->name ?: '';
+        if ($name) {
+            $this->$name = $name;
+        }
+        return $this->name ?? '';
     }
 
-    public function url(): string
+    public function url(string $url = null): string
     {
-        return $this->config()->app->url ??= \untrailingslashit(c('WP_HOME') ?: \get_site_url());
+        if ($url) {
+            $this->$url = $url;
+        }
+        return $this->url ??= \untrailingslashit(c('WP_HOME') ?: \get_site_url());
+    }
+
+    // use values from https://www.php.net/manual/en/timezones.php
+    public function timezone(string $timezone = null): string
+    {
+        if ($timezone) {
+            $this->$timezone = $timezone;
+        }
+        return $this->timezone ??= 'UTC';
+
+        // Note: CAN NOT use date_default_timezone_set here:
+
+        // found a major bug/feature on WordPress itself
+        // it seems to set the date_default_timezone_set to UTC itself
+        // so changing again here will create time to be wrong everywhere (ACF, etc)
+
+        // will read source WP code to understand more what to do
+        // may just remove, but will need doc to let users know
+
+        // date_default_timezone_set($this->timezone);
     }
 
     public function isFrontEnd(): bool
@@ -458,8 +526,8 @@ class App extends Container
         $this->removeSavePostHook();
 
         // turn off cache
-        $original_state = $this->cache()->enabled();
-        $this->cache()->enabled(false);
+        $was_enabled = $this->cache()->isEnabled();
+        $this->cache()->disable();
 
         // in case it's attachment, it misses the post object
         if (!$post) {
@@ -489,7 +557,9 @@ class App extends Container
         // deleted, when deleted
 
         // turn on posts cache
-        $this->cache()->enabled($original_state);
+        if ($was_enabled) {
+            $this->cache()->enable();
+        }
 
         // re-add action
         $this->addSavePostHook();
@@ -517,8 +587,8 @@ class App extends Container
         $this->removeDeletePostHook();
 
         // turn off cache
-        $original_state = $this->cache()->enabled();
-        $this->cache()->enabled(false);
+        $was_enabled = $this->cache()->isEnabled();
+        $this->cache()->disable();
 
         // in case it's attachment, it misses the post object
         if (!$post) {
@@ -539,7 +609,9 @@ class App extends Container
             \do_action('Bond/delete_post/' . $post->post_type, Cast::post($post));
         }
         // turn on posts cache
-        $this->cache()->enabled($original_state);
+        if ($was_enabled) {
+            $this->cache()->enable();
+        }
 
         // re-add action
         $this->addDeletePostHook();
@@ -554,8 +626,8 @@ class App extends Container
         }
 
         // turn off cache
-        $original_state = $this->cache()->enabled();
-        $this->cache()->enabled(false);
+        $was_enabled = $this->cache()->isEnabled();
+        $this->cache()->disable();
 
         // clear cache
         $this->cache()->delete('options');
@@ -571,7 +643,9 @@ class App extends Container
         }
 
         // turn on posts cache
-        $this->cache()->enabled($original_state);
+        if ($was_enabled) {
+            $this->cache()->enable();
+        }
     }
 
 
@@ -592,8 +666,8 @@ class App extends Container
         $this->removeSaveTermHook();
 
         // turn off cache
-        $original_state = $this->cache()->enabled();
-        $this->cache()->enabled(false);
+        $was_enabled = $this->cache()->isEnabled();
+        $this->cache()->disable();
 
         // clear cache
         $this->cache()->delete($taxonomy);
@@ -615,7 +689,10 @@ class App extends Container
         // TODO save_term doesn't get the delete right?
 
         // turn on posts cache
-        $this->cache()->enabled($original_state);
+        if ($was_enabled) {
+            $this->cache()->enable();
+        }
+
 
         // re-add action
         $this->addSaveTermHook();
@@ -645,8 +722,8 @@ class App extends Container
         $this->removeSaveUserHook();
 
         // turn off cache
-        $original_state = $this->cache()->enabled();
-        $this->cache()->enabled(false);
+        $was_enabled = $this->cache()->isEnabled();
+        $this->cache()->disable();
 
         // clear cache
         $this->cache()->delete('bond/query');
@@ -662,7 +739,9 @@ class App extends Container
         }
 
         // turn on posts cache
-        $this->cache()->enabled($original_state);
+        if ($was_enabled) {
+            $this->cache()->enable();
+        }
 
         // re-add action
         $this->addSaveUserHook();

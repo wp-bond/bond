@@ -19,7 +19,7 @@ class Term extends Fluent
 
     public function __construct($values = null, bool $skip_cache = false)
     {
-        if (!$skip_cache && cache()->enabled()) {
+        if (!$skip_cache && cache()->isEnabled()) {
             $this->initFromCache($values);
         } else {
             $this->init($values);

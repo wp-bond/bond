@@ -36,10 +36,12 @@ class Meta extends Fluent implements ServiceInterface
     //
     public Fluent $og;
     public Fluent $article;
-    public Fluent $facebook;
-    public Fluent $twitter;
+
+    public Fluent $google;
     public Fluent $instagram;
+    public Fluent $twitter;
     public Fluent $pinterest;
+    public Fluent $facebook;
 
     // TODO migrate all to the new Fluents above
     public string $og_type = 'website';
@@ -48,7 +50,7 @@ class Meta extends Fluent implements ServiceInterface
     public string $article_section;
 
     // twitter
-    public string $twitter_card = 'summary'; //summary_large_image
+    public string $twitter_card = 'summary_large_image';
     public string $twitter_creator;
     public string $twitter_image;
     public string $twitter_player;
@@ -59,44 +61,46 @@ class Meta extends Fluent implements ServiceInterface
     {
         $this->og = new Fluent();
         $this->article = new Fluent();
-        $this->facebook = new Fluent();
-        $this->twitter = new Fluent();
+
+        $this->google = new Fluent();
         $this->instagram = new Fluent();
+        $this->twitter = new Fluent();
         $this->pinterest = new Fluent();
+        $this->facebook = new Fluent();
         parent::__construct($data);
     }
 
-    public function config(
-        ?bool $enabled = null,
-        ...$args
-    ) {
-        $this->add($args);
 
-        if (isset($enabled)) {
-            if ($enabled) {
-                $this->enable();
-            } else {
-                $this->disable();
-            }
-        }
+    protected bool $enabled = false;
+
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
     }
 
     public function enable()
     {
-        // do not enable when it is on WP admin
-        // nor when programatically loading WP
-        if (app()->isFrontEnd()) {
-            \add_action('wp', [$this, 'setDefaults'], 2);
-            \add_action('wp_head', [$this, 'printAllTags'], 99);
+        if (!$this->enabled) {
+            $this->enabled = true;
+
+            // do not enable when it is on WP admin
+            // nor when programatically loading WP
+            if (app()->isFrontEnd()) {
+                \add_action('wp', [$this, 'setDefaults'], 2);
+                \add_action('wp_head', [$this, 'printAllTags'], 99);
+            }
         }
     }
 
     public function disable()
     {
-        \remove_action('wp', [$this, 'setDefaults'], 2);
-        \remove_action('wp_head', [$this, 'printAllTags'], 99);
-    }
+        if ($this->enabled) {
+            $this->enabled = false;
 
+            \remove_action('wp', [$this, 'setDefaults'], 2);
+            \remove_action('wp_head', [$this, 'printAllTags'], 99);
+        }
+    }
 
     private function separator()
     {
@@ -217,6 +221,27 @@ class Meta extends Fluent implements ServiceInterface
         //implement http://ogp.me/#type_article
     }
 
+    public function getTitle()
+    {
+        // sanitize title and allow WP fallback
+        if (!empty($this->title)) {
+            $title = is_array($this->title) ? implode($this->separator(), $this->title) : $this->title;
+            $title = Str::clean($title);
+        } else {
+            $title = wp_title($this->title_separator, false, 'right') . app()->name();
+        }
+
+        return $title;
+    }
+
+    public function addTitle($title)
+    {
+        if (empty($title)) {
+            return;
+        }
+        array_unshift($this->title, $title);
+    }
+
 
     public function printAllTags()
     {
@@ -241,7 +266,7 @@ class Meta extends Fluent implements ServiceInterface
         // Twitter Validator: https://dev.twitter.com/docs/cards/validation/validator
     }
 
-    public function printMultilanguageTags()
+    protected function printMultilanguageTags()
     {
         foreach (Language::codes() as $code) {
 
@@ -266,7 +291,7 @@ class Meta extends Fluent implements ServiceInterface
         }
     }
 
-    public function printTitleTags()
+    protected function printTitleTags()
     {
         // sanitize title and allow WP fallback
         $title = $this->getTitle();
@@ -280,28 +305,9 @@ class Meta extends Fluent implements ServiceInterface
         echo '<meta name="twitter:title" content="' . $og_title . '">' . "\n";
     }
 
-    public function getTitle()
-    {
-        // sanitize title and allow WP fallback
-        if (!empty($this->title)) {
-            $title = is_array($this->title) ? implode($this->separator(), $this->title) : $this->title;
-            $title = Str::clean($title);
-        } else {
-            $title = wp_title($this->title_separator, false, 'right') . app()->name();
-        }
 
-        return $title;
-    }
 
-    public function addTitle($title)
-    {
-        if (empty($title)) {
-            return;
-        }
-        array_unshift($this->title, $title);
-    }
-
-    public function printDescriptionTags()
+    protected function printDescriptionTags()
     {
         // don't print empty descriptions
         if (empty($this->description)) {
@@ -319,7 +325,7 @@ class Meta extends Fluent implements ServiceInterface
         echo '<meta name="twitter:description" content="' . $og_description . '">' . "\n";
     }
 
-    public function printSettingsTags()
+    protected function printSettingsTags()
     {
         // page url
         if ($this->url) {
@@ -327,7 +333,7 @@ class Meta extends Fluent implements ServiceInterface
         }
     }
 
-    public function printAuthorTags()
+    protected function printAuthorTags()
     {
         if (!empty($this->author)) {
             echo '<link rel="author" href="' . $this->author . '">' . "\n";
@@ -337,7 +343,7 @@ class Meta extends Fluent implements ServiceInterface
         }
     }
 
-    public function printOgTags()
+    protected function printOgTags()
     {
         echo '<meta property="og:type" content="' . $this->og_type . '">' . "\n";
         echo '<meta property="og:site_name" content="' . app()->name() . '">' . "\n";
@@ -401,7 +407,7 @@ class Meta extends Fluent implements ServiceInterface
         }
     }
 
-    public function printFacebookTags()
+    protected function printFacebookTags()
     {
         if ($this->facebook->app_id) {
             echo '<meta property="fb:app_id" content="' . $this->facebook->app_id . '">' . "\n";
@@ -411,7 +417,7 @@ class Meta extends Fluent implements ServiceInterface
         }
     }
 
-    public function printTwitterTags()
+    protected function printTwitterTags()
     {
         echo '<meta name="twitter:card" content="' . $this->twitter_card . '">' . "\n";
 
@@ -445,6 +451,7 @@ class Meta extends Fluent implements ServiceInterface
         // if (!empty($this->twitter_player_height))
         //     echo '<meta name="twitter:player:height" content="'.$this->twitter_player_height.'">';
     }
+
 
     public function addPreload(
         ?string $href = null,
@@ -533,18 +540,7 @@ class Meta extends Fluent implements ServiceInterface
         }
     }
 
-    // private function is_assoc(array $array)
-    // {
-    //     // Keys of the array
-    //     $keys = array_keys($array);
-
-    //     // If the array keys of the keys match the keys, then the array must
-    //     // not be associative (e.g. the keys array looked like {0:0, 1:1...}).
-    //     return array_keys($keys) !== $keys;
-    // }
-
-
-    public function getImageInfo($id)
+    protected function getImageInfo($id)
     {
         $id = (int) $id;
         $img_src = Image::source($id, $this->image_size);
