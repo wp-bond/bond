@@ -267,7 +267,7 @@ class App extends Container
     public function id(string $id = null): string
     {
         if ($id) {
-            $this->$id = $id;
+            $this->id = $id;
         }
         return $this->id ??= $this->themeId();
     }
@@ -275,7 +275,7 @@ class App extends Container
     public function name(string $name = null): string
     {
         if ($name) {
-            $this->$name = $name;
+            $this->name = $name;
         }
         return $this->name ?? '';
     }
@@ -283,7 +283,7 @@ class App extends Container
     public function url(string $url = null): string
     {
         if ($url) {
-            $this->$url = $url;
+            $this->url = $url;
         }
         return $this->url ??= \untrailingslashit(c('WP_HOME') ?: \get_site_url());
     }
@@ -292,7 +292,7 @@ class App extends Container
     public function timezone(string $timezone = null): string
     {
         if ($timezone) {
-            $this->$timezone = $timezone;
+            $this->timezone = $timezone;
         }
         return $this->timezone ??= 'UTC';
 
