@@ -14,6 +14,7 @@ use Bond\Utils\Obj;
 
 // TODO LATER give a new look into ArrayObject
 // at least here we miss many methods to work as a array like chunks, slice, etc
+// if needed https://github.com/illuminate/collections/blob/master/Collection.php
 
 class FluentList implements
     ArrayAccess,
@@ -249,5 +250,11 @@ class FluentList implements
     public function localized(): self
     {
         return Obj::localize($this, Language::getCurrent());
+    }
+
+    public function slice(int $offset, int $length = null): self
+    {
+        $this->items = array_slice($this->items, $offset, $length);
+        return $this;
     }
 }
