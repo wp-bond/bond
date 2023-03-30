@@ -225,11 +225,6 @@ class FluentList implements
         return $this;
     }
 
-    public function column($column_key, $index_key = null): array
-    {
-        return array_column($this->items, $column_key, $index_key);
-    }
-
     public function shuffle(): self
     {
         shuffle($this->items);
@@ -252,9 +247,23 @@ class FluentList implements
         return Obj::localize($this, Language::getCurrent());
     }
 
+    public function column($column_key, $index_key = null): array
+    {
+        return array_column($this->items, $column_key, $index_key);
+    }
+
+    // TODO maybe should return the result instead of changing the source data, just like column above
+    // if so, change on profilePosters
     public function slice(int $offset, int $length = null): self
     {
         $this->items = array_slice($this->items, $offset, $length);
+        return $this;
+    }
+
+    // TODO maybe should return the result instead of changing the source data, just like column above
+    public function filter(callable $callback = null): self
+    {
+        $this->items = array_filter($this->items, $callback, ARRAY_FILTER_USE_BOTH);
         return $this;
     }
 }
