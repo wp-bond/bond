@@ -42,6 +42,17 @@ class Attachment extends Post
         );
     }
 
+    public function imageTag(
+        $size = 'thumbnail',
+        array $options = []
+    ): string {
+        return Image::imageTag(
+            $this->ID,
+            $size,
+            $options
+        );
+    }
+
     public function values(string $for = ''): Fluent
     {
         $values = new Fluent();
