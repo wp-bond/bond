@@ -53,6 +53,11 @@ class Attachment extends Post
         );
     }
 
+    public function imageUrl($size = 'thumbnail'): string
+    {
+        return Image::url($this->ID, $size);
+    }
+
     public function values(string $for = ''): Fluent
     {
         $values = new Fluent();
