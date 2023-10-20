@@ -112,9 +112,14 @@ class Arr
     }
 
     // $keys array|string
-    public static function only(array $array, array $keys): array
+    public static function only(array $values, array $keys): array
     {
-        return array_intersect_key($array, array_flip((array) $keys));
+        return array_intersect_key($values, array_flip((array) $keys));
+    }
+
+    public static function except(array $values, array $keys): array
+    {
+        return array_diff_key($values, array_flip((array) $keys));
     }
 
     public static function sortKeys(

@@ -321,4 +321,9 @@ class Fluent implements
     {
         return new Fluent(Arr::only($this->all(), $keys));
     }
+
+    public function except(array $keys): Fluent
+    {
+        return new Fluent(Arr::except($this->all(), $keys));
+    }
 }
