@@ -6,8 +6,8 @@
     "upgrade": "pnpm dlx npm-check-updates -u && pnpm install"
   },
   "devDependencies": {
-    "sass": "^1.47.0",
-    "vite": "^2.7.10",
-    "vite-plugin-live-reload": "^2.1.0"
+    "sass": "^1.69.4",
+    "vite": "^4.5.0",
+    "vite-plugin-live-reload": "^3.0.2"
   }
 }

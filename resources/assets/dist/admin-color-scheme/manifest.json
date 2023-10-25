@@ -1,10 +1,14 @@
 {
+  "admin-color-scheme.css": {
+    "file": "assets/admin-color-scheme-3114c622.css",
+    "src": "admin-color-scheme.css"
+  },
   "admin-color-scheme.js": {
-    "file": "assets/admin-color-scheme.c376a249.js",
-    "src": "admin-color-scheme.js",
-    "isEntry": true,
     "css": [
-      "assets/admin-color-scheme.49101743.css"
-    ]
+      "assets/admin-color-scheme-3114c622.css"
+    ],
+    "file": "assets/admin-color-scheme-c4a526d9.js",
+    "isEntry": true,
+    "src": "admin-color-scheme.js"
   }
 }
