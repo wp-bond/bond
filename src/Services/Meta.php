@@ -294,18 +294,18 @@ class Meta extends Fluent implements ServiceInterface
     protected function printTitleTags()
     {
         // sanitize title and allow WP fallback
-        $title = $this->getTitle();
+        $title = \esc_attr(Str::clean($this->getTitle()));
 
         // allow alternative og title, not recommended but still
-        $og_title = !empty($this->og_title) ? Str::clean($this->og_title) : $title;
+        $og_title = !empty($this->og_title)
+            ? \esc_attr(Str::clean($this->og_title))
+            : $title;
 
         // print
         echo '<title>' . $title . '</title>' . "\n";
         echo '<meta property="og:title" content="' . $og_title . '">' . "\n";
         echo '<meta name="twitter:title" content="' . $og_title . '">' . "\n";
     }
-
-
 
     protected function printDescriptionTags()
     {
@@ -314,11 +314,8 @@ class Meta extends Fluent implements ServiceInterface
             return;
         }
 
-        $description = Str::clean($this->description, 100);
-        $og_description = !empty($this->og_description) ? Str::clean($this->og_description, 100) : $description;
-
-        // $description = mb_strtolower($description);
-        // $og_description = mb_strtolower($og_description);
+        $description = \esc_attr(Str::clean($this->description, 100));
+        $og_description = \esc_attr(Str::clean($this->og_description, 100));
 
         echo '<meta name="description" content="' . $description . '">' . "\n";
         echo '<meta property="og:description" content="' . $og_description . '">' . "\n";
