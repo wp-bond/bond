@@ -380,12 +380,12 @@ class Str
         $string = strip_tags($string);
 
         // convert space entities to normal spaces to help out some users
-        // $string = str_replace('&nbsp;', ' ', $string);
+        $string = str_replace('&nbsp;', ' ', $string);
 
         // convert to html entities
         // $string = htmlspecialchars($string);
 
-        // convert space entities to regular spaces so we can remove double spaces - all other html entities should be fine
+        // convert space entities to regular spaces so we can remove double spaces - all other hmtl entities should be fine
         $string = str_replace('&nbsp;', ' ', $string);
 
         // removes double spaces, tabs or line breaks, and trim the result
