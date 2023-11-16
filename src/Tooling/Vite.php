@@ -297,7 +297,7 @@ class Vite
     public function manifest(): array
     {
         $content = Filesystem::get(
-            $this->base_path . '/' . $this->out_dir  . '/manifest.json'
+            $this->base_path . '/' . $this->out_dir  . '/.vite/manifest.json'
         );
 
         return $content
