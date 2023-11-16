@@ -186,15 +186,15 @@ class Vite
         }
 
         if ($this->isRunning()) {
-            return '<script type="module" crossorigin src="'
+            return '<script type="module" src="'
                 . $this->host()
-                . '/@vite/client"></script><script type="module" crossorigin src="'
+                . '/@vite/client"></script><script type="module" src="'
                 . $url
                 . '"></script>';
         }
 
 
-        return '<script type="module" crossorigin src="'
+        return '<script type="module" src="'
             . $url
             . '"></script>';
     }
