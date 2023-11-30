@@ -186,15 +186,15 @@ class Vite
         }
 
         if ($this->isRunning()) {
-            return '<script type="module" src="'
+            return '<script type="module" crossorigin src="'
                 . $this->host()
-                . '/@vite/client"></script><script type="module" src="'
+                . '/@vite/client"></script><script type="module" crossorigin src="'
                 . $url
                 . '"></script>';
         }
 
 
-        return '<script type="module" src="'
+        return '<script type="module" crossorigin src="'
             . $url
             . '"></script>';
     }
@@ -222,7 +222,7 @@ class Vite
 
         $res = '';
         foreach ($this->importsUrls($this->entry) as $url) {
-            $res .= '<link rel="modulepreload" href="'
+            $res .= '<link rel="modulepreload" crossorigin href="'
                 . $url
                 . '">';
         }
@@ -240,7 +240,7 @@ class Vite
 
         $tags = '';
         foreach ($this->cssUrls() as $url) {
-            $tags .= '<link rel="stylesheet" href="'
+            $tags .= '<link rel="stylesheet" crossorigin href="'
                 . $url
                 . '">';
         }
@@ -274,9 +274,9 @@ class Vite
                 continue;
             }
             if ($type === 'woff2') {
-                $res .= '<link rel="preload" href="'
+                $res .= '<link rel="preload" crossorigin="anonymous" href="'
                     . $url
-                    . '" as="font" type="font/woff2" crossorigin="anonymous">';
+                    . '" as="font" type="font/woff2">';
             }
         }
         return $res;
