@@ -325,35 +325,4 @@ class Vite
 
         return $this->server_is_running = !$error || $error === 60;
     }
-
-
-    public function legacy(): string
-    {
-        if ($this->isRunning()) {
-            return '';
-        }
-
-        $url = $this->assetUrl(str_replace(
-            '.js',
-            '-legacy.js',
-            $this->entry
-        ));
-
-        $polyfill_url = $this->assetUrl('vite/legacy-polyfills');
-        if (!$polyfill_url) {
-            $polyfill_url = $this->assetUrl('../vite/legacy-polyfills');
-        }
-
-        if (!$url || !$polyfill_url) {
-            return '';
-        }
-
-        $script = '<script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>';
-
-        $script .= '<script nomodule src="' . $polyfill_url . '"></script>';
-
-        $script .= '<script nomodule id="vite-legacy-entry" data-src="' . $url . '">System.import(document.getElementById(\'vite-legacy-entry\').getAttribute(\'data-src\'))</script>';
-
-        return $script;
-    }
 }
