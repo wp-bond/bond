@@ -193,16 +193,16 @@ class Rewrite
         bool $year = false,
         array $extra_params = []
     ) {
+        static::single(
+            $post_type,
+            $path,
+            $extra_params
+        );
         static::archive(
             $post_type,
             $path,
             $paged,
             $year,
-            $extra_params
-        );
-        static::single(
-            $post_type,
-            $path,
             $extra_params
         );
     }
@@ -310,9 +310,10 @@ class Rewrite
             }
 
             // rewrite
+            $match_regex = \is_post_type_hierarchical($post_type) ? '(.+?)' : '([^/]+)';
 
             \add_rewrite_rule(
-                $_path . '([^/]+)/?$',
+                $_path . $match_regex . '/?$',
                 'index.php?' . $post_type . '=$matches[1]'
                     . $params_string,
                 $order
