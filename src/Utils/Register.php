@@ -59,7 +59,7 @@ class Register
 
         \add_action('init', function () use ($post_type, $params) {
             \register_post_type($post_type, $params);
-        });
+        }, 9);
     }
 
 
@@ -115,6 +115,6 @@ class Register
 
         \add_action('init', function () use ($taxonomy, $params) {
             \register_taxonomy($taxonomy, null, $params);
-        });
+        }, 9);
     }
 }
